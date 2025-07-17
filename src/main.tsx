@@ -15,13 +15,21 @@ const queryClient = new QueryClient({
 })
 
 console.log('Pharma SEO Dashboard initializing...')
+console.log('Environment:', import.meta.env.MODE)
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    </QueryClientProvider>
-  </React.StrictMode>,
-)
+const rootElement = document.getElementById('root')
+if (!rootElement) {
+  console.error('Root element not found!')
+} else {
+  console.log('Root element found, rendering app...')
+  
+  ReactDOM.createRoot(rootElement).render(
+    <React.StrictMode>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </QueryClientProvider>
+    </React.StrictMode>,
+  )
+}
