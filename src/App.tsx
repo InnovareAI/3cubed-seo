@@ -11,7 +11,6 @@ import MLRReview from './pages/MLRReview'
 import ClientManagement from './pages/ClientManagement'
 import CurrentProjects from './pages/CurrentProjects'
 import HITLReview from './pages/HITLReview'
-import ProcessingQueue from './pages/ProcessingQueue'
 import Submissions from './pages/Submissions'
 import AuditTrail from './pages/AuditTrail'
 import Administration from './pages/Administration'
@@ -67,7 +66,6 @@ function App() {
             <Route path="seo-requests" element={<SEORequests />} />
             <Route path="submissions" element={<Submissions />} />
             <Route path="submissions/:id" element={<SubmissionDetail />} />
-            <Route path="processing-queue" element={<ProcessingQueue />} />
             <Route path="hitl-review" element={<HITLReview />} />
             <Route path="seo-review" element={<SEOReview />} />
             <Route path="client-review" element={<ClientReview />} />
