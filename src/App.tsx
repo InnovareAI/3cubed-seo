@@ -1,11 +1,11 @@
 import { Routes, Route } from 'react-router-dom'
 import DashboardLayout from './components/DashboardLayout'
-import ProjectsOverview from './pages/ProjectsOverview'
+import CurrentProjects from './pages/CurrentProjects'
 import SEORequests from './pages/SEORequests'
 import SEOReview from './pages/SEOReview'
+import RevisionRequests from './pages/RevisionRequests'
 // import ClientReview from './pages/ClientReview'
 import Compliance from './pages/Compliance'
-// import RevisionRequests from './pages/RevisionRequests'
 // import MLRReview from './pages/MLRReview'
 // import SEOContentHub from './pages/SEOContentHub'
 // import ContentHub from './pages/ContentHub'
@@ -33,13 +33,13 @@ function App() {
     <div className="min-h-screen bg-gray-50">
       <Routes>
         <Route path="/" element={<DashboardLayout />}>
-          <Route index element={<ProjectsOverview />} />
+          <Route index element={<CurrentProjects />} />
           <Route path="seo-requests" element={<SEORequests />} />
           <Route path="seo-requests/:id" element={<SubmissionDetail />} />
           <Route path="seo-review" element={<SEOReview />} />
           <Route path="client-review" element={<ComingSoon title="Client Review" />} />
           <Route path="compliance" element={<Compliance />} />
-          <Route path="revision-requests" element={<ComingSoon title="Revision Requests" />} />
+          <Route path="revision-requests" element={<RevisionRequests />} />
           <Route path="mlr-review" element={<ComingSoon title="MLR Review" />} />
           <Route path="content-hub" element={<ComingSoon title="SEO Content Hub" />} />
           <Route path="audit" element={<AuditTrail />} />
