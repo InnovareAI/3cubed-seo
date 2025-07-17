@@ -149,6 +149,10 @@ export default function DashboardLayout() {
               </button>
             </div>
           </div>
+          {/* Version indicator - temporary for debugging */}
+          <div className="px-4 pb-2">
+            <p className="text-xs text-gray-400">v2.0 - Updated Navigation</p>
+          </div>
         </div>
       </div>
 
