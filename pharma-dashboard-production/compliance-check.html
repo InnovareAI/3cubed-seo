@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compliance Check - Pharma SEO Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <h1 class="text-xl font-bold text-gray-900">Compliance Check Tool</h1>
+                </div>
+                <div class="flex items-center">
+                    <a href="/" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div class="bg-white shadow rounded-lg p-6">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">Real-time Compliance Checker</h2>
+            
+            <div class="space-y-6">
+                <div>
+                    <label for="content-input" class="block text-sm font-medium text-gray-700 mb-2">
+                        Paste your content for compliance check
+                    </label>
+                    <textarea id="content-input" rows="10" 
+                              placeholder="Enter your pharmaceutical content here..."
+                              class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"></textarea>
+                </div>
+
+                <div class="flex justify-between items-center">
+                    <select id="region-select" class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        <option value="fda">FDA (US)</option>
+                        <option value="ema">EMA (EU)</option>
+                        <option value="health-canada">Health Canada</option>
+                        <option value="pmda">PMDA (Japan)</option>
+                        <option value="tga">TGA (Australia)</option>
+                    </select>
+                    <button onclick="checkCompliance()" 
+                            class="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 transition">
+                        <i class="fas fa-shield-alt mr-2"></i>Check Compliance
+                    </button>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div id="results" class="hidden mt-8">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Compliance Results</h3>
+                <div class="space-y-4">
+                    <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                        <div class="flex items-center">
+                            <i class="fas fa-check-circle text-green-600 text-xl mr-3"></i>
+                            <div>
+                                <h4 class="font-semibold text-green-900">Overall Compliance Score</h4>
+                                <p class="text-green-700">98.5% - Excellent</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="border rounded-lg p-4">
+                            <h4 class="font-semibold mb-2">Regulatory Compliance</h4>
+                            <div class="space-y-2">
+                                <div class="flex justify-between">
+                                    <span class="text-sm">Claims validation</span>
+                                    <i class="fas fa-check text-green-500"></i>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-sm">Safety information</span>
+                                    <i class="fas fa-check text-green-500"></i>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-sm">Fair balance</span>
+                                    <i class="fas fa-check text-green-500"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="border rounded-lg p-4">
+                            <h4 class="font-semibold mb-2">Brand Guidelines</h4>
+                            <div class="space-y-2">
+                                <div class="flex justify-between">
+                                    <span class="text-sm">Tone of voice</span>
+                                    <i class="fas fa-check text-green-500"></i>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-sm">Terminology</span>
+                                    <i class="fas fa-exclamation text-yellow-500"></i>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-sm">Messaging</span>
+                                    <i class="fas fa-check text-green-500"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border rounded-lg p-4">
+                        <h4 class="font-semibold mb-2">Recommendations</h4>
+                        <ul class="list-disc list-inside text-sm text-gray-600 space-y-1">
+                            <li>Consider adding more specific safety information in paragraph 3</li>
+                            <li>Review terminology: "breakthrough" may require additional substantiation</li>
+                            <li>Excellent use of fair balance throughout the content</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function checkCompliance() {
+            // Show loading state
+            const button = event.target;
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Checking...';
+            
+            // Simulate API call
+            setTimeout(() => {
+                document.getElementById('results').classList.remove('hidden');
+                button.disabled = false;
+                button.innerHTML = '<i class="fas fa-shield-alt mr-2"></i>Check Compliance';
+                
+                // Smooth scroll to results
+                document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+# SPA fallback
+/*    /index.html   200
+
+# API redirects
+/api/*  https://ktchrfgkbpaixbiwbieg.supabase.co/:splat  200

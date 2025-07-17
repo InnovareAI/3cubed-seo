@@ -1,0 +1,31 @@
+{
+  "extends": ["plugin:wc/recommended", "plugin:lit/recommended"],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": 2020,
+    "sourceType": "module"
+  },
+  "env": {
+    "browser": true
+  },
+  "plugins": ["@typescript-eslint"],
+  "rules": {
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": ["error"],
+    "sort-imports": ["error", {
+      "ignoreCase": true,
+      "ignoreDeclarationSort": true
+    }],
+    "import/extensions": ["error", "always", {
+      "ignorePackages": true
+    }]
+  },
+  "overrides": [
+    {
+      "files": ["src/**/*.ts"],
+      "rules": {
+        "import/extensions": ["error", "never"]
+      }
+    }
+  ]
+}

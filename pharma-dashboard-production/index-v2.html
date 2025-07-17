@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pharma SEO Dashboard</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Custom styles -->
+    <style>
+        .dashboard-card {
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .dashboard-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .pulse-indicator {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+            }
+        }
+        .chat-widget {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        .status-badge {
+            position: relative;
+            overflow: hidden;
+        }
+        .status-badge::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: shimmer 3s infinite;
+        }
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        .sidebar {
+            transition: transform 0.3s ease;
+        }
+        .sidebar-collapsed {
+            transform: translateX(-100%);
+        }
+        @media (min-width: 768px) {
+            .sidebar-collapsed {
+                transform: translateX(0);
+                width: 4rem;
+            }
+            .sidebar-collapsed .sidebar-text {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="flex h-screen">
+        <!-- Left Sidebar Navigation -->
+        <nav class="sidebar bg-gray-900 text-white w-64 flex-shrink-0 h-full overflow-y-auto">
+            <div class="p-4">
+                <div class="flex items-center justify-between mb-8">
+                    <h1 class="text-xl font-bold">Pharma SEO</h1>
+                    <button onclick="toggleSidebar()" class="md:hidden text-gray-400 hover:text-white">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+                
+                <ul class="space-y-2">
+                    <li>
+                        <a href="#hitl" class="flex items-center p-3 rounded-lg bg-indigo-600 text-white">
+                            <i class="fas fa-user-check w-5"></i>
+                            <span class="sidebar-text ml-3">HITL Review</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#compliance" class="flex items-center p-3 rounded-lg hover:bg-gray-800 transition">
+                            <i class="fas fa-shield-alt w-5"></i>
+                            <span class="sidebar-text ml-3">Compliance</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#library" class="flex items-center p-3 rounded-lg hover:bg-gray-800 transition">
+                            <i class="fas fa-folder w-5"></i>
+                            <span class="sidebar-text ml-3">Content Library</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#kpi" class="flex items-center p-3 rounded-lg hover:bg-gray-800 transition">
+                            <i class="fas fa-chart-line w-5"></i>
+                            <span class="sidebar-text ml-3">Performance</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#admin" class="flex items-center p-3 rounded-lg hover:bg-gray-800 transition">
+                            <i class="fas fa-cog w-5"></i>
+                            <span class="sidebar-text ml-3">Admin</span>
+                        </a>
+                    </li>
+                </ul>
+                
+                <div class="mt-8 pt-8 border-t border-gray-700">
+                    <a href="/submit.html" class="flex items-center p-3 rounded-lg bg-green-600 hover:bg-green-700 transition">
+                        <i class="fas fa-plus w-5"></i>
+                        <span class="sidebar-text ml-3">New Request</span>
+                    </a>
+                </div>
+                
+                <div class="mt-auto pt-8">
+                    <div class="flex items-center p-3">
+                        <img src="https://ui-avatars.com/api/?name=Sophia+Caldwell&background=4F46E5&color=fff" 
+                             class="w-8 h-8 rounded-full">
+                        <span class="sidebar-text ml-3 text-sm">Sophia Caldwell</span>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <div class="flex-1 overflow-y-auto">
+            <!-- Top Bar -->
+            <header class="bg-white shadow-sm border-b sticky top-0 z-10">
+                <div class="px-4 sm:px-6 lg:px-8">
+                    <div class="flex justify-between h-16 items-center">
+                        <button onclick="toggleSidebar()" class="text-gray-500 hover:text-gray-700 md:hidden">
+                            <i class="fas fa-bars"></i>
+                        </button>
+                        <div class="flex items-center space-x-4 ml-auto">
+                            <button class="text-gray-400 hover:text-gray-500">
+                                <i class="fas fa-bell text-lg"></i>
+                            </button>
+                            <button class="bg-purple-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-purple-700 transition" onclick="askAI()">
+                                <i class="fas fa-robot mr-2"></i>Ask AI
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Content -->
+            <main class="p-6">
+                <!-- Screen 1: HITL Review Dashboard -->
+                <div id="hitl" class="mb-8">
+                    <div class="bg-white shadow rounded-lg p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-2xl font-bold text-gray-900">HITL Review Queue</h2>
+                            <div class="flex items-center space-x-4">
+                                <span class="text-sm text-gray-500">5 items pending review</span>
+                                <button class="text-indigo-600 hover:text-indigo-700" onclick="refreshQueue()">
+                                    <i class="fas fa-refresh"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Review Items -->
+                        <div class="space-y-4">
+                            <div class="dashboard-card border rounded-lg p-4 hover:border-indigo-500">
+                                <div class="flex justify-between items-start">
+                                    <div class="flex-1">
+                                        <h3 class="text-lg font-semibold">Keytruda - Phase III Content</h3>
+                                        <p class="text-gray-600 mt-1">Compliance ID: PHR-2025-0142</p>
+                                        <div class="mt-2 flex items-center space-x-4">
+                                            <span class="status-badge bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm">
+                                                Pending Review
+                                            </span>
+                                            <span class="text-sm text-gray-500">3 retry attempts</span>
+                                            <span class="text-sm text-gray-500">Submitted: 2 hours ago</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex space-x-2">
+                                        <button onclick="approveContent('PHR-2025-0142')" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
+                                            <i class="fas fa-check mr-2"></i>Approve
+                                        </button>
+                                        <button onclick="rejectContent('PHR-2025-0142')" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition">
+                                            <i class="fas fa-times mr-2"></i>Reject
+                                        </button>
+                                        <button onclick="reviewContent('PHR-2025-0142')" class="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300 transition">
+                                            <i class="fas fa-eye mr-2"></i>Review
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="dashboard-card border rounded-lg p-4 hover:border-indigo-500">
+                                <div class="flex justify-between items-start">
+                                    <div class="flex-1">
+                                        <h3 class="text-lg font-semibold">Ozempic - Market Launch Content</h3>
+                                        <p class="text-gray-600 mt-1">Compliance ID: PHR-2025-0143</p>
+                                        <div class="mt-2 flex items-center space-x-4">
+                                            <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
+                                                In Review
+                                            </span>
+                                            <span class="text-sm text-gray-500">1 retry attempt</span>
+                                            <span class="text-sm text-gray-500">Reviewer: Dr. Chen</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="pulse-indicator inline-block w-3 h-3 bg-blue-500 rounded-full mr-2"></span>
+                                        <span class="text-sm text-gray-500">Currently reviewing...</span>
+                                        <button onclick="reviewContent('PHR-2025-0143')" class="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300 transition ml-4">
+                                            <i class="fas fa-eye mr-2"></i>View
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="dashboard-card border rounded-lg p-4 hover:border-indigo-500">
+                                <div class="flex justify-between items-start">
+                                    <div class="flex-1">
+                                        <h3 class="text-lg font-semibold">Humira Biosimilar - Phase II Update</h3>
+                                        <p class="text-gray-600 mt-1">Compliance ID: PHR-2025-0144</p>
+                                        <div class="mt-2 flex items-center space-x-4">
+                                            <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
+                                                Approved
+                                            </span>
+                                            <span class="text-sm text-gray-500">0 retry attempts</span>
+                                            <span class="text-sm text-gray-500">Approved by: Sarah M.</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex space-x-2">
+                                        <button onclick="viewApproved('PHR-2025-0144')" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition">
+                                            <i class="fas fa-file-alt mr-2"></i>View Report
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Screen 2: Compliance Tracking Dashboard -->
+                <div id="compliance" class="mb-8">
+                    <div class="bg-white shadow rounded-lg p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-2xl font-bold text-gray-900">Compliance Tracking</h2>
+                            <button class="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 transition" onclick="openChatbot()">
+                                <i class="fas fa-comments mr-2"></i>Chat with Compliance AI
+                            </button>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <!-- QA Agent Feed -->
+                            <div class="dashboard-card bg-blue-50 rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h3 class="font-semibold text-gray-900">QA Agent Status</h3>
+                                    <button class="text-gray-400 hover:text-gray-600">
+                                        <i class="fas fa-info-circle"></i>
+                                    </button>
+                                </div>
+                                <div class="text-2xl font-bold text-blue-600">98.5%</div>
+                                <p class="text-sm text-gray-600 mt-1">Compliance Score</p>
+                                <div class="mt-3 space-y-1">
+                                    <div class="text-xs text-gray-500">
+                                        <i class="fas fa-check-circle text-green-500 mr-1"></i>FDA Guidelines: Pass
+                                    </div>
+                                    <div class="text-xs text-gray-500">
+                                        <i class="fas fa-exclamation-circle text-yellow-500 mr-1"></i>EU MDR: Review needed
+                                    </div>
+                                    <div class="text-xs text-gray-500">
+                                        <i class="fas fa-check-circle text-green-500 mr-1"></i>PMDA Japan: Pass
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Local Regulations -->
+                            <div class="dashboard-card bg-green-50 rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h3 class="font-semibold text-gray-900">Local Regulations</h3>
+                                    <button class="text-gray-400 hover:text-gray-600">
+                                        <i class="fas fa-globe"></i>
+                                    </button>
+                                </div>
+                                <div class="space-y-2 mt-3">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm">US FDA</span>
+                                        <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Compliant</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm">EU EMA</span>
+                                        <span class="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Pending</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm">Health Canada</span>
+                                        <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Compliant</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm">TGA Australia</span>
+                                        <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Compliant</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Brand Guidelines -->
+                            <div class="dashboard-card bg-purple-50 rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h3 class="font-semibold text-gray-900">Brand Guidelines</h3>
+                                    <button class="text-gray-400 hover:text-gray-600">
+                                        <i class="fas fa-palette"></i>
+                                    </button>
+                                </div>
+                                <div class="text-2xl font-bold text-purple-600">Active</div>
+                                <p class="text-sm text-gray-600 mt-1">Version 2.3</p>
+                                <div class="mt-3">
+                                    <div class="text-xs text-gray-500">
+                                        <i class="fas fa-check text-green-500 mr-1"></i>Tone & Voice
+                                    </div>
+                                    <div class="text-xs text-gray-500">
+                                        <i class="fas fa-check text-green-500 mr-1"></i>Visual Identity
+                                    </div>
+                                    <div class="text-xs text-gray-500">
+                                        <i class="fas fa-check text-green-500 mr-1"></i>Messaging Framework
+                                    </div>
+                                </div>
+                                <button class="text-xs text-indigo-600 hover:text-indigo-700 mt-2">View Guidelines →</button>
+                            </div>
+                            
+                            <!-- MLR Status -->
+                            <div class="dashboard-card bg-orange-50 rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h3 class="font-semibold text-gray-900">MLR Status</h3>
+                                    <button class="text-gray-400 hover:text-gray-600">
+                                        <i class="fas fa-shield-alt"></i>
+                                    </button>
+                                </div>
+                                <div class="space-y-2 mt-3">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm">Medical</span>
+                                        <i class="fas fa-check-circle text-green-500"></i>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm">Legal</span>
+                                        <i class="fas fa-clock text-yellow-500"></i>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm">Regulatory</span>
+                                        <i class="fas fa-check-circle text-green-500"></i>
+                                    </div>
+                                </div>
+                                <div class="mt-3 pt-3 border-t">
+                                    <p class="text-xs text-gray-500">Last review: 2 days ago</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Compliance Activities -->
+                        <div class="mt-6 border-t pt-6">
+                            <h3 class="text-lg font-semibold mb-4">Recent Compliance Activities</h3>
+                            <div class="space-y-2">
+                                <div class="flex items-center justify-between py-2">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                                        <span class="text-sm">FDA 21 CFR Part 11 compliance verified for PHR-2025-0142</span>
+                                    </div>
+                                    <span class="text-xs text-gray-500">10 min ago</span>
+                                </div>
+                                <div class="flex items-center justify-between py-2">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-exclamation-circle text-yellow-500 mr-3"></i>
+                                        <span class="text-sm">EU MDR update required for medical device content</span>
+                                    </div>
+                                    <span class="text-xs text-gray-500">1 hour ago</span>
+                                </div>
+                                <div class="flex items-center justify-between py-2">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-info-circle text-blue-500 mr-3"></i>
+                                        <span class="text-sm">Brand guidelines v2.3 applied to all new content</span>
+                                    </div>
+                                    <span class="text-xs text-gray-500">3 hours ago</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Screen 3: Content Library (Placeholder) -->
+                <div id="library" class="mb-8">
+                    <div class="bg-white shadow rounded-lg p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-2xl font-bold text-gray-900">Content Library</h2>
+                            <div class="flex space-x-2">
+                                <input type="search" placeholder="Search content..." class="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <button class="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 transition">
+                                    <i class="fas fa-filter mr-2"></i>Filter
+                                </button>
+                                <button class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition">
+                                    <i class="fas fa-plus mr-2"></i>New Content
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gray-100 rounded-lg p-12 text-center">
+                            <i class="fas fa-folder-open text-6xl text-gray-400 mb-4"></i>
+                            <h3 class="text-xl font-semibold text-gray-700 mb-2">Content Library Coming Soon</h3>
+                            <p class="text-gray-600">Your generated content will appear here with full search and version control capabilities.</p>
+                            <p class="text-sm text-gray-500 mt-2">Expected launch: Q2 2025</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Screen 4: Performance Metrics - Enhanced for Pharma -->
+                <div id="kpi" class="mb-8">
+                    <div class="bg-white shadow rounded-lg p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-2xl font-bold text-gray-900">Pharma & Life Sciences Performance</h2>
+                            <select class="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option>Last 7 days</option>
+                                <option>Last 30 days</option>
+                                <option>Last 90 days</option>
+                                <option>Year to date</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Key Pharma Metrics -->
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                            <div class="bg-gray-50 rounded-lg p-4">
+                                <h3 class="text-sm font-medium text-gray-600">Clinical Trial Content</h3>
+                                <p class="text-2xl font-bold text-gray-900 mt-2">186</p>
+                                <p class="text-sm text-green-600 mt-1">↑ 23% from last period</p>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-4">
+                                <h3 class="text-sm font-medium text-gray-600">Regulatory Compliance Rate</h3>
+                                <p class="text-2xl font-bold text-gray-900 mt-2">99.2%</p>
+                                <p class="text-sm text-green-600 mt-1">↑ 0.8% improvement</p>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-4">
+                                <h3 class="text-sm font-medium text-gray-600">MedTech Publications</h3>
+                                <p class="text-2xl font-bold text-gray-900 mt-2">73</p>
+                                <p class="text-sm text-blue-600 mt-1">→ On target</p>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-4">
+                                <h3 class="text-sm font-medium text-gray-600">Time to Market</h3>
+                                <p class="text-2xl font-bold text-gray-900 mt-2">18 days</p>
+                                <p class="text-sm text-green-600 mt-1">↓ 4 days faster</p>
+                            </div>
+                        </div>
+
+                        <!-- Therapeutic Area Breakdown -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="bg-gray-50 rounded-lg p-6">
+                                <h3 class="text-sm font-medium text-gray-600 mb-4">Content by Therapeutic Area</h3>
+                                <div class="space-y-3">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm">Oncology</span>
+                                        <div class="flex items-center">
+                                            <div class="w-32 bg-gray-200 rounded-full h-2 mr-2">
+                                                <div class="bg-blue-600 h-2 rounded-full" style="width: 35%"></div>
+                                            </div>
+                                            <span class="text-sm text-gray-600">87</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm">Cardiology</span>
+                                        <div class="flex items-center">
+                                            <div class="w-32 bg-gray-200 rounded-full h-2 mr-2">
+                                                <div class="bg-blue-600 h-2 rounded-full" style="width: 28%"></div>
+                                            </div>
+                                            <span class="text-sm text-gray-600">69</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm">Neurology</span>
+                                        <div class="flex items-center">
+                                            <div class="w-32 bg-gray-200 rounded-full h-2 mr-2">
+                                                <div class="bg-blue-600 h-2 rounded-full" style="width: 20%"></div>
+                                            </div>
+                                            <span class="text-sm text-gray-600">49</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm">Rare Diseases</span>
+                                        <div class="flex items-center">
+                                            <div class="w-32 bg-gray-200 rounded-full h-2 mr-2">
+                                                <div class="bg-blue-600 h-2 rounded-full" style="width: 17%"></div>
+                                            </div>
+                                            <span class="text-sm text-gray-600">42</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-gray-50 rounded-lg p-6">
+                                <h3 class="text-sm font-medium text-gray-600 mb-4">Competitive Intelligence</h3>
+                                <div class="space-y-3">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm">vs. Pfizer Content</span>
+                                        <span class="text-sm font-semibold text-green-600">+15% reach</span>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm">vs. Roche Content</span>
+                                        <span class="text-sm font-semibold text-green-600">+8% engagement</span>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm">vs. J&J Content</span>
+                                        <span class="text-sm font-semibold text-red-600">-3% visibility</span>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm">Market Share (SEO)</span>
+                                        <span class="text-sm font-semibold">22.4%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Regulatory Metrics -->
+                        <div class="mt-6 bg-blue-50 rounded-lg p-6">
+                            <h3 class="text-sm font-medium text-gray-900 mb-4">Regulatory & Compliance Metrics</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <p class="text-sm text-gray-600">FDA Submissions</p>
+                                    <p class="text-xl font-bold text-gray-900">24 <span class="text-sm font-normal text-green-600">100% approved</span></p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-600">EMA Compliance</p>
+                                    <p class="text-xl font-bold text-gray-900">98.5% <span class="text-sm font-normal text-gray-600">2 pending</span></p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-600">Clinical Trial Updates</p>
+                                    <p class="text-xl font-bold text-gray-900">156 <span class="text-sm font-normal text-blue-600">12 this week</span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Screen 5: Admin Dashboard -->
+                <div id="admin" class="mb-8">
+                    <div class="bg-white shadow rounded-lg p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-2xl font-bold text-gray-900">Admin Dashboard</h2>
+                            <button class="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 transition">
+                                <i class="fas fa-download mr-2"></i>Export Reports
+                            </button>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <!-- User Management -->
+                            <div class="bg-gray-50 rounded-lg p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 mb-4">User Management</h3>
+                                <div class="space-y-3">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm">Active Users</span>
+                                        <span class="font-semibold">24</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm">Pending Invites</span>
+                                        <span class="font-semibold text-yellow-600">3</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm">Admin Users</span>
+                                        <span class="font-semibold">5</span>
+                                    </div>
+                                </div>
+                                <button class="mt-4 w-full bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition">
+                                    Manage Users
+                                </button>
+                            </div>
+
+                            <!-- System Settings -->
+                            <div class="bg-gray-50 rounded-lg p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 mb-4">System Settings</h3>
+                                <div class="space-y-3">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm">AI Model</span>
+                                        <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">GPT-4 Active</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm">Webhooks</span>
+                                        <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Connected</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm">Email Service</span>
+                                        <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Active</span>
+                                    </div>
+                                </div>
+                                <button class="mt-4 w-full bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 transition">
+                                    Configure Settings
+                                </button>
+                            </div>
+
+                            <!-- Audit Logs -->
+                            <div class="bg-gray-50 rounded-lg p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 mb-4">Audit & Compliance</h3>
+                                <div class="space-y-3">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm">Last Audit</span>
+                                        <span class="text-xs text-gray-600">2 days ago</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm">Log Entries</span>
+                                        <span class="font-semibold">12,847</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm">Compliance Score</span>
+                                        <span class="font-semibold text-green-600">99.8%</span>
+                                    </div>
+                                </div>
+                                <button class="mt-4 w-full bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition">
+                                    View Audit Logs
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- API Usage -->
+                        <div class="mt-6 bg-orange-50 rounded-lg p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">API Usage & Limits</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                <div>
+                                    <p class="text-sm text-gray-600">LangChain API</p>
+                                    <p class="text-xl font-bold">78%</p>
+                                    <div class="mt-2 bg-gray-200 rounded-full h-2">
+                                        <div class="bg-orange-500 h-2 rounded-full" style="width: 78%"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-600">Supabase Queries</p>
+                                    <p class="text-xl font-bold">45%</p>
+                                    <div class="mt-2 bg-gray-200 rounded-full h-2">
+                                        <div class="bg-green-500 h-2 rounded-full" style="width: 45%"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-600">Email Sends</p>
+                                    <p class="text-xl font-bold">62%</p>
+                                    <div class="mt-2 bg-gray-200 rounded-full h-2">
+                                        <div class="bg-blue-500 h-2 rounded-full" style="width: 62%"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-600">Storage Used</p>
+                                    <p class="text-xl font-bold">34%</p>
+                                    <div class="mt-2 bg-gray-200 rounded-full h-2">
+                                        <div class="bg-green-500 h-2 rounded-full" style="width: 34%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Chat Widget (Hidden by default) -->
+    <div id="chatWidget" class="chat-widget hidden">
+        <div class="bg-white rounded-lg shadow-2xl w-96 h-96 flex flex-col">
+            <div class="bg-indigo-600 text-white p-4 rounded-t-lg flex justify-between items-center">
+                <h3 class="font-semibold">Compliance AI Assistant</h3>
+                <button onclick="closeChatbot()" class="text-white hover:text-gray-200">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="flex-1 p-4 overflow-y-auto">
+                <div class="space-y-4">
+                    <div class="bg-gray-100 rounded-lg p-3 max-w-xs">
+                        <p class="text-sm">Hello! I can help you with compliance questions, regulatory guidance, and brand guidelines. What would you like to know?</p>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t p-4">
+                <div class="flex space-x-2">
+                    <input type="text" placeholder="Ask about compliance..." class="flex-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <button class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Toggle Button -->
+    <button id="chatToggle" class="fixed bottom-6 right-6 bg-indigo-600 text-white w-14 h-14 rounded-full shadow-lg hover:bg-indigo-700 transition flex items-center justify-center" onclick="openChatbot()">
+        <i class="fas fa-comments text-xl"></i>
+    </button>
+
+    <script>
+        // Toggle sidebar
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('sidebar-collapsed');
+        }
+
+        // Chat functions
+        function openChatbot() {
+            document.getElementById('chatWidget').classList.remove('hidden');
+            document.getElementById('chatToggle').classList.add('hidden');
+        }
+
+        function closeChatbot() {
+            document.getElementById('chatWidget').classList.add('hidden');
+            document.getElementById('chatToggle').classList.remove('hidden');
+        }
+
+        // HITL Review Functions
+        function approveContent(id) {
+            if (confirm(`Approve content ${id}?`)) {
+                alert(`Content ${id} has been approved and will be published.`);
+                // In production, this would call your API
+                location.reload();
+            }
+        }
+
+        function rejectContent(id) {
+            const reason = prompt(`Reason for rejecting ${id}:`);
+            if (reason) {
+                alert(`Content ${id} has been rejected. Notification sent to submitter.`);
+                // In production, this would call your API
+                location.reload();
+            }
+        }
+
+        function reviewContent(id) {
+            alert(`Opening detailed review for ${id}...`);
+            // In production, this would open a modal or new page
+        }
+
+        function viewApproved(id) {
+            alert(`Opening approved content report for ${id}...`);
+            // In production, this would show the final content
+        }
+
+        function refreshQueue() {
+            alert('Refreshing review queue...');
+            location.reload();
+        }
+
+        // Ask AI function
+        function askAI() {
+            const question = prompt('What would you like to ask the AI?');
+            if (question) {
+                alert('AI is processing your request: "' + question + '"');
+                // In production, this would call your AI API
+            }
+        }
+
+        // Add smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Highlight active nav item
+        function updateActiveNav() {
+            const sections = document.querySelectorAll('main > div[id]');
+            const navLinks = document.querySelectorAll('.sidebar a[href^="#"]');
+            
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (scrollY >= (sectionTop - 100)) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('bg-indigo-600', 'text-white');
+                link.classList.add('hover:bg-gray-800');
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.classList.add('bg-indigo-600', 'text-white');
+                    link.classList.remove('hover:bg-gray-800');
+                }
+            });
+        }
+
+        window.addEventListener('scroll', updateActiveNav);
+        window.addEventListener('load', updateActiveNav);
+
+        // Simulate real-time updates
+        setInterval(() => {
+            // Add subtle animations to status badges
+            document.querySelectorAll('.status-badge').forEach(badge => {
+                badge.style.opacity = '0.8';
+                setTimeout(() => {
+                    badge.style.opacity = '1';
+                }, 500);
+            });
+        }, 5000);
+    </script>
+</body>
+</html>

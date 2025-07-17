@@ -1,0 +1,34 @@
+[build]
+  publish = "."
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Content-Security-Policy = "default-src 'self' https:; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com; img-src 'self' data: https:;"
+
+# API proxy for Supabase
+[[redirects]]
+  from = "/api/*"
+  to = "https://ktchrfgkbpaixbiwbieg.supabase.co/:splat"
+  status = 200
+  force = true
+
+# Redirect home to login if not authenticated
+[[redirects]]
+  from = "/"
+  to = "/login"
+  status = 302
+  conditions = {Cookie = ["!authenticated"]}
+
+# Environment
+[build.environment]
+  NODE_VERSION = "18"

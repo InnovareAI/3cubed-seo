@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# Manual push instructions for Pharma SEO Dashboard
+
+echo "📋 Manual Git Push Instructions"
+echo "================================"
+echo ""
+echo "Since automated push isn't working, here are the manual steps:"
+echo ""
+echo "1. Open Terminal and navigate to the project:"
+echo "   cd /Users/tvonlinz/pharma-dashboard"
+echo ""
+echo "2. Initialize git and add the remote:"
+echo "   git init"
+echo "   git remote add origin https://github.com/InnovareAI/pharma-seo-dashboard.git"
+echo ""
+echo "3. Add all files and commit:"
+echo "   git add ."
+echo "   git commit -m 'Initial commit - Pharma SEO Dashboard'"
+echo ""
+echo "4. Push to GitHub:"
+echo "   git branch -M main"
+echo "   git push -u origin main"
+echo ""
+echo "5. If asked for credentials, use your GitHub username and a Personal Access Token"
+echo "   (not your password). Create a token at: https://github.com/settings/tokens"
+echo ""
+echo "After pushing, you can deploy to Netlify!"

@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit SEO Request - Pharma SEO Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <h1 class="text-xl font-bold text-gray-900">Pharma SEO Dashboard</h1>
+                </div>
+                <div class="flex items-center">
+                    <a href="/" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-3xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div class="bg-white shadow rounded-lg p-6">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">SEO Content Request Form</h2>
+            
+            <form name="pharma-seo-generator" method="POST" action="/success" netlify netlify-honeypot="bot-field">
+                <input type="hidden" name="form-name" value="pharma-seo-generator">
+                <p class="hidden">
+                    <label>Don't fill this out: <input name="bot-field"></label>
+                </p>
+
+                <!-- Mandatory Fields -->
+                <div class="space-y-6">
+                    <h3 class="text-lg font-semibold text-gray-900 border-b pb-2">Required Information</h3>
+                    
+                    <div>
+                        <label for="product-identifier" class="block text-sm font-medium text-gray-700">Product Identifier*</label>
+                        <input type="text" name="product-identifier" id="product-identifier" required
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    </div>
+
+                    <div>
+                        <label for="medical-indication" class="block text-sm font-medium text-gray-700">Medical Indication*</label>
+                        <input type="text" name="medical-indication" id="medical-indication" required
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    </div>
+
+                    <div>
+                        <label for="therapeutic-area" class="block text-sm font-medium text-gray-700">Therapeutic Area*</label>
+                        <select name="therapeutic-area" id="therapeutic-area" required
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                            <option value="">Select...</option>
+                            <option value="Oncology">Oncology</option>
+                            <option value="Cardiology">Cardiology</option>
+                            <option value="Neurology">Neurology</option>
+                            <option value="Immunology">Immunology</option>
+                            <option value="Infectious Disease">Infectious Disease</option>
+                            <option value="Rare Disease">Rare Disease</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="stage" class="block text-sm font-medium text-gray-700">Stage*</label>
+                        <select name="stage" id="stage" required
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                            <option value="">Select...</option>
+                            <option value="Phase I">Phase I</option>
+                            <option value="Phase II">Phase II</option>
+                            <option value="Phase III">Phase III</option>
+                            <option value="Marketing Shaping">Marketing Shaping</option>
+                            <option value="Market Launch">Market Launch</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="target-audience" class="block text-sm font-medium text-gray-700">Target Audience*</label>
+                        <select name="target-audience" id="target-audience" required
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                            <option value="">Select...</option>
+                            <option value="Healthcare Professionals">Healthcare Professionals</option>
+                            <option value="Patients">Patients</option>
+                            <option value="Payers">Payers</option>
+                            <option value="Investors">Investors</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Geography* (Select up to 3)</label>
+                        <div class="space-y-2">
+                            <label class="flex items-center">
+                                <input type="checkbox" name="geography" value="US" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                                <span class="ml-2">United States</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" name="geography" value="Canada" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                                <span class="ml-2">Canada</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" name="geography" value="EU" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                                <span class="ml-2">European Union</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" name="geography" value="UK" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                                <span class="ml-2">United Kingdom</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" name="geography" value="China" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                                <span class="ml-2">China</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" name="geography" value="Japan" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                                <span class="ml-2">Japan</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" name="geography" value="India" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                                <span class="ml-2">India</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" name="geography" value="AU/NZ" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                                <span class="ml-2">Australia/New Zealand</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" name="geography" value="Global" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                                <span class="ml-2">Global</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="key-differentiators" class="block text-sm font-medium text-gray-700">Key Differentiators* (3-5 items)</label>
+                        <textarea name="key-differentiators" id="key-differentiators" rows="4" required
+                                  placeholder="Enter 3-5 key differentiators, one per line"
+                                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
+                    </div>
+
+                    <div>
+                        <label for="competitor-products" class="block text-sm font-medium text-gray-700">Competitor Products*</label>
+                        <input type="text" name="competitor-products" id="competitor-products" required
+                               placeholder="e.g., Humira, Keytruda, Opdivo"
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                        <div>
+                            <label for="your-name" class="block text-sm font-medium text-gray-700">Your Name*</label>
+                            <input type="text" name="your-name" id="your-name" required
+                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        </div>
+                        <div>
+                            <label for="your-email" class="block text-sm font-medium text-gray-700">Your Email*</label>
+                            <input type="email" name="your-email" id="your-email" required
+                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="approver-seo" class="block text-sm font-medium text-gray-700">Approver (SEO)*</label>
+                        <input type="text" name="approver-seo" id="approver-seo" required
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    </div>
+                </div>
+
+                <!-- Optional Fields -->
+                <div class="space-y-6 mt-8">
+                    <h3 class="text-lg font-semibold text-gray-900 border-b pb-2">Optional Information</h3>
+                    
+                    <div>
+                        <label for="mechanism-of-action" class="block text-sm font-medium text-gray-700">Mechanism of Action</label>
+                        <textarea name="mechanism-of-action" id="mechanism-of-action" rows="3"
+                                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
+                    </div>
+
+                    <div>
+                        <label for="clinical-trial-details" class="block text-sm font-medium text-gray-700">Clinical Trial Phase Details</label>
+                        <textarea name="clinical-trial-details" id="clinical-trial-details" rows="3"
+                                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
+                    </div>
+
+                    <div>
+                        <label for="primary-endpoints" class="block text-sm font-medium text-gray-700">Primary Endpoints</label>
+                        <textarea name="primary-endpoints" id="primary-endpoints" rows="3"
+                                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
+                    </div>
+
+                    <div>
+                        <label for="safety-profile" class="block text-sm font-medium text-gray-700">Safety Profile</label>
+                        <textarea name="safety-profile" id="safety-profile" rows="3"
+                                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
+                    </div>
+
+                    <div>
+                        <label for="special-considerations" class="block text-sm font-medium text-gray-700">Special Considerations</label>
+                        <textarea name="special-considerations" id="special-considerations" rows="3"
+                                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
+                    </div>
+                </div>
+
+                <div class="mt-8 flex justify-end space-x-3">
+                    <button type="button" onclick="window.history.back()"
+                            class="bg-gray-200 text-gray-700 px-6 py-3 rounded-md hover:bg-gray-300 transition">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                            class="bg-indigo-600 text-white px-6 py-3 rounded-md hover:bg-indigo-700 transition">
+                        Submit Request
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        // Limit geography selection to 3
+        const checkboxes = document.querySelectorAll('input[name="geography"]');
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const checkedBoxes = document.querySelectorAll('input[name="geography"]:checked');
+                if (checkedBoxes.length >= 3) {
+                    checkboxes.forEach(cb => {
+                        if (!cb.checked) cb.disabled = true;
+                    });
+                } else {
+                    checkboxes.forEach(cb => {
+                        cb.disabled = false;
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
