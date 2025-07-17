@@ -148,31 +148,3 @@ export function formatProjectNumber(num: number): string {
 export function formatSubmissionNumber(num: number): string {
   return `SUB-${num.toString().padStart(5, '0')}`
 }
-
-// Old interface for backward compatibility
-export interface Submission_Old {
-  id: string
-  compliance_id: string
-  unique_id?: string
-  email_thread_id?: string
-  product_identifier: string
-  medical_indication: string
-  therapeutic_area: string
-  stage_new: string
-  target_audience: string
-  geography_new?: string[]
-  key_differentiators?: string
-  competitor_products?: string
-  your_name: string
-  your_email: string
-  approver_seo?: string
-  langchain_status: string
-  langchain_phase: string
-  langchain_retry_count: number
-  qa_status?: string
-  fda_compliance_status?: string
-  ai_output?: any
-  raw_input_content: string
-  created_at: string
-  updated_at: string
-}
