@@ -32,18 +32,29 @@ const navigation = [
 export default function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
-  // Fetch pending review count
+  // Fetch pending review count with error handling
   const { data: pendingCount } = useQuery({
     queryKey: ['pending-reviews-count'],
     queryFn: async () => {
-      const { count } = await supabase
-        .from('submissions')
-        .select('*', { count: 'exact', head: true })
-        .eq('langchain_status', 'needs_review')
-      
-      return count || 0
+      try {
+        const { count, error } = await supabase
+          .from('submissions')
+          .select('*', { count: 'exact', head: true })
+          .eq('langchain_status', 'needs_review')
+        
+        if (error) {
+          console.error('Error fetching pending reviews:', error)
+          return 0
+        }
+        
+        return count || 0
+      } catch (err) {
+        console.error('Error in pending reviews query:', err)
+        return 0
+      }
     },
-    refetchInterval: 30000 // Refresh every 30 seconds
+    refetchInterval: 30000, // Refresh every 30 seconds
+    retry: false // Don't retry on error to avoid spam
   })
 
   return (
