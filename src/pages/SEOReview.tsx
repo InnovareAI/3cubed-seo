@@ -99,7 +99,7 @@ const getSEOScoreColor = (score: number) => {
 export default function SEOReview() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
-  const [selectedItem, setSelectedItem] = useState<SEOReviewItem | null>(null)
+  // const [selectedItem, setSelectedItem] = useState<SEOReviewItem | null>(null)
 
   const { data: reviewItems = mockReviewItems } = useQuery({
     queryKey: ['seo-review-items'],
@@ -297,7 +297,7 @@ export default function SEOReview() {
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div className="flex items-center gap-2">
                     <button 
-                      onClick={() => setSelectedItem(item)}
+                      onClick={() => console.log('View item:', item)}
                       className="text-blue-600 hover:text-blue-900"
                     >
                       <Eye className="h-5 w-5" />

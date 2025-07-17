@@ -4,7 +4,6 @@ import { useQuery } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import { 
   FileText, 
-  BarChart3, 
   Library, 
   Shield,
   CheckSquare,
