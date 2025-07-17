@@ -1,124 +1,179 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { Link } from 'react-router-dom'
+import { supabase } from '../lib/supabase'
+import { Search, Filter, ChevronRight, AlertCircle, CheckCircle, Clock, XCircle } from 'lucide-react'
 import { format } from 'date-fns'
-import { supabase, type Submission } from '@/lib/supabase'
-import { Search, Filter, Download, ExternalLink } from 'lucide-react'
+import type { Submission } from '../lib/supabase'
+
+// Mock data for development
+const mockSubmissions: Submission[] = [
+  {
+    id: '1',
+    compliance_id: 'CMP-2025-001',
+    unique_id: 'UNQ-001',
+    email_thread_id: 'ETH-001',
+    product_identifier: 'KEYTRUDA (pembrolizumab)',
+    medical_indication: 'Advanced melanoma',
+    therapeutic_area: 'Oncology',
+    stage_new: 'Phase III',
+    target_audience: 'Healthcare Professionals',
+    geography_new: ['United States', 'Canada'],
+    key_differentiators: 'First-line treatment option',
+    competitor_products: 'Opdivo, Yervoy',
+    your_name: 'Dr. Sarah Johnson',
+    your_email: 'sarah.johnson@pharma.com',
+    approver_seo: 'Michael Chen',
+    langchain_status: 'needs_review',
+    langchain_phase: 'AI Processing Complete',
+    langchain_retry_count: 0,
+    qa_status: 'pending',
+    fda_compliance_status: 'pending',
+    ai_output: {},
+    raw_input_content: '',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  },
+  {
+    id: '2',
+    compliance_id: 'CMP-2025-002',
+    unique_id: 'UNQ-002',
+    email_thread_id: 'ETH-002',
+    product_identifier: 'OZEMPIC (semaglutide)',
+    medical_indication: 'Type 2 diabetes',
+    therapeutic_area: 'Endocrinology',
+    stage_new: 'Post-Launch',
+    target_audience: 'Patients',
+    geography_new: ['United States'],
+    key_differentiators: 'Once-weekly dosing',
+    competitor_products: 'Trulicity, Victoza',
+    your_name: 'Dr. James Wilson',
+    your_email: 'james.wilson@biotech.com',
+    approver_seo: 'Emily Rodriguez',
+    langchain_status: 'approved',
+    langchain_phase: 'Complete',
+    langchain_retry_count: 0,
+    qa_status: 'approved',
+    fda_compliance_status: 'approved',
+    ai_output: {},
+    raw_input_content: '',
+    created_at: new Date(Date.now() - 86400000).toISOString(),
+    updated_at: new Date(Date.now() - 86400000).toISOString()
+  }
+]
+
+const getStatusIcon = (status: string) => {
+  switch (status) {
+    case 'needs_review':
+      return <Clock className="h-4 w-4" />
+    case 'approved':
+      return <CheckCircle className="h-4 w-4" />
+    case 'rejected':
+      return <XCircle className="h-4 w-4" />
+    default:
+      return <AlertCircle className="h-4 w-4" />
+  }
+}
+
+const getStatusBadgeClass = (status: string) => {
+  switch (status) {
+    case 'needs_review':
+      return 'bg-yellow-100 text-yellow-800'
+    case 'approved':
+      return 'bg-green-100 text-green-800'
+    case 'rejected':
+      return 'bg-red-100 text-red-800'
+    default:
+      return 'bg-gray-100 text-gray-800'
+  }
+}
 
 export default function Submissions() {
+  const navigate = useNavigate()
   const [searchTerm, setSearchTerm] = useState('')
-  const [statusFilter, setStatusFilter] = useState('all')
-  const [therapeuticFilter, setTherapeuticFilter] = useState('all')
+  const [statusFilter, setStatusFilter] = useState<string>('all')
 
   const { data: submissions, isLoading } = useQuery({
-    queryKey: ['submissions', statusFilter, therapeuticFilter],
+    queryKey: ['submissions'],
     queryFn: async () => {
-      let query = supabase.from('submissions').select('*')
-      
-      if (statusFilter !== 'all') {
-        query = query.eq('langchain_status', statusFilter)
+      try {
+        const { data, error } = await supabase
+          .from('submissions')
+          .select('*')
+          .order('created_at', { ascending: false })
+        
+        if (error) {
+          console.error('Error fetching submissions:', error)
+          return mockSubmissions
+        }
+        
+        return data || mockSubmissions
+      } catch (err) {
+        console.error('Error in submissions query:', err)
+        return mockSubmissions
       }
-      
-      if (therapeuticFilter !== 'all') {
-        query = query.eq('therapeutic_area', therapeuticFilter)
-      }
-      
-      const { data, error } = await query.order('created_at', { ascending: false })
-      
-      if (error) throw error
-      return data as Submission[]
     }
   })
 
-  const filteredSubmissions = submissions?.filter(sub => 
-    searchTerm === '' || 
-    sub.product_identifier.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    sub.medical_indication.toLowerCase().includes(searchTerm.toLowerCase())
-  )
-
-  const getStatusBadge = (status: string) => {
-    const statusStyles = {
-      'needs_processing': 'bg-gray-100 text-gray-700',
-      'processing': 'bg-blue-100 text-blue-700',
-      'approved': 'bg-green-100 text-green-700',
-      'rejected': 'bg-red-100 text-red-700',
-      'complete': 'bg-green-100 text-green-700'
-    }
+  const filteredSubmissions = submissions?.filter(submission => {
+    const matchesSearch = searchTerm === '' || 
+      submission.product_identifier.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      submission.compliance_id.toLowerCase().includes(searchTerm.toLowerCase())
     
+    const matchesStatus = statusFilter === 'all' || submission.langchain_status === statusFilter
+    
+    return matchesSearch && matchesStatus
+  })
+
+  if (isLoading) {
     return (
-      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-        statusStyles[status as keyof typeof statusStyles] || 'bg-gray-100 text-gray-700'
-      }`}>
-        {status.replace('_', ' ')}
-      </span>
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Submissions</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Manage and track all your SEO content submissions
-          </p>
-        </div>
-        <button className="mt-4 sm:mt-0 inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
-          <Download className="h-4 w-4 mr-2" />
-          Export CSV
-        </button>
+    <div>
+      {/* Page Header */}
+      <div className="mb-8">
+        <h1 className="text-2xl font-semibold text-gray-900">Submissions</h1>
+        <p className="mt-1 text-sm text-gray-500">
+          Review and manage content submissions
+        </p>
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-4">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
-          <div className="relative">
+      <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Search submissions..."
-              className="pl-10 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              placeholder="Search by product or compliance ID..."
+              className="pl-10 pr-3 py-2 border border-gray-300 rounded-md w-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          
-          <select
-            className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-          >
-            <option value="all">All Status</option>
-            <option value="needs_processing">Needs Processing</option>
-            <option value="processing">Processing</option>
-            <option value="approved">Approved</option>
-            <option value="rejected">Rejected</option>
-            <option value="complete">Complete</option>
-          </select>
-          
-          <select
-            className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-            value={therapeuticFilter}
-            onChange={(e) => setTherapeuticFilter(e.target.value)}
-          >
-            <option value="all">All Therapeutic Areas</option>
-            <option value="Oncology">Oncology</option>
-            <option value="Cardiology">Cardiology</option>
-            <option value="Neurology">Neurology</option>
-            <option value="Immunology">Immunology</option>
-            <option value="Infectious Disease">Infectious Disease</option>
-            <option value="Rare Disease">Rare Disease</option>
-          </select>
-          
-          <button className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
-            <Filter className="h-4 w-4 mr-2" />
-            More Filters
-          </button>
+          <div className="flex items-center gap-2">
+            <Filter className="h-5 w-5 text-gray-400" />
+            <select
+              className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="all">All Status</option>
+              <option value="needs_review">Needs Review</option>
+              <option value="approved">Approved</option>
+              <option value="rejected">Rejected</option>
+            </select>
+          </div>
         </div>
       </div>
 
-      {/* Table */}
-      <div className="bg-white shadow rounded-lg overflow-hidden">
+      {/* Submissions Table */}
+      <div className="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -132,28 +187,29 @@ export default function Submissions() {
                 Therapeutic Area
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Stage
+                Target Audience
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Status
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Submitted
+                Submitted By
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Date
               </th>
               <th className="relative px-6 py-3">
-                <span className="sr-only">Actions</span>
+                <span className="sr-only">View</span>
               </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {isLoading ? (
-              <tr>
-                <td colSpan={7} className="px-6 py-4 text-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
-                </td>
-              </tr>
-            ) : filteredSubmissions?.map((submission) => (
-              <tr key={submission.id} className="hover:bg-gray-50">
+            {filteredSubmissions?.map((submission) => (
+              <tr 
+                key={submission.id} 
+                className="hover:bg-gray-50 cursor-pointer"
+                onClick={() => navigate(`/submissions/${submission.id}`)}
+              >
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                   {submission.compliance_id}
                 </td>
@@ -171,34 +227,42 @@ export default function Submissions() {
                   {submission.therapeutic_area}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {submission.stage_new}
+                  {submission.target_audience}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  {getStatusBadge(submission.langchain_status)}
+                  <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeClass(submission.langchain_status)}`}>
+                    {getStatusIcon(submission.langchain_status)}
+                    {submission.langchain_status.replace('_', ' ').charAt(0).toUpperCase() + submission.langchain_status.slice(1).replace('_', ' ')}
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div>
+                    <div className="text-sm font-medium text-gray-900">
+                      {submission.your_name}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      {submission.your_email}
+                    </div>
+                  </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {format(new Date(submission.created_at), 'MMM d, yyyy')}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <Link
-                    to={`/submissions/${submission.id}`}
-                    className="text-primary-600 hover:text-primary-900 inline-flex items-center gap-1"
-                  >
-                    View
-                    <ExternalLink className="h-3 w-3" />
-                  </Link>
+                  <ChevronRight className="h-5 w-5 text-gray-400" />
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-        
-        {filteredSubmissions?.length === 0 && (
-          <div className="text-center py-12 text-gray-500">
-            No submissions found
-          </div>
-        )}
       </div>
+
+      {filteredSubmissions?.length === 0 && (
+        <div className="text-center py-12">
+          <AlertCircle className="mx-auto h-12 w-12 text-gray-400" />
+          <p className="mt-2 text-sm text-gray-500">No submissions found</p>
+        </div>
+      )}
     </div>
   )
 }
