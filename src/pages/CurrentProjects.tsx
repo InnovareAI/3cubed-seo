@@ -1,199 +1,238 @@
-import React, { useEffect, useState } from 'react'
-import { supabase, ProjectOverview } from '../lib/supabase'
-import { Building2, Package, AlertCircle, CheckCircle2, Clock, FileText, Users, Briefcase } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
+import { supabase } from '../lib/supabase'
+import { BarChart3, TrendingUp, Clock, CheckCircle2 } from 'lucide-react'
+
+interface CurrentProjectsData {
+  client_id: string
+  client_name: string
+  company_domain: string
+  client_status: string
+  products_count: number
+  active_campaigns: number
+  pending_reviews: number
+  approval_rate: number
+  approval_rate_display: string
+  last_activity: string
+  last_activity_date: string
+}
+
+interface DashboardStats {
+  total_clients: number
+  active_projects: number
+  pending_reviews: number
+  avg_approval_rate: number
+}
 
 export default function CurrentProjects() {
-  const [projects, setProjects] = useState<ProjectOverview[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    fetchProjects()
-  }, [])
-
-  const fetchProjects = async () => {
-    try {
+  const { data: projects, isLoading: projectsLoading } = useQuery({
+    queryKey: ['current-projects'],
+    queryFn: async () => {
       const { data, error } = await supabase
-        .from('project_overview')
+        .from('current_projects_dashboard')
         .select('*')
-        .order('last_activity', { ascending: false, nullsFirst: false })
-
+        .order('last_activity_date', { ascending: false })
+      
       if (error) throw error
-      setProjects(data || [])
-    } catch (err) {
-      console.error('Error fetching projects:', err)
-      setError('Failed to load projects')
-    } finally {
-      setLoading(false)
+      return data as CurrentProjectsData[]
     }
-  }
+  })
 
-  const getStageIcon = (stage: string) => {
-    switch (stage) {
-      case 'pending_ai': return <Clock className="h-4 w-4" />
-      case 'pending_seo_review': return <FileText className="h-4 w-4" />
-      case 'pending_client_review': return <Users className="h-4 w-4" />
-      case 'pending_mlr_review': return <Briefcase className="h-4 w-4" />
-      case 'pending_revisions': return <AlertCircle className="h-4 w-4" />
-      case 'published': return <CheckCircle2 className="h-4 w-4" />
-      default: return null
+  const { data: stats, isLoading: statsLoading } = useQuery({
+    queryKey: ['dashboard-stats'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('dashboard_summary_stats')
+        .select('*')
+        .single()
+      
+      if (error) throw error
+      return data as DashboardStats
     }
-  }
+  })
 
-  const getStageColor = (stage: string) => {
-    switch (stage) {
-      case 'pending_ai': return 'bg-gray-100 text-gray-700'
-      case 'pending_seo_review': return 'bg-blue-100 text-blue-700'
-      case 'pending_client_review': return 'bg-purple-100 text-purple-700'
-      case 'pending_mlr_review': return 'bg-orange-100 text-orange-700'
-      case 'pending_revisions': return 'bg-red-100 text-red-700'
-      case 'published': return 'bg-green-100 text-green-700'
-      default: return 'bg-gray-100 text-gray-700'
-    }
-  }
-
-  const workflowStages = [
-    { key: 'pending_ai', label: 'AI Processing', color: 'bg-gray-100 text-gray-700' },
-    { key: 'pending_seo_review', label: 'SEO Review', color: 'bg-blue-100 text-blue-700' },
-    { key: 'pending_client_review', label: 'Client Review', color: 'bg-purple-100 text-purple-700' },
-    { key: 'pending_mlr_review', label: 'MLR Review', color: 'bg-orange-100 text-orange-700' },
-    { key: 'pending_revisions', label: 'Revisions', color: 'bg-red-100 text-red-700' },
-    { key: 'published', label: 'Published', color: 'bg-green-100 text-green-700' }
-  ]
-
-  // Group projects by client
-  const projectsByClient = projects.reduce((acc, project) => {
-    if (!acc[project.client_id]) {
-      acc[project.client_id] = {
-        client_name: project.client_name,
-        client_status: project.client_status,
-        projects: []
-      }
-    }
-    acc[project.client_id].projects.push(project)
-    return acc
-  }, {} as Record<string, { client_name: string; client_status: string; projects: ProjectOverview[] }>)
-
-  if (loading) {
+  if (projectsLoading || statsLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-red-600 flex items-center gap-2">
-          <AlertCircle className="h-5 w-5" />
-          {error}
-        </div>
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
       </div>
     )
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Current Projects</h1>
-        <p className="text-gray-600">Overview of all active projects and their workflow status</p>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-semibold text-gray-900">Current Projects</h1>
+        <p className="mt-1 text-sm text-gray-500">
+          Active client projects and SEO content production
+        </p>
       </div>
 
-      {/* Workflow Stage Summary */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
-        {workflowStages.map(stage => {
-          const totalCount = projects.reduce((sum, p) => sum + (p[stage.key as keyof ProjectOverview] as number || 0), 0)
-          return (
-            <div key={stage.key} className="bg-white rounded-lg shadow p-4">
-              <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium ${stage.color} mb-2`}>
-                {getStageIcon(stage.key)}
-                {stage.label}
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-4">
+        <div className="bg-white overflow-hidden shadow rounded-lg">
+          <div className="p-5">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <BarChart3 className="h-6 w-6 text-gray-400" />
               </div>
-              <div className="text-2xl font-bold text-gray-900">{totalCount}</div>
-              <div className="text-sm text-gray-500">items</div>
-            </div>
-          )
-        })}
-      </div>
-
-      {/* Projects by Client */}
-      <div className="space-y-6">
-        {Object.entries(projectsByClient).map(([clientId, clientData]) => (
-          <div key={clientId} className="bg-white rounded-lg shadow-lg overflow-hidden">
-            <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Building2 className="h-6 w-6 text-gray-600" />
-                  <h2 className="text-xl font-semibold text-gray-900">{clientData.client_name}</h2>
-                  <span className={`px-3 py-1 text-xs font-medium rounded-full ${
-                    clientData.client_status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
-                  }`}>
-                    {clientData.client_status}
-                  </span>
-                </div>
-                <div className="text-sm text-gray-500">
-                  {clientData.projects.length} {clientData.projects.length === 1 ? 'project' : 'projects'}
-                </div>
+              <div className="ml-5 w-0 flex-1">
+                <dl>
+                  <dt className="text-sm font-medium text-gray-500 truncate">
+                    Total Clients
+                  </dt>
+                  <dd className="text-lg font-medium text-gray-900">
+                    {stats?.total_clients || 0}
+                  </dd>
+                </dl>
               </div>
-            </div>
-
-            <div className="divide-y divide-gray-200">
-              {clientData.projects.map(project => (
-                <div key={project.project_id} className="px-6 py-4">
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2">
-                        <Package className="h-5 w-5 text-gray-500" />
-                        {project.project_name}
-                      </h3>
-                      {project.product_name && (
-                        <p className="text-sm text-gray-600 mt-1">
-                          Product: {project.product_name} | Area: {project.therapeutic_area}
-                        </p>
-                      )}
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm text-gray-500">Total Submissions</div>
-                      <div className="text-2xl font-bold text-gray-900">{project.total_submissions}</div>
-                    </div>
-                  </div>
-
-                  {/* Workflow Progress */}
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-                    {workflowStages.map(stage => {
-                      const count = project[stage.key as keyof ProjectOverview] as number || 0
-                      return (
-                        <div key={stage.key} className="text-center">
-                          <div className={`inline-flex items-center justify-center w-full px-3 py-2 rounded-lg ${
-                            count > 0 ? stage.color : 'bg-gray-50 text-gray-400'
-                          }`}>
-                            <span className="font-medium">{count}</span>
-                          </div>
-                          <div className="text-xs text-gray-500 mt-1">{stage.label}</div>
-                        </div>
-                      )
-                    })}
-                  </div>
-
-                  {project.last_activity && (
-                    <div className="mt-3 text-xs text-gray-500">
-                      Last activity: {new Date(project.last_activity).toLocaleDateString()}
-                    </div>
-                  )}
-                </div>
-              ))}
             </div>
           </div>
-        ))}
+        </div>
+
+        <div className="bg-white overflow-hidden shadow rounded-lg">
+          <div className="p-5">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <TrendingUp className="h-6 w-6 text-green-400" />
+              </div>
+              <div className="ml-5 w-0 flex-1">
+                <dl>
+                  <dt className="text-sm font-medium text-gray-500 truncate">
+                    Active Projects
+                  </dt>
+                  <dd className="text-lg font-medium text-gray-900">
+                    {stats?.active_projects || 0}
+                  </dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white overflow-hidden shadow rounded-lg">
+          <div className="p-5">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <Clock className="h-6 w-6 text-yellow-400" />
+              </div>
+              <div className="ml-5 w-0 flex-1">
+                <dl>
+                  <dt className="text-sm font-medium text-gray-500 truncate">
+                    Pending Reviews
+                  </dt>
+                  <dd className="text-lg font-medium text-gray-900">
+                    {stats?.pending_reviews || 0}
+                  </dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white overflow-hidden shadow rounded-lg">
+          <div className="p-5">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <CheckCircle2 className="h-6 w-6 text-blue-400" />
+              </div>
+              <div className="ml-5 w-0 flex-1">
+                <dl>
+                  <dt className="text-sm font-medium text-gray-500 truncate">
+                    Avg Approval Rate
+                  </dt>
+                  <dd className="text-lg font-medium text-gray-900">
+                    {stats?.avg_approval_rate || 0}%
+                  </dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {projects.length === 0 && (
-        <div className="text-center py-12 bg-white rounded-lg shadow">
-          <Package className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-          <p className="text-gray-500">No projects found</p>
+      {/* Projects Table */}
+      <div className="bg-white shadow overflow-hidden sm:rounded-md">
+        <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
+          <h3 className="text-lg leading-6 font-medium text-gray-900">
+            Active Projects by Client
+          </h3>
         </div>
-      )}
+        <div className="bg-white">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Client
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Products
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Active Campaigns
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Pending Reviews
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Approval Rate
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Last Activity
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {projects?.map((project) => (
+                <tr key={project.client_id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div>
+                      <div className="text-sm font-medium text-gray-900">
+                        {project.client_name}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {project.company_domain}
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {project.products_count}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {project.active_campaigns}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      project.pending_reviews > 0 ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      {project.pending_reviews}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {project.approval_rate_display}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                      project.client_status === 'active' 
+                        ? 'bg-green-100 text-green-800' 
+                        : project.client_status === 'paused'
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      {project.client_status}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {project.last_activity}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   )
 }
