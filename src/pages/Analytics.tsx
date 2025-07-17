@@ -1,250 +1,231 @@
-import { useState } from 'react'
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  Users, 
-  Clock, 
-  Activity,
-  MousePointer,
-  BarChart3,
+import { useQuery } from '@tanstack/react-query'
+import {
+  BarChart,
+  Bar,
   LineChart,
+  Line,
   PieChart,
-  Calendar
-} from 'lucide-react'
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer
+} from 'recharts'
+import { TrendingUp, TrendingDown, Users, FileText, CheckCircle, Clock } from 'lucide-react'
 
-type DateRange = 'last7' | 'last30' | 'last90' | 'last365' | 'custom'
+const performanceData = [
+  { month: 'Jan', submissions: 45, approved: 41, rejected: 4 },
+  { month: 'Feb', submissions: 52, approved: 48, rejected: 4 },
+  { month: 'Mar', submissions: 61, approved: 57, rejected: 4 },
+  { month: 'Apr', submissions: 58, approved: 53, rejected: 5 },
+  { month: 'May', submissions: 67, approved: 64, rejected: 3 },
+  { month: 'Jun', submissions: 72, approved: 69, rejected: 3 },
+]
 
-interface MetricCardProps {
-  title: string
-  value: string
-  change: number
-  changeLabel: string
-  icon: React.ReactNode
-}
+const contentTypeData = [
+  { name: 'Product Pages', value: 35, color: '#3B82F6' },
+  { name: 'Blog Articles', value: 25, color: '#10B981' },
+  { name: 'White Papers', value: 20, color: '#F59E0B' },
+  { name: 'Email Campaigns', value: 15, color: '#EF4444' },
+  { name: 'Landing Pages', value: 5, color: '#8B5CF6' },
+]
 
-function MetricCard({ title, value, change, changeLabel, icon }: MetricCardProps) {
-  const isPositive = change >= 0
-
-  return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <div className="flex items-center justify-between">
-        <div className="flex-1">
-          <p className="text-sm text-gray-500">{title}</p>
-          <p className="mt-2 text-3xl font-semibold text-gray-900">{value}</p>
-          <div className="mt-2 flex items-center gap-1">
-            {isPositive ? (
-              <TrendingUp className="h-4 w-4 text-green-500" />
-            ) : (
-              <TrendingDown className="h-4 w-4 text-red-500" />
-            )}
-            <span className={`text-sm font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
-              {isPositive ? '+' : ''}{change}%
-            </span>
-            <span className="text-sm text-gray-500">{changeLabel}</span>
-          </div>
-        </div>
-        <div className="ml-4">
-          <div className="p-3 bg-primary-50 rounded-lg">
-            {icon}
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
+const clientPerformance = [
+  { client: 'Pharma Corp', score: 92 },
+  { client: 'BioTech Inc', score: 88 },
+  { client: 'MedTech Solutions', score: 85 },
+  { client: 'Global Pharma', score: 90 },
+  { client: 'Innovative Bio', score: 87 },
+]
 
 export default function Analytics() {
-  const [dateRange, setDateRange] = useState<DateRange>('last30')
-
-  const metrics = [
-    {
-      title: 'Total Visitors',
-      value: '124,532',
-      change: 12.3,
-      changeLabel: 'vs last period',
-      icon: <Users className="h-6 w-6 text-primary-600" />
-    },
-    {
-      title: 'Unique Visitors',
-      value: '89,421',
-      change: 8.7,
-      changeLabel: 'vs last period',
-      icon: <Activity className="h-6 w-6 text-primary-600" />
-    },
-    {
-      title: 'Avg. Session Duration',
-      value: '3m 42s',
-      change: 22.1,
-      changeLabel: 'vs last period',
-      icon: <Clock className="h-6 w-6 text-primary-600" />
-    },
-    {
-      title: 'Bounce Rate',
-      value: '42.3%',
-      change: -5.2,
-      changeLabel: 'vs last period',
-      icon: <MousePointer className="h-6 w-6 text-primary-600" />
-    },
-    {
-      title: 'Pages per Session',
-      value: '4.8',
-      change: 0.6,
-      changeLabel: 'vs last period',
-      icon: <BarChart3 className="h-6 w-6 text-primary-600" />
-    },
-    {
-      title: 'Conversion Rate',
-      value: '3.2%',
-      change: 0.4,
-      changeLabel: 'vs last period',
-      icon: <TrendingUp className="h-6 w-6 text-primary-600" />
-    }
-  ]
-
-  const dateRangeOptions = [
-    { value: 'last7', label: 'Last 7 Days' },
-    { value: 'last30', label: 'Last 30 Days' },
-    { value: 'last90', label: 'Last 90 Days' },
-    { value: 'last365', label: 'Last 12 Months' },
-    { value: 'custom', label: 'Custom Range' },
-  ]
-
-  const tabs = [
-    { id: 'overview', label: 'Overview', icon: <BarChart3 className="h-4 w-4" /> },
-    { id: 'performance', label: 'Content Performance', icon: <LineChart className="h-4 w-4" /> },
-    { id: 'seo', label: 'SEO Metrics', icon: <TrendingUp className="h-4 w-4" /> },
-    { id: 'competitor', label: 'Competitor Analysis', icon: <PieChart className="h-4 w-4" /> },
-  ]
-
-  const [activeTab, setActiveTab] = useState('overview')
+  const { data: stats } = useQuery({
+    queryKey: ['analytics-stats'],
+    queryFn: async () => ({
+      totalSubmissions: 345,
+      totalApproved: 318,
+      avgApprovalRate: 92.2,
+      avgTimeToApproval: 3.5,
+      monthlyGrowth: 12.5,
+      activeClients: 24
+    })
+  })
 
   return (
-    <div className="space-y-6">
-      <div>
+    <div>
+      {/* Page Header */}
+      <div className="mb-8">
         <h1 className="text-2xl font-semibold text-gray-900">Analytics Dashboard</h1>
         <p className="mt-1 text-sm text-gray-500">
-          Monitor content performance, traffic metrics, and conversion data
+          Track performance metrics and content production insights
         </p>
       </div>
 
-      {/* Tab Navigation */}
-      <div className="border-b border-gray-200">
-        <nav className="-mb-px flex space-x-8">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
-                activeTab === tab.id
-                  ? 'border-primary-500 text-primary-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              {tab.icon}
-              {tab.label}
-            </button>
-          ))}
-        </nav>
+      {/* Summary Stats */}
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Total Submissions</p>
+              <p className="mt-2 text-3xl font-semibold text-gray-900">{stats?.totalSubmissions}</p>
+              <p className="mt-1 text-sm text-green-600 flex items-center">
+                <TrendingUp className="h-4 w-4 mr-1" />
+                +{stats?.monthlyGrowth}% from last month
+              </p>
+            </div>
+            <div className="p-3 bg-blue-100 rounded-lg">
+              <FileText className="h-6 w-6 text-blue-600" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Approval Rate</p>
+              <p className="mt-2 text-3xl font-semibold text-gray-900">{stats?.avgApprovalRate}%</p>
+              <p className="mt-1 text-sm text-gray-500">
+                Last 30 days
+              </p>
+            </div>
+            <div className="p-3 bg-green-100 rounded-lg">
+              <CheckCircle className="h-6 w-6 text-green-600" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Avg. Time to Approval</p>
+              <p className="mt-2 text-3xl font-semibold text-gray-900">{stats?.avgTimeToApproval} days</p>
+              <p className="mt-1 text-sm text-red-600 flex items-center">
+                <TrendingDown className="h-4 w-4 mr-1" />
+                -0.5 days improvement
+              </p>
+            </div>
+            <div className="p-3 bg-yellow-100 rounded-lg">
+              <Clock className="h-6 w-6 text-yellow-600" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Active Clients</p>
+              <p className="mt-2 text-3xl font-semibold text-gray-900">{stats?.activeClients}</p>
+              <p className="mt-1 text-sm text-gray-500">
+                Currently active
+              </p>
+            </div>
+            <div className="p-3 bg-purple-100 rounded-lg">
+              <Users className="h-6 w-6 text-purple-600" />
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Date Range Selector */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Calendar className="h-5 w-5 text-gray-400" />
-          <select
-            value={dateRange}
-            onChange={(e) => setDateRange(e.target.value as DateRange)}
-            className="rounded-md border-gray-300 text-sm font-medium text-gray-700"
-          >
-            {dateRangeOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
+      {/* Charts Row 1 */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 mb-6">
+        {/* Submission Trends */}
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Submission Trends</h2>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={performanceData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+              <XAxis dataKey="month" stroke="#6B7280" />
+              <YAxis stroke="#6B7280" />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: 'white', 
+                  border: '1px solid #E5E7EB',
+                  borderRadius: '6px'
+                }}
+              />
+              <Legend />
+              <Line 
+                type="monotone" 
+                dataKey="submissions" 
+                stroke="#3B82F6" 
+                strokeWidth={2}
+                dot={{ fill: '#3B82F6' }}
+                name="Total Submissions"
+              />
+              <Line 
+                type="monotone" 
+                dataKey="approved" 
+                stroke="#10B981" 
+                strokeWidth={2}
+                dot={{ fill: '#10B981' }}
+                name="Approved"
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Content Type Distribution */}
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Content Type Distribution</h2>
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie
+                data={contentTypeData}
+                cx="50%"
+                cy="50%"
+                innerRadius={60}
+                outerRadius={100}
+                paddingAngle={2}
+                dataKey="value"
+              >
+                {contentTypeData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: 'white', 
+                  border: '1px solid #E5E7EB',
+                  borderRadius: '6px'
+                }}
+              />
+            </PieChart>
+          </ResponsiveContainer>
+          <div className="mt-4 space-y-2">
+            {contentTypeData.map((item) => (
+              <div key={item.name} className="flex items-center justify-between text-sm">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
+                  <span className="text-gray-600">{item.name}</span>
+                </div>
+                <span className="font-medium text-gray-900">{item.value}%</span>
+              </div>
             ))}
-          </select>
-        </div>
-        <button className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
-          Export Report
-        </button>
-      </div>
-
-      {/* Metrics Grid */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {metrics.map((metric, index) => (
-          <MetricCard key={index} {...metric} />
-        ))}
-      </div>
-
-      {/* Charts Placeholder */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Traffic Overview</h3>
-          <div className="h-64 flex items-center justify-center text-gray-400">
-            <LineChart className="h-12 w-12" />
-            <span className="ml-2">Traffic chart visualization</span>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Top Content</h3>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-gray-900">KEYTRUDA® Landing Page</p>
-                <p className="text-sm text-gray-500">12,453 views</p>
-              </div>
-              <span className="text-sm font-medium text-green-600">+15.2%</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-gray-900">Oncology Treatment Guide</p>
-                <p className="text-sm text-gray-500">8,921 views</p>
-              </div>
-              <span className="text-sm font-medium text-green-600">+8.7%</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-gray-900">Patient Resources Hub</p>
-                <p className="text-sm text-gray-500">6,234 views</p>
-              </div>
-              <span className="text-sm font-medium text-red-600">-2.3%</span>
-            </div>
           </div>
         </div>
       </div>
 
-      {/* Additional Analytics Sections */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Conversion Funnel</h3>
-        <div className="space-y-4">
-          <div className="relative">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-700">Page Views</span>
-              <span className="text-sm text-gray-500">124,532 (100%)</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-8">
-              <div className="bg-primary-600 h-8 rounded-full" style={{ width: '100%' }}></div>
-            </div>
-          </div>
-          <div className="relative">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-700">Engaged Sessions</span>
-              <span className="text-sm text-gray-500">72,149 (58%)</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-8">
-              <div className="bg-primary-600 h-8 rounded-full" style={{ width: '58%' }}></div>
-            </div>
-          </div>
-          <div className="relative">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-700">Form Submissions</span>
-              <span className="text-sm text-gray-500">3,985 (3.2%)</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-8">
-              <div className="bg-primary-600 h-8 rounded-full" style={{ width: '3.2%' }}></div>
-            </div>
-          </div>
-        </div>
+      {/* Client Performance */}
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Client Performance Score</h2>
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={clientPerformance} layout="horizontal">
+            <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+            <XAxis type="number" domain={[0, 100]} stroke="#6B7280" />
+            <YAxis dataKey="client" type="category" stroke="#6B7280" width={120} />
+            <Tooltip 
+              contentStyle={{ 
+                backgroundColor: 'white', 
+                border: '1px solid #E5E7EB',
+                borderRadius: '6px'
+              }}
+            />
+            <Bar dataKey="score" fill="#3B82F6" radius={[0, 4, 4, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
       </div>
     </div>
   )
