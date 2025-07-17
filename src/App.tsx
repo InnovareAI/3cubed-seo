@@ -31,7 +31,10 @@ function ComingSoon({ title }: { title: string }) {
 
 function App() {
   console.log('App component rendered')
-  console.log('Supabase URL:', import.meta.env.VITE_SUPABASE_URL ? 'Configured' : 'MISSING!')
+  console.log('Env mode:', import.meta.env.MODE)
+  console.log('All env vars:', Object.keys(import.meta.env))
+  console.log('Supabase URL exists:', !!import.meta.env.VITE_SUPABASE_URL)
+  console.log('Supabase Key exists:', !!import.meta.env.VITE_SUPABASE_ANON_KEY)
   
   // Check if environment variables are missing
   if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
@@ -42,12 +45,17 @@ function App() {
           <p className="text-gray-700 mb-4">
             The application is missing required environment variables.
           </p>
-          <div className="bg-gray-100 p-4 rounded">
+          <div className="bg-gray-100 p-4 rounded mb-4">
             <p className="text-sm font-mono text-gray-800">
               Missing: {!import.meta.env.VITE_SUPABASE_URL && 'VITE_SUPABASE_URL'}
               {!import.meta.env.VITE_SUPABASE_URL && !import.meta.env.VITE_SUPABASE_ANON_KEY && ', '}
               {!import.meta.env.VITE_SUPABASE_ANON_KEY && 'VITE_SUPABASE_ANON_KEY'}
             </p>
+          </div>
+          <div className="bg-gray-100 p-4 rounded text-xs">
+            <p className="font-bold mb-2">Debug Info:</p>
+            <p>Mode: {import.meta.env.MODE}</p>
+            <p>Available vars: {Object.keys(import.meta.env).join(', ')}</p>
           </div>
           <p className="text-sm text-gray-600 mt-4">
             Please add these environment variables in Netlify's site settings.
