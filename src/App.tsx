@@ -3,10 +3,11 @@ import DashboardLayout from './components/DashboardLayout'
 import CurrentProjects from './pages/CurrentProjects'
 import SEORequests from './pages/SEORequests'
 import SEOReview from './pages/SEOReview'
+import ClientReview from './pages/ClientReview'
 import RevisionRequests from './pages/RevisionRequests'
-// import ClientReview from './pages/ClientReview'
+import MLRReview from './pages/MLRReview'
 import Compliance from './pages/Compliance'
-// import MLRReview from './pages/MLRReview'
+import ClientManagement from './pages/ClientManagement'
 // import SEOContentHub from './pages/SEOContentHub'
 // import ContentHub from './pages/ContentHub'
 import AuditTrail from './pages/AuditTrail'
@@ -37,13 +38,14 @@ function App() {
           <Route path="seo-requests" element={<SEORequests />} />
           <Route path="seo-requests/:id" element={<SubmissionDetail />} />
           <Route path="seo-review" element={<SEOReview />} />
-          <Route path="client-review" element={<ComingSoon title="Client Review" />} />
+          <Route path="client-review" element={<ClientReview />} />
           <Route path="compliance" element={<Compliance />} />
           <Route path="revision-requests" element={<RevisionRequests />} />
-          <Route path="mlr-review" element={<ComingSoon title="MLR Review" />} />
+          <Route path="mlr-review" element={<MLRReview />} />
           <Route path="content-hub" element={<ComingSoon title="SEO Content Hub" />} />
           <Route path="audit" element={<AuditTrail />} />
           <Route path="admin" element={<Administration />} />
+          <Route path="admin/clients" element={<ClientManagement />} />
           <Route path="projects/:clientName" element={<ClientDashboard />} />
         </Route>
       </Routes>
