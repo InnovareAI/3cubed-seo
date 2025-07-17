@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { supabase, Client } from '../lib/supabase'
+import { supabase, type Client } from '../lib/supabase'
 import { processSubmissionAssignment } from '../lib/clientProjectHelpers'
 import { Send, Building2, AlertCircle } from 'lucide-react'
 
@@ -33,12 +33,12 @@ export default function SubmissionForm({ onSuccess, isAdmin = false }: Submissio
     try {
       const { data, error } = await supabase
         .from('clients')
-        .select('id, name, company_domain')
+        .select('*')
         .eq('status', 'active')
         .order('name')
 
       if (error) throw error
-      setClients(data || [])
+      setClients((data || []) as Client[])
     } catch (err) {
       console.error('Error fetching clients:', err)
     }

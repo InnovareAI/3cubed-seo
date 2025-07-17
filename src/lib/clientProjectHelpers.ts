@@ -8,7 +8,7 @@ export async function findOrCreateClient(email: string) {
   if (!domain) throw new Error('Invalid email address')
 
   // First, try to find existing client
-  const { data: existingClient, error: findError } = await supabase
+  const { data: existingClient } = await supabase
     .from('clients')
     .select('*')
     .eq('company_domain', domain)
@@ -53,7 +53,7 @@ export async function findOrCreateProject(
   therapeuticArea: string
 ) {
   // First, try to find existing project
-  const { data: existingProject, error: findError } = await supabase
+  const { data: existingProject } = await supabase
     .from('projects')
     .select('*')
     .eq('client_id', clientId)
