@@ -109,9 +109,9 @@ export default function ProjectsOverview() {
     <div>
       {/* Page Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-gray-900">Projects Overview</h1>
+        <h1 className="text-2xl font-semibold text-gray-900">Current Projects</h1>
         <p className="mt-1 text-sm text-gray-500">
-          Manage client projects and SEO content production
+          Active client projects and SEO content production
         </p>
       </div>
 

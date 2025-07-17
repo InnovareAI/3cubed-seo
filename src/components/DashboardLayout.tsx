@@ -14,17 +14,21 @@ import {
   Bell,
   User,
   Settings,
-  Activity
+  Activity,
+  Users,
+  Edit3,
+  FileCheck
 } from 'lucide-react'
 
 const navigation = [
-  { name: 'Projects', href: '/', icon: Building2 },
-  { name: 'Submissions', href: '/submissions', icon: FileText },
-  { name: 'HITL Review', href: '/review', icon: CheckSquare, showBadge: true },
-  { name: 'Content Requests', href: '/requests', icon: FileText },
-  { name: 'Analytics', href: '/analytics', icon: BarChart3 },
-  { name: 'Content Library', href: '/content', icon: Library },
+  { name: 'Current Projects', href: '/', icon: Building2 },
+  { name: 'SEO Requests', href: '/seo-requests', icon: FileText },
+  { name: 'SEO Review', href: '/seo-review', icon: CheckSquare, showBadge: true },
+  { name: 'Client Review', href: '/client-review', icon: Users },
   { name: 'Compliance', href: '/compliance', icon: Shield },
+  { name: 'Revision Requests', href: '/revision-requests', icon: Edit3 },
+  { name: 'MLR Review', href: '/mlr-review', icon: FileCheck },
+  { name: 'SEO Content Hub', href: '/content-hub', icon: Library },
   { name: 'Audit Trail', href: '/audit', icon: Activity },
   { name: 'Administration', href: '/admin', icon: Settings },
 ]
