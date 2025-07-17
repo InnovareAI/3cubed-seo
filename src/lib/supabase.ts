@@ -18,8 +18,29 @@ export interface Client {
   contact_name?: string
   contact_email?: string
   status: 'active' | 'paused' | 'inactive'
+  portal_access_enabled?: boolean
+  portal_password_hash?: string
+  portal_last_login?: string
+  portal_access_token?: string
   created_at: string
   updated_at: string
+}
+
+export interface ClientDomain {
+  id: string
+  client_id: string
+  domain: string
+  is_primary: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface ClientPortalSession {
+  id: string
+  client_id: string
+  token: string
+  expires_at: string
+  created_at: string
 }
 
 export interface Project {
