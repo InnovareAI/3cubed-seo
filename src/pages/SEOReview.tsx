@@ -1,253 +1,187 @@
-import React, { useEffect, useState } from 'react'
-import { supabase, Submission } from '../lib/supabase'
-import { FileText, Clock, CheckCircle, XCircle, RotateCcw, AlertCircle } from 'lucide-react'
+import { useState } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { supabase, type Submission } from '../lib/supabase'
+import { CheckCircle, XCircle, Clock, Send, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react'
+import { format } from 'date-fns'
 
 export default function SEOReview() {
-  const [submissions, setSubmissions] = useState<Submission[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null)
-  const [rejectionReason, setRejectionReason] = useState('')
-  const [showRejectionModal, setShowRejectionModal] = useState(false)
+  const [selectedSubmission, setSelectedSubmission] = useState<string | null>(null)
+  const [feedback, setFeedback] = useState<Record<string, string>>({})
+  const queryClient = useQueryClient()
 
-  useEffect(() => {
-    fetchSubmissions()
-  }, [])
-
-  const fetchSubmissions = async () => {
-    try {
+  const { data: submissions, isLoading } = useQuery({
+    queryKey: ['seo-review-submissions'],
+    queryFn: async () => {
       const { data, error } = await supabase
         .from('submissions')
         .select('*')
-        .eq('langchain_status', 'needs_review')
+        .eq('workflow_stage', 'SEO_Review')
         .order('created_at', { ascending: false })
-
+      
       if (error) throw error
-      setSubmissions(data || [])
-    } catch (err) {
-      console.error('Error fetching submissions:', err)
-      setError('Failed to load submissions')
-    } finally {
-      setLoading(false)
+      return data as Submission[]
     }
-  }
+  })
 
-  const handleApprove = async (submission: Submission) => {
-    try {
+  const updateSubmission = useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: any }) => {
       const { error } = await supabase
         .from('submissions')
-        .update({
-          langchain_status: 'seo_approved',
-          workflow_stage: 'Client_Review',
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', submission.id)
-
-      if (error) throw error
+        .update(updates)
+        .eq('id', id)
       
-      // Remove from list
-      setSubmissions(submissions.filter(s => s.id !== submission.id))
-      alert('Submission approved and sent to client review!')
-    } catch (err) {
-      console.error('Error approving submission:', err)
-      alert('Failed to approve submission')
-    }
-  }
-
-  const handleReject = (submission: Submission) => {
-    setSelectedSubmission(submission)
-    setShowRejectionModal(true)
-  }
-
-  const confirmRejection = async () => {
-    if (!selectedSubmission || !rejectionReason.trim()) {
-      alert('Please provide a rejection reason')
-      return
-    }
-
-    try {
-      const { error } = await supabase
-        .from('submissions')
-        .update({
-          langchain_status: 'rejected',
-          workflow_stage: 'Revision_Requested',
-          rejection_stage: 'SEO_Review',
-          rejection_reason: rejectionReason,
-          rejected_by: 'SEO Team', // In production, get from auth
-          rejected_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', selectedSubmission.id)
-
       if (error) throw error
-      
-      // Remove from list
-      setSubmissions(submissions.filter(s => s.id !== selectedSubmission.id))
-      setShowRejectionModal(false)
-      setRejectionReason('')
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['seo-review-submissions'] })
       setSelectedSubmission(null)
-      alert('Submission sent for revision')
-    } catch (err) {
-      console.error('Error rejecting submission:', err)
-      alert('Failed to reject submission')
+      setFeedback({})
     }
+  })
+
+  const handleApprove = (id: string) => {
+    updateSubmission.mutate({
+      id,
+      updates: {
+        langchain_status: 'seo_approved',
+        workflow_stage: 'Client_Review',
+        updated_at: new Date().toISOString()
+      }
+    })
   }
 
-  if (loading) {
+  const handleReject = (id: string) => {
+    const feedbackText = feedback[id] || 'Please revise the SEO content'
+    updateSubmission.mutate({
+      id,
+      updates: {
+        langchain_status: 'revision_requested',
+        workflow_stage: 'Revision_Requested',
+        rejection_stage: 'SEO_Review',
+        rejection_reason: feedbackText,
+        rejected_by: 'SEO Reviewer',
+        rejected_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+    })
+  }
+
+  if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
       </div>
     )
   }
 
-  if (error) {
+  if (!submissions || submissions.length === 0) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-red-600 flex items-center gap-2">
-          <AlertCircle className="h-5 w-5" />
-          {error}
-        </div>
+      <div className="text-center py-12">
+        <CheckCircle className="mx-auto h-12 w-12 text-green-600 mb-4" />
+        <h3 className="text-lg font-medium text-gray-900">No submissions pending SEO review</h3>
+        <p className="mt-2 text-sm text-gray-500">All submissions have been reviewed.</p>
       </div>
     )
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">SEO Review</h1>
-        <p className="text-gray-600">Review AI-generated content for SEO optimization</p>
-      </div>
-
-      <div className="bg-white rounded-lg shadow">
+    <div className="space-y-6">
+      <div className="bg-white shadow rounded-lg">
         <div className="px-6 py-4 border-b border-gray-200">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <FileText className="h-5 w-5 text-gray-500" />
-              <span className="text-lg font-medium">Pending Review</span>
-            </div>
-            <span className="text-sm text-gray-500">{submissions.length} items</span>
-          </div>
+          <h2 className="text-lg font-medium text-gray-900">SEO Review Queue</h2>
+          <p className="mt-1 text-sm text-gray-500">
+            Review and approve AI-generated SEO content before client review
+          </p>
         </div>
 
         <div className="divide-y divide-gray-200">
           {submissions.map((submission) => (
             <div key={submission.id} className="p-6">
-              <div className="flex items-start justify-between mb-4">
+              <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <h3 className="text-lg font-medium text-gray-900 mb-1">
+                  <h3 className="text-lg font-medium text-gray-900">
                     {submission.product_name}
                   </h3>
-                  <p className="text-sm text-gray-600">
-                    {submission.therapeutic_area} | Stage: {submission.stage}
+                  <p className="mt-1 text-sm text-gray-500">
+                    {submission.therapeutic_area} • Stage: {submission.stage}
                   </p>
-                  <p className="text-sm text-gray-500 mt-1">
-                    Submitted by: {submission.submitter_name} ({submission.submitter_email})
-                  </p>
-                  <p className="text-xs text-gray-400 mt-1">
-                    {new Date(submission.created_at).toLocaleString()}
+                  <p className="mt-2 text-sm text-gray-600">
+                    Submitted by {submission.submitter_name} • {format(new Date(submission.created_at), 'MMM d, yyyy')}
                   </p>
                 </div>
-                <span className={`px-3 py-1 text-sm font-medium rounded-full ${
-                  submission.priority_level === 'High' ? 'bg-red-100 text-red-700' :
-                  submission.priority_level === 'Medium' ? 'bg-yellow-100 text-yellow-700' :
-                  'bg-green-100 text-green-700'
-                }`}>
-                  {submission.priority_level} Priority
-                </span>
+                <div className="ml-4">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                    <Clock className="w-3 h-3 mr-1" />
+                    Pending SEO Review
+                  </span>
+                </div>
               </div>
 
-              {/* AI Output Preview */}
-              {submission.ai_output && (
-                <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">AI Generated Content</h4>
-                  <div className="text-sm text-gray-600 space-y-2">
-                    {submission.h1_tag && (
-                      <p><strong>H1 Tag:</strong> {submission.h1_tag}</p>
-                    )}
-                    {submission.meta_description && (
-                      <p><strong>Meta Description:</strong> {submission.meta_description}</p>
-                    )}
-                    {submission.seo_keywords && (
-                      <p><strong>Keywords:</strong> {submission.seo_keywords}</p>
-                    )}
+              <button
+                onClick={() => setSelectedSubmission(selectedSubmission === submission.id ? null : submission.id)}
+                className="mt-4 text-sm text-indigo-600 hover:text-indigo-900 font-medium inline-flex items-center"
+              >
+                {selectedSubmission === submission.id ? (
+                  <>
+                    <ChevronUp className="h-4 w-4 mr-1" />
+                    Hide Details
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="h-4 w-4 mr-1" />
+                    View Details
+                  </>
+                )}
+              </button>
+
+              {selectedSubmission === submission.id && (
+                <div className="mt-6 space-y-6">
+                  {submission.ai_output && (
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <h4 className="text-sm font-medium text-gray-900 mb-2">AI Generated Content</h4>
+                      <pre className="text-xs text-gray-600 whitespace-pre-wrap">
+                        {typeof submission.ai_output === 'string' 
+                          ? submission.ai_output 
+                          : JSON.stringify(submission.ai_output, null, 2)}
+                      </pre>
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Feedback (if rejecting)
+                    </label>
+                    <textarea
+                      value={feedback[submission.id] || ''}
+                      onChange={(e) => setFeedback({ ...feedback, [submission.id]: e.target.value })}
+                      rows={3}
+                      className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                      placeholder="Provide specific feedback for revisions..."
+                    />
+                  </div>
+
+                  <div className="flex justify-end space-x-3">
+                    <button
+                      onClick={() => handleReject(submission.id)}
+                      className="inline-flex items-center px-4 py-2 border border-red-300 rounded-md shadow-sm text-sm font-medium text-red-700 bg-white hover:bg-red-50"
+                    >
+                      <XCircle className="h-4 w-4 mr-2" />
+                      Request Revision
+                    </button>
+                    <button
+                      onClick={() => handleApprove(submission.id)}
+                      className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700"
+                    >
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      Approve for Client Review
+                    </button>
                   </div>
                 </div>
               )}
-
-              <div className="flex gap-3">
-                <button
-                  onClick={() => handleApprove(submission)}
-                  className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-                >
-                  <CheckCircle className="h-4 w-4" />
-                  Approve for Client
-                </button>
-                <button
-                  onClick={() => handleReject(submission)}
-                  className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-                >
-                  <XCircle className="h-4 w-4" />
-                  Request Revision
-                </button>
-                <button
-                  onClick={() => window.open(submission.dashboard_url, '_blank')}
-                  className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
-                >
-                  <FileText className="h-4 w-4" />
-                  View Full Report
-                </button>
-              </div>
             </div>
           ))}
         </div>
-
-        {submissions.length === 0 && (
-          <div className="p-12 text-center">
-            <Clock className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-            <p className="text-gray-500">No submissions pending SEO review</p>
-          </div>
-        )}
       </div>
-
-      {/* Rejection Modal */}
-      {showRejectionModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">
-              Request Revision
-            </h3>
-            <p className="text-sm text-gray-600 mb-4">
-              Please provide feedback for the revision request:
-            </p>
-            <textarea
-              value={rejectionReason}
-              onChange={(e) => setRejectionReason(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              rows={4}
-              placeholder="Enter specific feedback for improvements..."
-            />
-            <div className="flex gap-3 mt-4">
-              <button
-                onClick={confirmRejection}
-                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-              >
-                Send for Revision
-              </button>
-              <button
-                onClick={() => {
-                  setShowRejectionModal(false)
-                  setRejectionReason('')
-                  setSelectedSubmission(null)
-                }}
-                className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
