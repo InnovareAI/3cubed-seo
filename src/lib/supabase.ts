@@ -12,6 +12,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 // Database types
 export interface Client {
   id: string
+  client_number: number
   name: string
   company_domain: string
   contact_name?: string
@@ -23,6 +24,7 @@ export interface Client {
 
 export interface Project {
   id: string
+  project_number: number
   client_id: string
   name: string
   product_name?: string
@@ -36,6 +38,7 @@ export interface Project {
 
 export interface Submission {
   id: string
+  submission_number: number
   compliance_id: string
   client_id?: string
   project_id?: string
@@ -75,9 +78,11 @@ export interface Submission {
 
 export interface ProjectOverview {
   client_id: string
+  client_number: number
   client_name: string
   client_status: string
   project_id: string
+  project_number: number
   project_name: string
   product_name?: string
   therapeutic_area?: string
@@ -89,6 +94,38 @@ export interface ProjectOverview {
   pending_revisions: number
   published: number
   last_activity?: string
+}
+
+export interface SubmissionSummary {
+  id: string
+  submission_number: number
+  submission_ref: string // e.g., "SUB-01000"
+  client_number: number
+  client_ref: string // e.g., "CLIENT-001"
+  client_name: string
+  project_number: number
+  project_ref: string // e.g., "PROJ-0001"
+  project_name: string
+  product_name: string
+  therapeutic_area: string
+  langchain_status: string
+  workflow_stage: string
+  priority_level: string
+  created_at: string
+  updated_at: string
+}
+
+// Helper functions for formatting IDs
+export function formatClientNumber(num: number): string {
+  return `CLIENT-${num.toString().padStart(3, '0')}`
+}
+
+export function formatProjectNumber(num: number): string {
+  return `PROJ-${num.toString().padStart(4, '0')}`
+}
+
+export function formatSubmissionNumber(num: number): string {
+  return `SUB-${num.toString().padStart(5, '0')}`
 }
 
 // Old interface for backward compatibility
