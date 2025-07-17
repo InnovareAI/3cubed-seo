@@ -11,7 +11,6 @@ const mockSubmissions: Submission[] = [
   {
     id: '1',
     compliance_id: 'CMP-2025-001',
-    unique_id: 'UNQ-001',
     email_thread_id: 'ETH-001',
     product_identifier: 'KEYTRUDA (pembrolizumab)',
     medical_indication: 'Advanced melanoma',
@@ -37,7 +36,6 @@ const mockSubmissions: Submission[] = [
   {
     id: '2',
     compliance_id: 'CMP-2025-002',
-    unique_id: 'UNQ-002',
     email_thread_id: 'ETH-002',
     product_identifier: 'OZEMPIC (semaglutide)',
     medical_indication: 'Type 2 diabetes',

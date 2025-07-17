@@ -97,10 +97,10 @@ interface ReviewContent {
 // Parse AI output from submission to generate review content
 const parseAIOutput = (submission: Submission): ReviewContent => {
   const aiOutput = submission.ai_output
-  const productName = submission.product_identifier
-  const indication = submission.medical_indication
+  const productName = submission.product_name
+  const indication = submission.therapeutic_area
   const therapeuticArea = submission.therapeutic_area
-  const geography = submission.geography_new || []
+  const geography = submission.stage || []
   
   // Extract data from AI output if it's structured, otherwise generate based on submission data
   let parsedContent: any = {}
@@ -221,7 +221,7 @@ const parseAIOutput = (submission: Submission): ReviewContent => {
   // Generate GEO strategy based on geography
   const geoStrategy = {
     target_markets: geography.length > 0 ? geography : ['United States', 'Canada', 'United Kingdom'],
-    localized_keywords: geography.reduce((acc, market) => {
+    localized_keywords: geography.reduce((acc: any, market: any) => {
       acc[market] = [
         `${productName} ${market} availability`,
         `${productName} ${market} prescribing`,
@@ -499,8 +499,8 @@ export default function HITLReview() {
               <div className="p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900">{request.submission.product_identifier}</h3>
-                    <p className="text-sm text-gray-500">{request.submission.your_name}</p>
+                    <h3 className="text-lg font-semibold text-gray-900">{request.submission.product_name}</h3>
+                    <p className="text-sm text-gray-500">{request.submission.submitter_name}</p>
                   </div>
                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                     request.priority === 'high' ? 'bg-red-100 text-red-800' :
@@ -529,7 +529,7 @@ export default function HITLReview() {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-gray-500">Indication</span>
-                    <span className="font-medium text-xs">{request.submission.medical_indication}</span>
+                    <span className="font-medium text-xs">{request.submission.therapeutic_area}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-gray-500">Created</span>
@@ -573,9 +573,9 @@ export default function HITLReview() {
                 </button>
                 <div>
                   <h2 className="text-xl font-semibold text-gray-900">
-                    {selectedRequest.submission.product_identifier} - SEO Content Review
+                    {selectedRequest.submission.product_name} - SEO Content Review
                   </h2>
-                  <p className="text-sm text-gray-500">{selectedRequest.submission.your_name}</p>
+                  <p className="text-sm text-gray-500">{selectedRequest.submission.submitter_name}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
