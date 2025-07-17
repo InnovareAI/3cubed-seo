@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { Building2, TrendingUp, Clock, CheckCircle, AlertCircle, ArrowRight } from 'lucide-react'
+import { Building2, TrendingUp, Clock, CheckCircle, AlertCircle, ArrowRight, Sparkles, Target } from 'lucide-react'
 
 interface ClientProject {
   client_name: string
@@ -92,6 +92,15 @@ const mockClients: ClientProject[] = [
   }
 ]
 
+const cardGradients = [
+  'from-purple-500 to-pink-500',
+  'from-blue-500 to-teal-500',
+  'from-green-500 to-emerald-500',
+  'from-orange-500 to-red-500',
+  'from-indigo-500 to-purple-500',
+  'from-yellow-500 to-orange-500'
+]
+
 export default function ProjectsOverview() {
   const navigate = useNavigate()
   const [searchTerm, setSearchTerm] = useState('')
@@ -129,75 +138,83 @@ export default function ProjectsOverview() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
       </div>
     )
   }
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-gray-900">Projects Overview</h1>
-        <p className="mt-1 text-sm text-gray-500">
+      <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl p-8 text-white">
+        <h1 className="text-3xl font-bold mb-2">Projects Overview</h1>
+        <p className="text-purple-100">
           Manage all client projects and SEO content production
         </p>
       </div>
 
       {/* Summary Stats */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow p-6 border-t-4 border-purple-500">
           <div className="flex items-center">
             <div className="flex-1">
               <p className="text-sm font-medium text-gray-600">Total Clients</p>
-              <p className="mt-2 text-3xl font-semibold text-gray-900">{totalStats.totalClients}</p>
+              <p className="mt-2 text-3xl font-bold text-gray-900">{totalStats.totalClients}</p>
             </div>
-            <Building2 className="h-12 w-12 text-gray-400" />
+            <div className="p-3 bg-purple-100 rounded-lg">
+              <Building2 className="h-8 w-8 text-purple-600" />
+            </div>
           </div>
         </div>
         
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow p-6 border-t-4 border-green-500">
           <div className="flex items-center">
             <div className="flex-1">
               <p className="text-sm font-medium text-gray-600">Active Projects</p>
-              <p className="mt-2 text-3xl font-semibold text-gray-900">{totalStats.activeProjects}</p>
+              <p className="mt-2 text-3xl font-bold text-gray-900">{totalStats.activeProjects}</p>
             </div>
-            <TrendingUp className="h-12 w-12 text-green-500" />
+            <div className="p-3 bg-green-100 rounded-lg">
+              <TrendingUp className="h-8 w-8 text-green-600" />
+            </div>
           </div>
         </div>
         
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow p-6 border-t-4 border-orange-500">
           <div className="flex items-center">
             <div className="flex-1">
               <p className="text-sm font-medium text-gray-600">Pending Reviews</p>
-              <p className="mt-2 text-3xl font-semibold text-gray-900">{totalStats.pendingReviews}</p>
+              <p className="mt-2 text-3xl font-bold text-gray-900">{totalStats.pendingReviews}</p>
             </div>
-            <Clock className="h-12 w-12 text-amber-500" />
+            <div className="p-3 bg-orange-100 rounded-lg">
+              <Clock className="h-8 w-8 text-orange-600" />
+            </div>
           </div>
         </div>
         
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow p-6 border-t-4 border-blue-500">
           <div className="flex items-center">
             <div className="flex-1">
               <p className="text-sm font-medium text-gray-600">Avg Approval Rate</p>
-              <p className="mt-2 text-3xl font-semibold text-gray-900">{totalStats.avgApprovalRate}%</p>
+              <p className="mt-2 text-3xl font-bold text-gray-900">{totalStats.avgApprovalRate}%</p>
             </div>
-            <CheckCircle className="h-12 w-12 text-blue-500" />
+            <div className="p-3 bg-blue-100 rounded-lg">
+              <CheckCircle className="h-8 w-8 text-blue-600" />
+            </div>
           </div>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-4">
+      <div className="bg-white rounded-xl shadow-lg p-6">
         <div className="flex flex-col sm:flex-row gap-4">
           <input
             type="text"
             placeholder="Search clients or companies..."
-            className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="flex-1 rounded-lg border-2 border-gray-200 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
           <select
-            className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="rounded-lg border-2 border-gray-200 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as any)}
           >
@@ -211,53 +228,70 @@ export default function ProjectsOverview() {
 
       {/* Client Projects Grid */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
-        {filteredProjects?.map((project) => (
+        {filteredProjects?.map((project, index) => (
           <div
             key={project.client_name}
-            className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow cursor-pointer"
-            onClick={() => navigate(`/projects/${encodeURIComponent(project.client_name)}`)}
+            className="bg-white rounded-xl shadow-lg hover:shadow-2xl transform hover:-translate-y-1 transition-all cursor-pointer overflow-hidden"
+            onClick={() => navigate(`/projects/${encodeURIComponent(project.client_name)}`}
           >
+            <div className={`h-2 bg-gradient-to-r ${cardGradients[index % cardGradients.length]}`} />
             <div className="p-6">
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">{project.client_name}</h3>
+                  <h3 className="text-xl font-bold text-gray-900">{project.client_name}</h3>
                   <p className="text-sm text-gray-500">{project.company}</p>
                 </div>
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${
                   project.status === 'active' ? 'bg-green-100 text-green-800' :
                   project.status === 'paused' ? 'bg-yellow-100 text-yellow-800' :
                   'bg-gray-100 text-gray-800'
                 }`}>
+                  <span className={`w-2 h-2 rounded-full mr-2 ${
+                    project.status === 'active' ? 'bg-green-500' :
+                    project.status === 'paused' ? 'bg-yellow-500' :
+                    'bg-gray-500'
+                  }`} />
                   {project.status}
                 </span>
               </div>
               
               <div className="space-y-3">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Products</span>
-                  <span className="font-medium">{project.product_count}</span>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Products</span>
+                  <span className="font-bold text-lg text-purple-600">{project.product_count}</span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Active Campaigns</span>
-                  <span className="font-medium">{project.active_campaigns}</span>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Active Campaigns</span>
+                  <span className="font-bold text-lg text-blue-600">{project.active_campaigns}</span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Pending Reviews</span>
-                  <span className={`font-medium ${project.pending_reviews > 0 ? 'text-amber-600' : ''}`}>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Pending Reviews</span>
+                  <span className={`font-bold text-lg ${project.pending_reviews > 0 ? 'text-orange-600' : 'text-gray-600'}`}>
                     {project.pending_reviews}
                   </span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Approval Rate</span>
-                  <span className="font-medium">{project.approval_rate}%</span>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Approval Rate</span>
+                  <div className="flex items-center gap-1">
+                    <span className={`font-bold text-lg ${
+                      project.approval_rate >= 90 ? 'text-green-600' :
+                      project.approval_rate >= 80 ? 'text-blue-600' :
+                      'text-orange-600'
+                    }`}>
+                      {project.approval_rate}%
+                    </span>
+                    {project.approval_rate >= 90 && <Sparkles className="h-4 w-4 text-yellow-500" />}
+                  </div>
                 </div>
               </div>
               
-              <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
+              <div className="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
                 <span className="text-xs text-gray-500">
                   Last activity: {new Date(project.last_activity).toLocaleDateString()}
                 </span>
-                <ArrowRight className="h-4 w-4 text-gray-400" />
+                <div className="p-2 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg">
+                  <ArrowRight className="h-4 w-4 text-white" />
+                </div>
               </div>
             </div>
           </div>
@@ -265,9 +299,9 @@ export default function ProjectsOverview() {
       </div>
       
       {filteredProjects?.length === 0 && (
-        <div className="bg-white rounded-lg shadow p-12 text-center">
-          <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-500">No projects found matching your criteria</p>
+        <div className="bg-white rounded-xl shadow-lg p-12 text-center">
+          <AlertCircle className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+          <p className="text-gray-500 text-lg">No projects found matching your criteria</p>
         </div>
       )}
     </div>
