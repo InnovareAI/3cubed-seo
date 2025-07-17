@@ -232,7 +232,7 @@ export default function ProjectsOverview() {
           <div
             key={project.client_name}
             className="bg-white rounded-xl shadow-lg hover:shadow-2xl transform hover:-translate-y-1 transition-all cursor-pointer overflow-hidden"
-            onClick={() => navigate(`/projects/${encodeURIComponent(project.client_name)}`}
+            onClick={() => navigate(`/projects/${encodeURIComponent(project.client_name)}`)}
           >
             <div className={`h-2 bg-gradient-to-r ${cardGradients[index % cardGradients.length]}`} />
             <div className="p-6">
