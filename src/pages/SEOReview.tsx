@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase, type Submission } from '../lib/supabase'
-import { CheckCircle, XCircle, Clock, Send, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react'
+import { CheckCircle, XCircle, Search, ChevronDown, ChevronUp } from 'lucide-react'
 import { format } from 'date-fns'
 
 export default function SEOReview() {
@@ -51,7 +51,7 @@ export default function SEOReview() {
   }
 
   const handleReject = (id: string) => {
-    const feedbackText = feedback[id] || 'Please revise the SEO content'
+    const feedbackText = feedback[id] || 'Please revise content based on SEO guidelines'
     updateSubmission.mutate({
       id,
       updates: {
@@ -59,7 +59,7 @@ export default function SEOReview() {
         workflow_stage: 'Revision_Requested',
         rejection_stage: 'SEO_Review',
         rejection_reason: feedbackText,
-        rejected_by: 'SEO Reviewer',
+        rejected_by: 'SEO Team',
         rejected_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       }
@@ -79,7 +79,7 @@ export default function SEOReview() {
       <div className="text-center py-12">
         <CheckCircle className="mx-auto h-12 w-12 text-green-600 mb-4" />
         <h3 className="text-lg font-medium text-gray-900">No submissions pending SEO review</h3>
-        <p className="mt-2 text-sm text-gray-500">All submissions have been reviewed.</p>
+        <p className="mt-2 text-sm text-gray-500">All submissions have been reviewed by the SEO team.</p>
       </div>
     )
   }
@@ -90,7 +90,7 @@ export default function SEOReview() {
         <div className="px-6 py-4 border-b border-gray-200">
           <h2 className="text-lg font-medium text-gray-900">SEO Review Queue</h2>
           <p className="mt-1 text-sm text-gray-500">
-            Review and approve AI-generated SEO content before client review
+            Review and optimize content for search engine performance
           </p>
         </div>
 
@@ -110,9 +110,9 @@ export default function SEOReview() {
                   </p>
                 </div>
                 <div className="ml-4">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                    <Clock className="w-3 h-3 mr-1" />
-                    Pending SEO Review
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    <Search className="w-3 h-3 mr-1" />
+                    SEO Review
                   </span>
                 </div>
               </div>
@@ -138,7 +138,7 @@ export default function SEOReview() {
                 <div className="mt-6 space-y-6">
                   {submission.ai_output && (
                     <div className="bg-gray-50 rounded-lg p-4">
-                      <h4 className="text-sm font-medium text-gray-900 mb-2">AI Generated Content</h4>
+                      <h4 className="text-sm font-medium text-gray-900 mb-2">Generated Content</h4>
                       <pre className="text-xs text-gray-600 whitespace-pre-wrap">
                         {typeof submission.ai_output === 'string' 
                           ? submission.ai_output 
@@ -149,14 +149,14 @@ export default function SEOReview() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Feedback (if rejecting)
+                      SEO Feedback (if rejecting)
                     </label>
                     <textarea
                       value={feedback[submission.id] || ''}
                       onChange={(e) => setFeedback({ ...feedback, [submission.id]: e.target.value })}
                       rows={3}
                       className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                      placeholder="Provide specific feedback for revisions..."
+                      placeholder="Provide specific SEO improvements needed..."
                     />
                   </div>
 

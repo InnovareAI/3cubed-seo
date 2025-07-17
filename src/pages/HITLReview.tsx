@@ -4,20 +4,8 @@ import { supabase, type Submission } from '../lib/supabase'
 import { 
   CheckCircle, 
   XCircle, 
-  MessageSquare, 
-  Sparkles,
-  Clock, 
-  Building2, 
-  ArrowRight,
-  Search,
-  HelpCircle,
-  Type,
-  FileText,
-  Globe,
   ChevronDown,
   ChevronUp,
-  Send,
-  AlertCircle
 } from 'lucide-react'
 import { format } from 'date-fns'
 
@@ -45,7 +33,7 @@ export default function HITLReview() {
         .from('submissions')
         .update({ 
           langchain_status: status,
-          workflow_stage: status === 'seo_approved' ? 'Client_Review' : 'Revision_Requested',
+          workflow_stage: status === 'approved' ? 'SEO_Review' : 'HITL_Review',
           updated_at: new Date().toISOString()
         })
         .eq('id', id)
@@ -54,12 +42,11 @@ export default function HITLReview() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['hitl-submissions'] })
-      setSelectedSubmission(null)
     }
   })
 
   const handleApprove = (id: string) => {
-    updateStatus.mutate({ id, status: 'seo_approved' })
+    updateStatus.mutate({ id, status: 'approved' })
   }
 
   const handleReject = (id: string) => {
@@ -86,11 +73,11 @@ export default function HITLReview() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white shadow-sm rounded-lg">
+      <div className="bg-white shadow rounded-lg">
         <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-medium text-gray-900">SEO Review Queue</h2>
+          <h2 className="text-lg font-medium text-gray-900">Human in the Loop Review</h2>
           <p className="mt-1 text-sm text-gray-500">
-            Review and approve AI-generated SEO content
+            Review AI-generated content for quality and compliance
           </p>
         </div>
 
@@ -106,43 +93,10 @@ export default function HITLReview() {
                     {submission.therapeutic_area} • {submission.stage}
                   </p>
                   <p className="mt-2 text-sm text-gray-600">
-                    Submitted by {submission.submitter_name} • {format(new Date(submission.created_at), 'MMM d, yyyy')}
+                    Submitted by {submission.submitter_name} on {format(new Date(submission.created_at), 'MMM d, yyyy')}
                   </p>
                 </div>
-                <div className="flex items-center space-x-3">
-                  <button
-                    onClick={() => handleReject(submission.id)}
-                    className="inline-flex items-center px-3 py-2 border border-red-300 rounded-md shadow-sm text-sm font-medium text-red-700 bg-white hover:bg-red-50"
-                  >
-                    <XCircle className="h-4 w-4 mr-2" />
-                    Reject
-                  </button>
-                  <button
-                    onClick={() => handleApprove(submission.id)}
-                    className="inline-flex items-center px-3 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700"
-                  >
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    Approve
-                  </button>
-                </div>
               </div>
-
-              {selectedSubmission === submission.id && (
-                <div className="mt-6 border-t border-gray-200 pt-6">
-                  <div className="space-y-6">
-                    {submission.ai_output && (
-                      <div className="bg-gray-50 rounded-lg p-4">
-                        <h4 className="text-sm font-medium text-gray-900 mb-2">AI Generated Content</h4>
-                        <pre className="text-xs text-gray-600 whitespace-pre-wrap">
-                          {typeof submission.ai_output === 'string' 
-                            ? submission.ai_output 
-                            : JSON.stringify(submission.ai_output, null, 2)}
-                        </pre>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
 
               <button
                 onClick={() => setSelectedSubmission(selectedSubmission === submission.id ? null : submission.id)}
@@ -160,6 +114,38 @@ export default function HITLReview() {
                   </>
                 )}
               </button>
+
+              {selectedSubmission === submission.id && (
+                <div className="mt-6 space-y-6">
+                  {submission.ai_output && (
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <h4 className="text-sm font-medium text-gray-900 mb-2">AI Generated Content</h4>
+                      <pre className="text-xs text-gray-600 whitespace-pre-wrap">
+                        {typeof submission.ai_output === 'string' 
+                          ? submission.ai_output 
+                          : JSON.stringify(submission.ai_output, null, 2)}
+                      </pre>
+                    </div>
+                  )}
+
+                  <div className="flex justify-end space-x-3">
+                    <button
+                      onClick={() => handleReject(submission.id)}
+                      className="inline-flex items-center px-4 py-2 border border-red-300 rounded-md shadow-sm text-sm font-medium text-red-700 bg-white hover:bg-red-50"
+                    >
+                      <XCircle className="h-4 w-4 mr-2" />
+                      Reject
+                    </button>
+                    <button
+                      onClick={() => handleApprove(submission.id)}
+                      className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700"
+                    >
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      Approve
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           ))}
         </div>

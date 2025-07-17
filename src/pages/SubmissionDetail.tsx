@@ -41,7 +41,7 @@ export default function SubmissionDetail() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold text-gray-900">
-          {submission.product_identifier}
+          {submission.product_name}
         </h1>
         <p className="mt-1 text-sm text-gray-500">
           Compliance ID: {submission.compliance_id}
@@ -71,11 +71,11 @@ export default function SubmissionDetail() {
               <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <dt className="text-sm font-medium text-gray-500">FDA Compliance</dt>
-                  <dd className="mt-1 text-sm text-gray-900">{submission.fda_compliance_status}</dd>
+                  <dd className="mt-1 text-sm text-gray-900">{submission.workflow_stage}</dd>
                 </div>
                 <div>
                   <dt className="text-sm font-medium text-gray-500">QA Status</dt>
-                  <dd className="mt-1 text-sm text-gray-900">{submission.qa_status}</dd>
+                  <dd className="mt-1 text-sm text-gray-900">{submission.langchain_status}</dd>
                 </div>
               </dl>
             </div>
