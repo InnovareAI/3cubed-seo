@@ -1,438 +1,331 @@
 import { useState } from 'react'
-import { useMutation } from '@tanstack/react-query'
-import { 
-  Send,
-  Bot, 
-  User,
-  AlertTriangle,
-  CheckCircle,
-  FileText,
-  RefreshCw,
-  ChevronDown,
-  ChevronUp
-} from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
+import { Shield, CheckCircle, XCircle, AlertCircle, Clock, TrendingUp, Search, Filter } from 'lucide-react'
+import { format } from 'date-fns'
 
-interface QAMessage {
+interface ComplianceCheck {
   id: string
-  role: 'user' | 'assistant' | 'system'
-  content: string
-  timestamp: string
-  complianceLevel?: 'safe' | 'warning' | 'high-risk'
-  sources?: string[]
-  confidence?: number
+  submissionId: string
+  productName: string
+  checkType: 'FDA' | 'EMA' | 'Health Canada' | 'Internal'
+  status: 'passed' | 'failed' | 'pending' | 'review'
+  severity: 'critical' | 'high' | 'medium' | 'low'
+  issues: string[]
+  checkedBy: string
+  checkedAt: Date
+  notes?: string
 }
 
-interface ComplianceCategory {
-  id: string
-  name: string
-  description: string
-  questions: string[]
-}
-
-const categories: ComplianceCategory[] = [
-  {
-    id: 'fda-claims',
-    name: 'FDA Claims & Labeling',
-    description: 'Questions about FDA-approved claims and off-label discussions',
-    questions: [
-      'Is this claim FDA-approved for our product?',
-      'Can we mention off-label uses in this context?',
-      'What disclaimers are required for this statement?'
-    ]
-  },
-  {
-    id: 'promotional',
-    name: 'Promotional Guidelines',
-    description: 'Rules for promotional materials and fair balance',
-    questions: [
-      'Does this content meet fair balance requirements?',
-      'Are we required to include ISI with this material?',
-      'Is this considered promotional or educational?'
-    ]
-  },
-  {
-    id: 'hcp-communication',
-    name: 'HCP Communications',
-    description: 'Guidelines for healthcare provider communications',
-    questions: [
-      'Can we share this clinical data with HCPs?',
-      'What restrictions apply to speaker programs?',
-      'How should we handle unsolicited requests?'
-    ]
-  },
-  {
-    id: 'patient-materials',
-    name: 'Patient Materials',
-    description: 'Rules for direct-to-patient communications',
-    questions: [
-      'Is this language appropriate for patient audiences?',
-      'Do we need to include medication guides?',
-      'What patient assistance information can we provide?'
-    ]
-  },
-  {
-    id: 'digital-social',
-    name: 'Digital & Social Media',
-    description: 'Compliance for digital channels and social media',
-    questions: [
-      'What are the requirements for social media posts?',
-      'How do we handle adverse event reporting online?',
-      'Can we use patient testimonials on our website?'
-    ]
-  }
-]
-
-const mockMessages: QAMessage[] = [
+const mockComplianceData: ComplianceCheck[] = [
   {
     id: '1',
-    role: 'system',
-    content: 'Welcome to the Pharma Compliance Q&A Agent. I can help answer questions about FDA regulations, promotional guidelines, and compliance requirements. How can I assist you today?',
-    timestamp: new Date().toISOString()
+    submissionId: 'SUB-001',
+    productName: 'KEYTRUDA (pembrolizumab)',
+    checkType: 'FDA',
+    status: 'passed',
+    severity: 'low',
+    issues: [],
+    checkedBy: 'Compliance AI',
+    checkedAt: new Date(),
+    notes: 'All FDA requirements met'
+  },
+  {
+    id: '2',
+    submissionId: 'SUB-002',
+    productName: 'OZEMPIC (semaglutide)',
+    checkType: 'FDA',
+    status: 'review',
+    severity: 'medium',
+    issues: ['Missing black box warning', 'Incomplete adverse events section'],
+    checkedBy: 'Compliance AI',
+    checkedAt: new Date(Date.now() - 3600000),
+    notes: 'Requires manual review for risk assessment'
+  },
+  {
+    id: '3',
+    submissionId: 'SUB-003',
+    productName: 'Biosimilar Candidate X',
+    checkType: 'EMA',
+    status: 'failed',
+    severity: 'critical',
+    issues: ['Unapproved indication claim', 'Missing clinical trial data', 'Comparative efficacy claims not substantiated'],
+    checkedBy: 'Compliance AI',
+    checkedAt: new Date(Date.now() - 7200000)
+  },
+  {
+    id: '4',
+    submissionId: 'SUB-004',
+    productName: 'Novel mRNA Vaccine',
+    checkType: 'Health Canada',
+    status: 'pending',
+    severity: 'low',
+    issues: [],
+    checkedBy: 'Pending Review',
+    checkedAt: new Date(Date.now() - 86400000)
   }
 ]
 
-export default function Compliance() {
-  const [messages, setMessages] = useState<QAMessage[]>(mockMessages)
-  const [input, setInput] = useState('')
-  // const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set())
-  const [isTyping, setIsTyping] = useState(false)
+const getStatusIcon = (status: string) => {
+  switch (status) {
+    case 'passed':
+      return <CheckCircle className="h-5 w-5" />
+    case 'failed':
+      return <XCircle className="h-5 w-5" />
+    case 'review':
+      return <AlertCircle className="h-5 w-5" />
+    case 'pending':
+      return <Clock className="h-5 w-5" />
+    default:
+      return <AlertCircle className="h-5 w-5" />
+  }
+}
 
-  // Simulate AI response
-  const sendMessageMutation = useMutation({
-    mutationFn: async (message: string) => {
-      // Add user message
-      const userMessage: QAMessage = {
-        id: `msg-${Date.now()}`,
-        role: 'user',
-        content: message,
-        timestamp: new Date().toISOString()
-      }
-      
-      setMessages(prev => [...prev, userMessage])
-      setIsTyping(true)
-      
-      // Simulate AI processing
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
-      // Generate mock response
-      const response = generateComplianceResponse(message)
-      
-      setMessages(prev => [...prev, response])
-      setIsTyping(false)
-    }
+const getStatusBadgeClass = (status: string) => {
+  switch (status) {
+    case 'passed':
+      return 'bg-green-100 text-green-800'
+    case 'failed':
+      return 'bg-red-100 text-red-800'
+    case 'review':
+      return 'bg-yellow-100 text-yellow-800'
+    case 'pending':
+      return 'bg-gray-100 text-gray-800'
+    default:
+      return 'bg-gray-100 text-gray-800'
+  }
+}
+
+const getSeverityBadgeClass = (severity: string) => {
+  switch (severity) {
+    case 'critical':
+      return 'bg-red-100 text-red-800'
+    case 'high':
+      return 'bg-orange-100 text-orange-800'
+    case 'medium':
+      return 'bg-yellow-100 text-yellow-800'
+    case 'low':
+      return 'bg-green-100 text-green-800'
+    default:
+      return 'bg-gray-100 text-gray-800'
+  }
+}
+
+export default function Compliance() {
+  const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [checkTypeFilter, setCheckTypeFilter] = useState<string>('all')
+
+  const { data: complianceChecks = mockComplianceData } = useQuery({
+    queryKey: ['compliance-checks'],
+    queryFn: async () => mockComplianceData
   })
 
-  const generateComplianceResponse = (query: string): QAMessage => {
-    const lowerQuery = query.toLowerCase()
+  const stats = {
+    total: complianceChecks.length,
+    passed: complianceChecks.filter(c => c.status === 'passed').length,
+    failed: complianceChecks.filter(c => c.status === 'failed').length,
+    pending: complianceChecks.filter(c => c.status === 'pending' || c.status === 'review').length,
+    complianceRate: Math.round((complianceChecks.filter(c => c.status === 'passed').length / complianceChecks.length) * 100)
+  }
+
+  const filteredChecks = complianceChecks.filter(check => {
+    const matchesSearch = searchTerm === '' || 
+      check.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      check.submissionId.toLowerCase().includes(searchTerm.toLowerCase())
     
-    let content = ''
-    let complianceLevel: 'safe' | 'warning' | 'high-risk' = 'safe'
-    let sources: string[] = []
-    let confidence = 0.95
+    const matchesStatus = statusFilter === 'all' || check.status === statusFilter
+    const matchesType = checkTypeFilter === 'all' || check.checkType === checkTypeFilter
     
-    if (lowerQuery.includes('off-label')) {
-      content = `Regarding off-label use discussions:
-
-**Key Requirements:**
-- Off-label information can be shared in response to unsolicited requests
-- Must be separate from promotional materials
-- Requires clear disclaimers about FDA approval status
-
-**Recommended Approach:**
-1. Clearly state the FDA-approved indications first
-2. Use disclaimer: "The following use is not FDA-approved"
-3. Provide balanced scientific information
-4. Document the unsolicited nature of the request
-
-**Warning:** Proactive promotion of off-label uses is prohibited and can result in FDA warning letters.`
-      
-      complianceLevel = 'warning'
-      sources = ['FDA Guidance on Off-Label Communications', '21 CFR 99.103']
-      confidence = 0.92
-    } else if (lowerQuery.includes('fair balance')) {
-      content = `Fair balance requirements for promotional materials:
-
-**Core Principle:** Risk information must be presented with comparable prominence to benefit claims.
-
-**Requirements:**
-- Same font size and style for risks and benefits
-- Similar placement and visibility
-- Equal time/space in broadcast materials
-- Clear, consumer-friendly language
-
-**Best Practices:**
-1. Place major risks adjacent to major claims
-2. Use headers like "Important Safety Information"
-3. Avoid minimizing risk presentation
-4. Test materials with target audience
-
-**Note:** Fair balance applies to all promotional pieces, including digital and social media.`
-      
-      complianceLevel = 'safe'
-      sources = ['FDA Fair Balance Guidance', 'PhRMA Code']
-      confidence = 0.98
-    } else if (lowerQuery.includes('social media')) {
-      content = `Social media compliance requirements:
-
-**Platform Considerations:**
-- Character limits don't exempt from regulations
-- Each post must stand alone compliantly
-- Links to full prescribing information required
-
-**Key Requirements:**
-1. Include proprietary and generic names
-2. Major risk disclosure or link to it
-3. Report adverse events within 24 hours
-4. Monitor and moderate comments
-
-**High Risk Areas:**
-- User-generated content
-- Influencer partnerships
-- Employee personal accounts
-- Retweeting/sharing content
-
-Always pre-approve social content through MLR review.`
-      
-      complianceLevel = 'warning'
-      sources = ['FDA Social Media Guidance 2014', 'FDA Internet/Social Media Q&A']
-      confidence = 0.90
-    } else {
-      content = `I understand you're asking about "${query}". 
-
-To provide the most accurate compliance guidance, I need more specific information. Here are some areas I can help with:
-
-1. **FDA Claims & Labeling** - Approved vs. off-label uses
-2. **Promotional Materials** - Fair balance and ISI requirements
-3. **HCP Communications** - Scientific exchange guidelines
-4. **Patient Materials** - DTC regulations and health literacy
-5. **Digital Compliance** - Website, email, and social media rules
-
-Please select a category or ask a more specific question. You can also reference specific content for review.
-
-Remember: When in doubt, always consult with your Legal/Regulatory team for final approval.`
-      
-      complianceLevel = 'safe'
-      confidence = 0.85
-    }
-    
-    return {
-      id: `msg-${Date.now()}-response`,
-      role: 'assistant',
-      content,
-      timestamp: new Date().toISOString(),
-      complianceLevel,
-      sources,
-      confidence
-    }
-  }
-
-  const handleSend = () => {
-    if (input.trim()) {
-      sendMessageMutation.mutate(input)
-      setInput('')
-    }
-  }
-
-  const toggleCategory = (categoryId: string) => {
-    const newExpanded = new Set(expandedCategories)
-    if (newExpanded.has(categoryId)) {
-      newExpanded.delete(categoryId)
-    } else {
-      newExpanded.add(categoryId)
-    }
-    setExpandedCategories(newExpanded)
-  }
-
-  const getComplianceBadge = (level?: string) => {
-    switch (level) {
-      case 'safe':
-        return (
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
-            <CheckCircle className="h-3 w-3" />
-            Low Risk
-          </span>
-        )
-      case 'warning':
-        return (
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
-            <AlertTriangle className="h-3 w-3" />
-            Caution Advised
-          </span>
-        )
-      case 'high-risk':
-        return (
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
-            <AlertTriangle className="h-3 w-3" />
-            High Risk
-          </span>
-        )
-      default:
-        return null
-    }
-  }
+    return matchesSearch && matchesStatus && matchesType
+  })
 
   return (
-    <div className="flex h-[calc(100vh-8rem)] gap-6">
-      {/* Categories Sidebar */}
-      <div className="w-80 bg-white rounded-lg shadow overflow-hidden flex flex-col">
-        <div className="px-4 py-3 border-b border-gray-200">
-          <h2 className="text-lg font-medium text-gray-900">Compliance Topics</h2>
-        </div>
-        <div className="flex-1 overflow-y-auto p-4 space-y-3">
-          {categories.map((category) => (
-            <div key={category.id} className="border rounded-lg">
-              <button
-                onClick={() => toggleCategory(category.id)}
-                className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50"
-              >
-                <div className="text-left">
-                  <h3 className="font-medium text-gray-900">{category.name}</h3>
-                  <p className="text-sm text-gray-500">{category.description}</p>
-                </div>
-                {expandedCategories.has(category.id) ? (
-                  <ChevronUp className="h-5 w-5 text-gray-400" />
-                ) : (
-                  <ChevronDown className="h-5 w-5 text-gray-400" />
-                )}
-              </button>
-              {expandedCategories.has(category.id) && (
-                <div className="px-4 pb-3 space-y-2">
-                  {category.questions.map((question, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setInput(question)}
-                      className="w-full text-left text-sm text-gray-600 hover:text-primary-600 py-1"
-                    >
-                      • {question}
-                    </button>
-                  ))}
-                </div>
-              )}
+    <div>
+      {/* Page Header */}
+      <div className="mb-8">
+        <h1 className="text-2xl font-semibold text-gray-900">Compliance Dashboard</h1>
+        <p className="mt-1 text-sm text-gray-500">
+          Monitor regulatory compliance across all content submissions
+        </p>
+      </div>
+
+      {/* Summary Stats */}
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="flex items-center">
+            <div className="flex-1">
+              <p className="text-sm font-medium text-gray-600">Total Checks</p>
+              <p className="mt-2 text-3xl font-semibold text-gray-900">{stats.total}</p>
             </div>
-          ))}
+            <div className="p-3 bg-blue-100 rounded-lg">
+              <Shield className="h-6 w-6 text-blue-600" />
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="flex items-center">
+            <div className="flex-1">
+              <p className="text-sm font-medium text-gray-600">Passed</p>
+              <p className="mt-2 text-3xl font-semibold text-gray-900">{stats.passed}</p>
+            </div>
+            <div className="p-3 bg-green-100 rounded-lg">
+              <CheckCircle className="h-6 w-6 text-green-600" />
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="flex items-center">
+            <div className="flex-1">
+              <p className="text-sm font-medium text-gray-600">Failed</p>
+              <p className="mt-2 text-3xl font-semibold text-gray-900">{stats.failed}</p>
+            </div>
+            <div className="p-3 bg-red-100 rounded-lg">
+              <XCircle className="h-6 w-6 text-red-600" />
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="flex items-center">
+            <div className="flex-1">
+              <p className="text-sm font-medium text-gray-600">Compliance Rate</p>
+              <p className="mt-2 text-3xl font-semibold text-gray-900">{stats.complianceRate}%</p>
+              <p className="mt-1 text-sm text-green-600 flex items-center">
+                <TrendingUp className="h-4 w-4 mr-1" />
+                +2.5% from last month
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Chat Interface */}
-      <div className="flex-1 bg-white rounded-lg shadow flex flex-col">
-        <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary-100 rounded-lg">
-              <Bot className="h-5 w-5 text-primary-600" />
-            </div>
-            <div>
-              <h1 className="text-lg font-medium text-gray-900">Compliance Q&A Agent</h1>
-              <p className="text-sm text-gray-500">FDA & Pharma Regulatory Guidance</p>
-            </div>
-          </div>
-          <button className="p-2 hover:bg-gray-100 rounded-lg">
-            <RefreshCw className="h-5 w-5 text-gray-500" />
-          </button>
-        </div>
-
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-4">
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex gap-3 ${
-                message.role === 'user' ? 'justify-end' : 'justify-start'
-              }`}
-            >
-              {message.role !== 'user' && (
-                <div className="flex-shrink-0">
-                  <div className="p-2 bg-gray-100 rounded-lg">
-                    <Bot className="h-5 w-5 text-gray-600" />
-                  </div>
-                </div>
-              )}
-              
-              <div className={`max-w-2xl ${message.role === 'user' ? 'order-1' : ''}`}>
-                <div className={`rounded-lg px-4 py-3 ${
-                  message.role === 'user' 
-                    ? 'bg-primary-600 text-white' 
-                    : 'bg-gray-100 text-gray-900'
-                }`}>
-                  <div className="prose prose-sm max-w-none">
-                    <div dangerouslySetInnerHTML={{ 
-                      __html: message.content.replace(/\n/g, '<br />').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') 
-                    }} />
-                  </div>
-                </div>
-                
-                {message.role === 'assistant' && (
-                  <div className="mt-2 space-y-2">
-                    {message.complianceLevel && (
-                      <div className="flex items-center gap-2">
-                        {getComplianceBadge(message.complianceLevel)}
-                        {message.confidence && (
-                          <span className="text-xs text-gray-500">
-                            {Math.round(message.confidence * 100)}% confidence
-                          </span>
-                        )}
-                      </div>
-                    )}
-                    {message.sources && message.sources.length > 0 && (
-                      <div className="flex items-center gap-2 text-xs text-gray-500">
-                        <FileText className="h-3 w-3" />
-                        Sources: {message.sources.join(', ')}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-              
-              {message.role === 'user' && (
-                <div className="flex-shrink-0 order-2">
-                  <div className="p-2 bg-gray-100 rounded-lg">
-                    <User className="h-5 w-5 text-gray-600" />
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
-          
-          {isTyping && (
-            <div className="flex gap-3">
-              <div className="p-2 bg-gray-100 rounded-lg">
-                <Bot className="h-5 w-5 text-gray-600" />
-              </div>
-              <div className="bg-gray-100 rounded-lg px-4 py-3">
-                <div className="flex items-center gap-2">
-                  <div className="h-2 w-2 bg-gray-400 rounded-full animate-bounce" />
-                  <div className="h-2 w-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
-                  <div className="h-2 w-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Input */}
-        <div className="px-6 py-4 border-t border-gray-200">
-          <form onSubmit={(e) => { e.preventDefault(); handleSend() }} className="flex gap-3">
+      {/* Filters */}
+      <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             <input
               type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask a compliance question..."
-              className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-              disabled={sendMessageMutation.isPending}
+              placeholder="Search by product or submission ID..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 pr-3 py-2 border border-gray-300 rounded-md w-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
-            <button
-              type="submit"
-              disabled={!input.trim() || sendMessageMutation.isPending}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <Filter className="h-5 w-5 text-gray-400" />
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="border border-gray-300 rounded-md text-sm flex-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
-              <Send className="h-4 w-4" />
-              Send
-            </button>
-          </form>
-          <p className="mt-2 text-xs text-gray-500">
-            This AI assistant provides general compliance guidance. Always verify with Legal/Regulatory for final approval.
-          </p>
+              <option value="all">All Status</option>
+              <option value="passed">Passed</option>
+              <option value="failed">Failed</option>
+              <option value="review">Under Review</option>
+              <option value="pending">Pending</option>
+            </select>
+          </div>
+          
+          <div>
+            <select
+              value={checkTypeFilter}
+              onChange={(e) => setCheckTypeFilter(e.target.value)}
+              className="border border-gray-300 rounded-md text-sm w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="all">All Authorities</option>
+              <option value="FDA">FDA</option>
+              <option value="EMA">EMA</option>
+              <option value="Health Canada">Health Canada</option>
+              <option value="Internal">Internal</option>
+            </select>
+          </div>
         </div>
+      </div>
+
+      {/* Compliance Checks Table */}
+      <div className="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Submission
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Product
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Authority
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Status
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Severity
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Issues
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Checked
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {filteredChecks.map((check) => (
+              <tr key={check.id} className="hover:bg-gray-50">
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  {check.submissionId}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {check.productName}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-blue-100 text-blue-800">
+                    {check.checkType}
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeClass(check.status)}`}>
+                    {getStatusIcon(check.status)}
+                    {check.status.charAt(0).toUpperCase() + check.status.slice(1)}
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getSeverityBadgeClass(check.severity)}`}>
+                    {check.severity.charAt(0).toUpperCase() + check.severity.slice(1)}
+                  </span>
+                </td>
+                <td className="px-6 py-4">
+                  {check.issues.length > 0 ? (
+                    <ul className="text-sm text-gray-900 space-y-1">
+                      {check.issues.slice(0, 2).map((issue, index) => (
+                        <li key={index} className="flex items-start">
+                          <span className="text-red-500 mr-1">•</span>
+                          <span className="text-xs">{issue}</span>
+                        </li>
+                      ))}
+                      {check.issues.length > 2 && (
+                        <li className="text-xs text-gray-500">+{check.issues.length - 2} more</li>
+                      )}
+                    </ul>
+                  ) : (
+                    <span className="text-sm text-green-600">No issues found</span>
+                  )}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div>
+                    <div className="text-sm text-gray-900">{check.checkedBy}</div>
+                    <div className="text-xs text-gray-500">{format(check.checkedAt, 'MMM d, h:mm a')}</div>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   )
