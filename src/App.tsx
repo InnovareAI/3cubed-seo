@@ -8,7 +8,7 @@ import Compliance from './pages/Compliance'
 // import RevisionRequests from './pages/RevisionRequests'
 // import MLRReview from './pages/MLRReview'
 // import SEOContentHub from './pages/SEOContentHub'
-import ContentHub from './pages/ContentHub'
+// import ContentHub from './pages/ContentHub'
 import AuditTrail from './pages/AuditTrail'
 import Administration from './pages/Administration'
 import ClientDashboard from './pages/ClientDashboard'
@@ -41,7 +41,7 @@ function App() {
           <Route path="compliance" element={<Compliance />} />
           <Route path="revision-requests" element={<ComingSoon title="Revision Requests" />} />
           <Route path="mlr-review" element={<ComingSoon title="MLR Review" />} />
-          <Route path="content-hub" element={<ContentHub />} />
+          <Route path="content-hub" element={<ComingSoon title="SEO Content Hub" />} />
           <Route path="audit" element={<AuditTrail />} />
           <Route path="admin" element={<Administration />} />
           <Route path="projects/:clientName" element={<ClientDashboard />} />
