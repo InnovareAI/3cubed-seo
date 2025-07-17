@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { Building2, TrendingUp, Clock, CheckCircle, AlertCircle, ArrowRight, Sparkles, Target } from 'lucide-react'
+import { Building2, TrendingUp, Clock, CheckCircle, AlertCircle, ArrowRight, Sparkles } from 'lucide-react'
 
 interface ClientProject {
   client_name: string

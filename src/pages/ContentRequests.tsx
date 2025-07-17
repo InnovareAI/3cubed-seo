@@ -284,7 +284,7 @@ export default function ContentRequests() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {filteredRequests.map((request, index) => (
+            {filteredRequests.map((request) => (
               <tr key={request.id} className="hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 transition-all">
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className="text-sm font-bold bg-gradient-to-r from-red-500 to-pink-500 bg-clip-text text-transparent">
