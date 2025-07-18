@@ -201,60 +201,62 @@ export default function SEOReviewModal({ isOpen, onClose, submission }: SEORevie
           status?.status === 'rejected' ? 'bg-red-50 border border-red-200' : 
           'bg-gray-50'
         }`}>
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-900 flex-1">{keyword}</span>
-            {status?.status && (
-              <span className={`text-xs px-2 py-1 rounded-full ${
-                status.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-              }`}>
-                {status.status === 'approved' ? 'Approved' : 'Rejected'}
-              </span>
-            )}
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => handleKeywordAction(keyword, type, 'approved')}
-              className={`p-1.5 rounded text-sm transition-colors ${
-                status?.status === 'approved' 
-                  ? 'bg-green-600 text-white' 
-                  : 'bg-white text-green-600 border border-green-600 hover:bg-green-50'
-              }`}
-              title="Approve"
-            >
-              <Check className="h-3.5 w-3.5" />
-            </button>
+          <div className="flex items-center justify-between">
+            <div className="flex-1 pr-4">
+              <span className="text-sm font-medium text-gray-900">{keyword}</span>
+              {status?.status && (
+                <span className={`ml-3 text-xs px-2 py-1 rounded-full ${
+                  status.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                }`}>
+                  {status.status === 'approved' ? 'Approved' : 'Rejected'}
+                </span>
+              )}
+            </div>
             
-            <button
-              onClick={() => handleKeywordAction(keyword, type, 'rejected')}
-              className={`p-1.5 rounded text-sm transition-colors ${
-                status?.status === 'rejected' 
-                  ? 'bg-red-600 text-white' 
-                  : 'bg-white text-red-600 border border-red-600 hover:bg-red-50'
-              }`}
-              title="Reject"
-            >
-              <X className="h-3.5 w-3.5" />
-            </button>
-            
-            <button
-              onClick={() => handleKeywordComment(keyword, type)}
-              className={`p-1.5 rounded text-sm transition-colors ${
-                status?.comment || isCommenting
-                  ? 'bg-blue-600 text-white' 
-                  : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-50'
-              }`}
-              title="Add Comment"
-            >
-              <MessageCircle className="h-3.5 w-3.5" />
-            </button>
-            
-            <button
-              className="p-1.5 bg-white text-blue-600 border border-blue-600 rounded hover:bg-blue-50 text-sm transition-colors"
-              title="Ask AI"
-            >
-              <Sparkles className="h-3.5 w-3.5" />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => handleKeywordAction(keyword, type, 'approved')}
+                className={`p-1.5 rounded text-sm transition-colors ${
+                  status?.status === 'approved' 
+                    ? 'bg-green-600 text-white' 
+                    : 'bg-white text-green-600 border border-green-600 hover:bg-green-50'
+                }`}
+                title="Approve"
+              >
+                <Check className="h-3.5 w-3.5" />
+              </button>
+              
+              <button
+                onClick={() => handleKeywordAction(keyword, type, 'rejected')}
+                className={`p-1.5 rounded text-sm transition-colors ${
+                  status?.status === 'rejected' 
+                    ? 'bg-red-600 text-white' 
+                    : 'bg-white text-red-600 border border-red-600 hover:bg-red-50'
+                }`}
+                title="Reject"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+              
+              <button
+                onClick={() => handleKeywordComment(keyword, type)}
+                className={`p-1.5 rounded text-sm transition-colors ${
+                  status?.comment || isCommenting
+                    ? 'bg-blue-600 text-white' 
+                    : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-50'
+                }`}
+                title="Add Comment"
+              >
+                <MessageCircle className="h-3.5 w-3.5" />
+              </button>
+              
+              <button
+                className="p-1.5 bg-white text-blue-600 border border-blue-600 rounded hover:bg-blue-50 text-sm transition-colors"
+                title="Ask AI"
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+              </button>
+            </div>
           </div>
         </div>
         
