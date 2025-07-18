@@ -2,7 +2,6 @@ import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { FileText, CheckCircle, Clock, TrendingUp, AlertCircle, CheckSquare } from 'lucide-react'
 import MetricCard from '@/components/MetricCard'
-import RecentSubmissionsTable from '@/components/RecentSubmissionsTable'
 import StatusDistributionChart from '@/components/StatusDistributionChart'
 import ProcessingQueue from '@/components/ProcessingQueue'
 
@@ -117,20 +116,41 @@ export default function Overview() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* Recent Submissions */}
-        <div className="bg-white rounded-lg shadow">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-medium text-gray-900">Recent Submissions</h2>
-          </div>
-          <RecentSubmissionsTable />
-        </div>
-
         {/* Status Distribution */}
         <div className="bg-white rounded-lg shadow">
           <div className="px-6 py-4 border-b border-gray-200">
             <h2 className="text-lg font-medium text-gray-900">Status Distribution</h2>
           </div>
           <StatusDistributionChart data={stats?.statusCounts} />
+        </div>
+
+        {/* Quick Actions */}
+        <div className="bg-white rounded-lg shadow">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h2 className="text-lg font-medium text-gray-900">Quick Actions</h2>
+          </div>
+          <div className="p-6 space-y-4">
+            <a 
+              href="/seo-requests" 
+              className="block w-full text-center px-4 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            >
+              Submit New SEO Request
+            </a>
+            <div className="grid grid-cols-2 gap-4">
+              <a 
+                href="/content-requests" 
+                className="block text-center px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
+              >
+                View All Requests
+              </a>
+              <a 
+                href="/analytics" 
+                className="block text-center px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
+              >
+                View Analytics
+              </a>
+            </div>
+          </div>
         </div>
       </div>
 

@@ -28,26 +28,28 @@ interface FormData {
   geography: string[];
   
   // Key Information
-  key_differentiators: string;
-  competitors: string;
-  unmet_need: string;
+  key_advantages: string;
+  competitor_names: string;
+  competitor_urls: string;
+  problem_solved: string;
   treatment_settings: string[];
   
   // SEO Enhancement Fields
   mechanism_of_action: string;
   clinical_trials: string;
-  efficacy_data: string;
-  safety_profile: string;
-  dosing_administration: string;
-  patient_populations: string;
+  key_results: string;
+  safety_info: string;
+  dosing_info: string;
+  patient_population: string;
   regulatory_status: string;
-  market_size: string;
-  medical_keywords: string;
+  patient_numbers: string;
+  industry_keywords: string;
   avoid_keywords: string;
-  existing_content: string;
+  website_url: string;
   unique_value_prop: string;
   conference_data: string;
   kol_names: string;
+  special_considerations: string;
 }
 
 export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClose }) => {
@@ -66,24 +68,26 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
     therapeutic_area: '',
     target_audience: [],
     geography: [],
-    key_differentiators: '',
-    competitors: '',
-    unmet_need: '',
+    key_advantages: '',
+    competitor_names: '',
+    competitor_urls: '',
+    problem_solved: '',
     treatment_settings: [],
     mechanism_of_action: '',
     clinical_trials: '',
-    efficacy_data: '',
-    safety_profile: '',
-    dosing_administration: '',
-    patient_populations: '',
+    key_results: '',
+    safety_info: '',
+    dosing_info: '',
+    patient_population: '',
     regulatory_status: '',
-    market_size: '',
-    medical_keywords: '',
+    patient_numbers: '',
+    industry_keywords: '',
     avoid_keywords: '',
-    existing_content: '',
+    website_url: '',
     unique_value_prop: '',
     conference_data: '',
-    kol_names: ''
+    kol_names: '',
+    special_considerations: ''
   });
   
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -148,8 +152,8 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         stage: formData.stage,
         indication: formData.condition_treated,
         mechanism_of_action: formData.mechanism_of_action,
-        competitive_landscape: formData.competitors,
-        key_differentiators: formData.key_differentiators,
+        competitive_landscape: formData.competitor_names,
+        key_differentiators: formData.key_advantages,
         target_audience: formData.target_audience.join(', '),
         target_markets: formData.geography.join(', '),
         // Store all form data as JSON in raw_input_content
@@ -184,24 +188,26 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         therapeutic_area: '',
         target_audience: [],
         geography: [],
-        key_differentiators: '',
-        competitors: '',
-        unmet_need: '',
+        key_advantages: '',
+        competitor_names: '',
+        competitor_urls: '',
+        problem_solved: '',
         treatment_settings: [],
         mechanism_of_action: '',
         clinical_trials: '',
-        efficacy_data: '',
-        safety_profile: '',
-        dosing_administration: '',
-        patient_populations: '',
+        key_results: '',
+        safety_info: '',
+        dosing_info: '',
+        patient_population: '',
         regulatory_status: '',
-        market_size: '',
-        medical_keywords: '',
+        patient_numbers: '',
+        industry_keywords: '',
         avoid_keywords: '',
-        existing_content: '',
+        website_url: '',
         unique_value_prop: '',
         conference_data: '',
-        kol_names: ''
+        kol_names: '',
+        special_considerations: ''
       });
       
       if (onSuccess) onSuccess();
@@ -258,7 +264,6 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
               placeholder="your.email@company.com"
             />
           </div>
-
 
 
         </div>
@@ -513,57 +518,62 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         </div>
       </div>
 
-      {/* Key Information */}
+      {/* Competitive Landscape */}
       <div className="space-y-4 border-b pb-6">
-        <h3 className="text-lg font-semibold text-gray-900">Key Information</h3>
+        <h3 className="text-lg font-semibold text-gray-900">Competitive Landscape</h3>
         
         <div>
-          <label htmlFor="key_differentiators" className="block text-sm font-medium text-gray-700 mb-1">
-            Key Differentiators <span className="text-red-500">*</span>
+          <label htmlFor="key_advantages" className="block text-sm font-medium text-gray-700 mb-1">
+            Key Product Advantages <span className="text-red-500">*</span>
           </label>
           <textarea
-            id="key_differentiators"
-            name="key_differentiators"
-            value={formData.key_differentiators}
+            id="key_advantages"
+            name="key_advantages"
+            value={formData.key_advantages}
             onChange={handleChange}
             required
-            rows={4}
+            rows={6}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="What makes this treatment different/better?"
+            placeholder="Example advantages:
+• Once daily dosing (vs. multiple daily doses)
+• Faster onset of action (days vs. weeks)
+• Better safety profile (fewer side effects)
+• Oral medication (vs. injections)
+• Lower cost than alternatives"
           />
           <p className="text-xs text-gray-500 mt-1">List 3-5 advantages in simple, clear language. Focus on what matters to patients and doctors.</p>
         </div>
 
         <div>
-          <label htmlFor="competitors" className="block text-sm font-medium text-gray-700 mb-1">
-            Main Competitors <span className="text-red-500">*</span>
+          <label htmlFor="competitor_names" className="block text-sm font-medium text-gray-700 mb-1">
+            Competitor Products <span className="text-red-500">*</span>
           </label>
           <textarea
-            id="competitors"
-            name="competitors"
-            value={formData.competitors}
+            id="competitor_names"
+            name="competitor_names"
+            value={formData.competitor_names}
             onChange={handleChange}
             required
             rows={3}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="List competing products and companies"
+            placeholder="List product names (e.g., Humira, Enbrel, Remicade)"
           />
           <p className="text-xs text-gray-500 mt-1">Include brand names and their official websites when available</p>
         </div>
 
         <div>
-          <label htmlFor="unmet_need" className="block text-sm font-medium text-gray-700 mb-1">
-            Unmet Need <span className="text-red-500">*</span>
+          <label htmlFor="problem_solved" className="block text-sm font-medium text-gray-700 mb-1">
+            What Problem Does Your Product Solve? <span className="text-red-500">*</span>
           </label>
           <textarea
-            id="unmet_need"
-            name="unmet_need"
-            value={formData.unmet_need}
+            id="problem_solved"
+            name="problem_solved"
+            value={formData.problem_solved}
             onChange={handleChange}
             required
             rows={3}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="What problem does this solve?"
+            placeholder="Example: Patients with moderate disease have no treatment options between mild therapies and aggressive biologics"
           />
           <p className="text-xs text-gray-500 mt-1">Describe the gap in current treatment that your product fills</p>
         </div>
@@ -608,7 +618,7 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label htmlFor="mechanism_of_action" className="block text-sm font-medium text-gray-700 mb-1">
-              Mechanism of Action
+              How Your Product Works (Optional)
             </label>
             <textarea
               id="mechanism_of_action"
@@ -617,14 +627,14 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
               onChange={handleChange}
               rows={2}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="How does the drug work?"
+              placeholder="e.g., Selective JAK1/JAK3 inhibitor that blocks inflammatory pathways by targeting specific kinase enzymes"
             />
             <p className="text-xs text-gray-500 mt-1">Technical description helps capture HCP searches for specific mechanisms</p>
           </div>
 
           <div>
             <label htmlFor="clinical_trials" className="block text-sm font-medium text-gray-700 mb-1">
-              Clinical Trial Names/Numbers
+              Clinical Trial Information (Optional)
             </label>
             <textarea
               id="clinical_trials"
@@ -633,78 +643,88 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
               onChange={handleChange}
               rows={2}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="e.g., KEYNOTE-189, NCT02578680"
+              placeholder="e.g., Phase 3 STELLAR trial, 1,200 patients, 52 weeks
+Phase 2 NOVA study, 450 patients, dose-ranging
+Long-term extension study, 800 patients, 2 years"
             />
             <p className="text-xs text-gray-500 mt-1">Trial names and details that HCPs might search for</p>
           </div>
 
           <div>
-            <label htmlFor="efficacy_data" className="block text-sm font-medium text-gray-700 mb-1">
-              Key Efficacy Data
+            <label htmlFor="key_results" className="block text-sm font-medium text-gray-700 mb-1">
+              Key Study Results (Optional)
             </label>
             <textarea
-              id="efficacy_data"
-              name="efficacy_data"
-              value={formData.efficacy_data}
+              id="key_results"
+              name="key_results"
+              value={formData.key_results}
               onChange={handleChange}
               rows={2}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Response rates, survival data, etc."
+              placeholder="e.g., 75% reduction in disease activity score
+45% achieved complete remission at Week 16
+Significant improvement in quality of life scores"
             />
             <p className="text-xs text-gray-500 mt-1">Specific outcomes that differentiate your product</p>
           </div>
 
           <div>
-            <label htmlFor="safety_profile" className="block text-sm font-medium text-gray-700 mb-1">
-              Safety Profile Highlights
+            <label htmlFor="safety_info" className="block text-sm font-medium text-gray-700 mb-1">
+              Safety Information (Optional)
             </label>
             <textarea
-              id="safety_profile"
-              name="safety_profile"
-              value={formData.safety_profile}
+              id="safety_info"
+              name="safety_info"
+              value={formData.safety_info}
               onChange={handleChange}
               rows={2}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Key safety advantages or considerations"
+              placeholder="e.g., No black box warnings, well-tolerated
+Most common side effects: headache (8%), nausea (5%)
+No dose adjustment needed for elderly patients"
             />
             <p className="text-xs text-gray-500 mt-1">Key safety data that influences prescribing decisions</p>
           </div>
 
           <div>
-            <label htmlFor="dosing_administration" className="block text-sm font-medium text-gray-700 mb-1">
-              Dosing & Administration
+            <label htmlFor="dosing_info" className="block text-sm font-medium text-gray-700 mb-1">
+              How Is It Taken? (Optional)
             </label>
             <textarea
-              id="dosing_administration"
-              name="dosing_administration"
-              value={formData.dosing_administration}
+              id="dosing_info"
+              name="dosing_info"
+              value={formData.dosing_info}
               onChange={handleChange}
               rows={2}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Frequency, route, duration"
+              placeholder="e.g., Once daily oral tablet, can be taken with or without food
+Starting dose: 5mg daily for 2 weeks, then 10mg daily
+No dose adjustment for mild renal impairment"
             />
             <p className="text-xs text-gray-500 mt-1">Dosing convenience is a major search factor</p>
           </div>
 
           <div>
-            <label htmlFor="patient_populations" className="block text-sm font-medium text-gray-700 mb-1">
-              Specific Patient Populations
+            <label htmlFor="patient_population" className="block text-sm font-medium text-gray-700 mb-1">
+              Who Is This For? (Optional)
             </label>
             <textarea
-              id="patient_populations"
-              name="patient_populations"
-              value={formData.patient_populations}
+              id="patient_population"
+              name="patient_population"
+              value={formData.patient_population}
               onChange={handleChange}
               rows={2}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Age groups, biomarkers, prior treatments"
+              placeholder="e.g., Adults 18-65 with inadequate response to methotrexate
+Moderate to severe disease despite conventional therapy
+Biologic-naive patients or those who failed anti-TNF therapy"
             />
             <p className="text-xs text-gray-500 mt-1">Specific patient groups who benefit most</p>
           </div>
 
           <div>
             <label htmlFor="regulatory_status" className="block text-sm font-medium text-gray-700 mb-1">
-              Regulatory Status/Designations
+              Regulatory Status/Designations (Optional)
             </label>
             <textarea
               id="regulatory_status"
@@ -719,40 +739,40 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
           </div>
 
           <div>
-            <label htmlFor="market_size" className="block text-sm font-medium text-gray-700 mb-1">
-              Market Size/Patient Numbers
+            <label htmlFor="patient_numbers" className="block text-sm font-medium text-gray-700 mb-1">
+              Patient Numbers (Optional)
             </label>
             <input
               type="text"
-              id="market_size"
-              name="market_size"
-              value={formData.market_size}
+              id="patient_numbers"
+              name="patient_numbers"
+              value={formData.patient_numbers}
               onChange={handleChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Estimated patient population"
+              placeholder="e.g., 2.3 million patients in US, 15 million globally, growing 5% annually"
             />
             <p className="text-xs text-gray-500 mt-1">Helps prioritize SEO investment based on market opportunity</p>
           </div>
 
           <div>
-            <label htmlFor="medical_keywords" className="block text-sm font-medium text-gray-700 mb-1">
-              Important Medical Keywords
+            <label htmlFor="industry_keywords" className="block text-sm font-medium text-gray-700 mb-1">
+              Industry Keywords You Want Included (Optional)
             </label>
             <textarea
-              id="medical_keywords"
-              name="medical_keywords"
-              value={formData.medical_keywords}
+              id="industry_keywords"
+              name="industry_keywords"
+              value={formData.industry_keywords}
               onChange={handleChange}
               rows={2}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Key terms your audience uses"
+              placeholder="e.g., JAKi, tsDMARD, targeted synthetic DMARD, kinase inhibitor, small molecule, oral DMARD, JAK/STAT pathway"
             />
             <p className="text-xs text-gray-500 mt-1">Technical terms, acronyms, or specific phrases important to your product</p>
           </div>
 
           <div>
             <label htmlFor="avoid_keywords" className="block text-sm font-medium text-gray-700 mb-1">
-              Keywords to Avoid
+              Keywords to Avoid (Optional)
             </label>
             <textarea
               id="avoid_keywords"
@@ -768,24 +788,24 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         </div>
 
         <div>
-          <label htmlFor="existing_content" className="block text-sm font-medium text-gray-700 mb-1">
-            Existing Website/Content URLs
+          <label htmlFor="website_url" className="block text-sm font-medium text-gray-700 mb-1">
+            Website URL (if applicable)
           </label>
-          <textarea
-            id="existing_content"
-            name="existing_content"
-            value={formData.existing_content}
+          <input
+            type="url"
+            id="website_url"
+            name="website_url"
+            value={formData.website_url}
             onChange={handleChange}
-            rows={2}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Current website or content links"
+            placeholder="https://www.example.com"
           />
           <p className="text-xs text-gray-500 mt-1">We'll build on your existing SEO presence</p>
         </div>
 
         <div>
           <label htmlFor="unique_value_prop" className="block text-sm font-medium text-gray-700 mb-1">
-            Unique Value Proposition
+            Unique Value Proposition (Optional)
           </label>
           <textarea
             id="unique_value_prop"
@@ -808,16 +828,16 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
             name="conference_data"
             value={formData.conference_data}
             onChange={handleChange}
-            rows={2}
+            rows={3}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="ASCO, ASH, ACC presentations"
+            placeholder="Conference name, date, and URL (e.g., ASCO 2024, June 2024, https://meetings.asco.org/abstracts)"
           />
           <p className="text-xs text-gray-500 mt-1">Conference presentations create search spikes we can capitalize on</p>
         </div>
 
         <div>
           <label htmlFor="kol_names" className="block text-sm font-medium text-gray-700 mb-1">
-            Key Opinion Leaders
+            Key Opinion Leaders (Optional)
           </label>
           <textarea
             id="kol_names"
@@ -829,6 +849,24 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
             placeholder="Leading physicians/researchers associated with your product"
           />
           <p className="text-xs text-gray-500 mt-1">KOL names drive HCP searches and add credibility</p>
+        </div>
+
+        <div>
+          <label htmlFor="special_considerations" className="block text-sm font-medium text-gray-700 mb-1">
+            Anything Else We Should Know? (Optional)
+          </label>
+          <textarea
+            id="special_considerations"
+            name="special_considerations"
+            value={formData.special_considerations}
+            onChange={handleChange}
+            rows={3}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="e.g., Competing with biosimilar launching next year
+Positioned for community practice vs. academic centers
+Key data presentation at ASH conference in December
+Partnership with patient advocacy group announced"
+          />
         </div>
       </div>
 
