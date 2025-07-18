@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { supabase, type Submission } from '../lib/supabase'
 import { Link } from 'react-router-dom'
 import { format } from 'date-fns'
-import { Search, Calendar, Building2, User, ExternalLink, Plus, ChevronDown, ChevronUp } from 'lucide-react'
+import { Search, Calendar, Building2, User, ExternalLink, Plus, ChevronUp } from 'lucide-react'
 import { SubmissionForm } from '../components/SubmissionForm'
 
 export default function SEORequests() {
