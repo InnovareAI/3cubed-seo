@@ -14,6 +14,7 @@ import {
   MoreVertical
 } from 'lucide-react'
 import { format } from 'date-fns'
+import { SubmissionModal } from '../components/SubmissionModal'
 
 type RequestStatus = 'in-review' | 'draft' | 'compliance-review' | 'approved' | 'rejected'
 type Priority = 'high' | 'medium' | 'low'
@@ -140,6 +141,7 @@ export default function ContentRequests() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<RequestStatus | 'all'>('all')
   const [priorityFilter, setPriorityFilter] = useState<Priority | 'all'>('all')
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   const { data: requests = mockRequests } = useQuery({
     queryKey: ['content-requests'],
@@ -171,7 +173,9 @@ export default function ContentRequests() {
             Manage and track all SEO content requests
           </p>
         </div>
-        <button className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
           <Plus className="h-4 w-4" />
           New Request
         </button>
@@ -368,6 +372,16 @@ export default function ContentRequests() {
           </div>
         </div>
       </div>
+
+      {/* Submission Modal */}
+      <SubmissionModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={() => {
+          setIsModalOpen(false);
+          // Optionally refresh the data here
+        }}
+      />
     </div>
   )
 }
