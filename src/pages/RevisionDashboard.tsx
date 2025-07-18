@@ -5,7 +5,6 @@ import { Link } from 'react-router-dom'
 import { format } from 'date-fns'
 import { 
   Clock, 
-  CheckCircle, 
   AlertCircle, 
   Eye, 
   MessageSquare, 
@@ -14,7 +13,6 @@ import {
   Filter,
   ChevronDown,
   ChevronUp,
-  FileText,
   Users,
   Shield
 } from 'lucide-react'
