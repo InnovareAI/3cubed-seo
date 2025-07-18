@@ -15,10 +15,10 @@ import {
   Settings,
   Activity,
   Users,
-  Edit3,
   FileCheck,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  LayoutDashboard
 } from 'lucide-react'
 
 const navigation = [
@@ -27,7 +27,7 @@ const navigation = [
   { name: 'SEO Review', href: '/seo-review', icon: CheckSquare, showBadge: true },
   { name: 'Client Review', href: '/client-review', icon: Users },
   { name: 'Compliance', href: '/compliance', icon: Shield },
-  { name: 'Revision Requests', href: '/revision-requests', icon: Edit3 },
+  { name: 'Revisions', href: '/revisions', icon: LayoutDashboard },
   { name: 'MLR Review', href: '/mlr-review', icon: FileCheck },
   { name: 'SEO Content Hub', href: '/content-hub', icon: Library },
   { name: 'Audit Trail', href: '/audit', icon: Activity },
