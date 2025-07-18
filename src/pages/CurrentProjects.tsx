@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 import { format } from 'date-fns'
 import { Clock, CheckCircle, AlertCircle, XCircle, Edit2, Eye } from 'lucide-react'
 
-type WorkflowStage = 'submitted' | 'seo_review' | 'mlr_review' | 'client_review' | 'approved' | 'rejected' | 'initial_processing'
+type WorkflowStage = 'Form_Submitted' | 'AI_Processing' | 'SEO_Review' | 'MLR_Review' | 'Client_Review' | 'Revision_Requested' | 'Published'
 
 interface Submission {
   id: string
@@ -23,44 +23,44 @@ interface Submission {
 
 const getStatusBadge = (status: WorkflowStage) => {
   const config = {
-    'submitted': { 
+    'Form_Submitted': { 
       class: 'bg-gray-100 text-gray-800', 
       icon: <Edit2 className="h-3 w-3" />,
       label: 'Submitted'
     },
-    'initial_processing': { 
-      class: 'bg-gray-100 text-gray-800', 
-      icon: <Edit2 className="h-3 w-3" />,
-      label: 'Processing'
+    'AI_Processing': { 
+      class: 'bg-blue-100 text-blue-800', 
+      icon: <Clock className="h-3 w-3" />,
+      label: 'AI Processing'
     },
-    'seo_review': { 
+    'SEO_Review': { 
       class: 'bg-yellow-100 text-yellow-800', 
       icon: <Clock className="h-3 w-3" />,
       label: 'SEO Review'
     },
-    'mlr_review': { 
+    'MLR_Review': { 
       class: 'bg-purple-100 text-purple-800', 
       icon: <Clock className="h-3 w-3" />,
       label: 'MLR Review'
     },
-    'client_review': { 
-      class: 'bg-blue-100 text-blue-800', 
+    'Client_Review': { 
+      class: 'bg-indigo-100 text-indigo-800', 
       icon: <Clock className="h-3 w-3" />,
       label: 'Client Review'
     },
-    'approved': { 
+    'Revision_Requested': { 
+      class: 'bg-orange-100 text-orange-800', 
+      icon: <AlertCircle className="h-3 w-3" />,
+      label: 'Revision Requested'
+    },
+    'Published': { 
       class: 'bg-green-100 text-green-800', 
       icon: <CheckCircle className="h-3 w-3" />,
-      label: 'Approved'
-    },
-    'rejected': { 
-      class: 'bg-red-100 text-red-800', 
-      icon: <XCircle className="h-3 w-3" />,
-      label: 'Rejected'
+      label: 'Published'
     }
   }
 
-  const statusConfig = config[status] || config['submitted']
+  const statusConfig = config[status] || config['Form_Submitted']
   
   return (
     <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${statusConfig.class}`}>
@@ -91,7 +91,7 @@ export default function CurrentProjects() {
       const { data, error } = await supabase
         .from('submissions')
         .select('*')
-        .in('workflow_stage', ['submitted', 'initial_processing', 'seo_review', 'mlr_review', 'client_review'])
+        .in('workflow_stage', ['Form_Submitted', 'AI_Processing', 'SEO_Review', 'MLR_Review', 'Client_Review', 'Revision_Requested'])
         .order('created_at', { ascending: false })
       
       if (error) throw error
@@ -103,8 +103,8 @@ export default function CurrentProjects() {
   // Calculate summary stats
   const stats = {
     total: submissions?.length || 0,
-    inReview: submissions?.filter(s => ['seo_review', 'mlr_review', 'client_review'].includes(s.workflow_stage)).length || 0,
-    submitted: submissions?.filter(s => ['submitted', 'initial_processing'].includes(s.workflow_stage)).length || 0,
+    inReview: submissions?.filter(s => ['SEO_Review', 'MLR_Review', 'Client_Review'].includes(s.workflow_stage)).length || 0,
+    submitted: submissions?.filter(s => ['Form_Submitted', 'AI_Processing'].includes(s.workflow_stage)).length || 0,
     highPriority: submissions?.filter(s => s.priority_level.toLowerCase() === 'high').length || 0
   }
 
