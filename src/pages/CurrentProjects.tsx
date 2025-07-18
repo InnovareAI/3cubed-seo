@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import { Link } from 'react-router-dom'
 import { format } from 'date-fns'
-import { Clock, CheckCircle, AlertCircle, XCircle, Edit2, Eye } from 'lucide-react'
+import { Clock, CheckCircle, AlertCircle, Edit2, Eye } from 'lucide-react'
 
 type WorkflowStage = 'Form_Submitted' | 'AI_Processing' | 'SEO_Review' | 'MLR_Review' | 'Client_Review' | 'Revision_Requested' | 'Published'
 

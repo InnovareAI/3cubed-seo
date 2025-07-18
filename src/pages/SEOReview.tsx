@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
-import { Link } from 'react-router-dom'
 import { format } from 'date-fns'
+import SEOReviewModal from '../components/SEOReviewModal'
+import { mockSEOReviews } from '../data/mockSEOReviews'
 import { 
   Search,
   Filter,
@@ -12,7 +13,16 @@ import {
   ChevronRight,
   FileText,
   Calendar,
-  User
+  User,
+  Users,
+  Target,
+  Globe,
+  TrendingUp,
+  MessageSquare,
+  Hash,
+  Building,
+  Tag,
+  Zap
 } from 'lucide-react'
 
 interface Submission {
@@ -21,22 +31,32 @@ interface Submission {
   therapeutic_area: string
   stage: string
   workflow_stage: string
-  target_audience: string
+  target_audience: string[]
   created_at: string
   submitter_name: string
   submitter_email: string
   priority_level: string
-  indication?: string
+  medical_indication?: string
   langchain_status?: string
-  generated_seo_content?: any
+  geography?: string[]
+  client_name?: string
+  mechanism_of_action?: string
+  key_differentiators?: string[]
+  seo_keywords?: string[]
+  long_tail_keywords?: string[]
+  consumer_questions?: string[]
+  h1_tag?: any
+  meta_description?: any
 }
 
 export default function SEOReview() {
   const [searchTerm, setSearchTerm] = useState('')
   const [priorityFilter, setPriorityFilter] = useState<string>('all')
   const [therapeuticAreaFilter, setTherapeuticAreaFilter] = useState<string>('all')
+  const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
-  const { data: submissions, isLoading } = useQuery({
+  const { data: dbSubmissions, isLoading } = useQuery({
     queryKey: ['seo-review-queue'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -50,6 +70,13 @@ export default function SEOReview() {
     },
     refetchInterval: 30000 // Refresh every 30 seconds
   })
+
+  // Combine database submissions with mock data
+  const submissions = useMemo(() => {
+    const dbData = dbSubmissions || []
+    // If we have real data from DB, use it; otherwise use mock data
+    return dbData.length > 0 ? dbData : mockSEOReviews
+  }, [dbSubmissions])
 
   const filteredSubmissions = submissions?.filter(submission => {
     if (searchTerm && !submission.product_name.toLowerCase().includes(searchTerm.toLowerCase()) &&
@@ -67,9 +94,9 @@ export default function SEOReview() {
 
   const getPriorityBadge = (priority: string) => {
     const classes = {
-      'high': 'bg-red-100 text-red-800',
-      'medium': 'bg-yellow-100 text-yellow-800',
-      'low': 'bg-green-100 text-green-800'
+      'high': 'bg-red-100 text-red-800 border-red-200',
+      'medium': 'bg-yellow-100 text-yellow-800 border-yellow-200',
+      'low': 'bg-green-100 text-green-800 border-green-200'
     }
     
     return classes[priority.toLowerCase() as keyof typeof classes] || classes.medium
@@ -93,6 +120,16 @@ export default function SEOReview() {
     }
   }
 
+  const handleCardClick = (submission: Submission) => {
+    setSelectedSubmission(submission)
+    setIsModalOpen(true)
+  }
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false)
+    setSelectedSubmission(null)
+  }
+
   // Get unique therapeutic areas for filter
   const therapeuticAreas = [...new Set(submissions?.map(s => s.therapeutic_area) || [])]
 
@@ -112,9 +149,12 @@ export default function SEOReview() {
         <p className="mt-1 text-sm text-gray-500">
           Review and approve AI-generated SEO content
         </p>
-        <div className="mt-2">
+        <div className="mt-2 flex items-center gap-4">
           <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
             {filteredSubmissions.length} requests pending review
+          </span>
+          <span className="text-sm text-gray-500">
+            Click any card to review in detail
           </span>
         </div>
       </div>
@@ -177,69 +217,151 @@ export default function SEOReview() {
           </div>
         ) : (
           filteredSubmissions.map((submission) => (
-            <Link
+            <div
               key={submission.id}
-              to={`/seo-review/${submission.id}`}
-              className="block"
+              onClick={() => handleCardClick(submission)}
+              className="bg-white rounded-lg shadow hover:shadow-lg transition-all duration-200 p-6 border border-gray-200 hover:border-blue-400 cursor-pointer group"
             >
-              <div className="bg-white rounded-lg shadow hover:shadow-md transition-shadow duration-200 p-6 border border-gray-200 hover:border-blue-300">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-start justify-between mb-4">
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                          {submission.product_name}
-                        </h3>
-                        <div className="flex items-center gap-4 text-sm text-gray-500">
-                          <span className="font-medium">{submission.stage}</span>
-                          <span>•</span>
-                          <span>{submission.therapeutic_area}</span>
-                          <span>•</span>
-                          <span>{submission.target_audience}</span>
-                        </div>
-                      </div>
-                      <ChevronRight className="h-5 w-5 text-gray-400 mt-1" />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-6 text-sm">
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4 text-gray-400" />
-                          <span className="text-gray-600">
-                            Submitted: {format(new Date(submission.created_at), 'MMM d, yyyy')}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <User className="h-4 w-4 text-gray-400" />
-                          <span className="text-gray-600">{submission.submitter_name}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Clock className="h-4 w-4 text-gray-400" />
-                          <span className="text-gray-600">
-                            {getDaysInQueue(submission.created_at)} days in queue
-                          </span>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center gap-3">
-                        <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium ${getPriorityBadge(submission.priority_level)}`}>
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  {/* Header Section */}
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex-1">
+                      <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
+                        {submission.product_name}
+                      </h3>
+                      <div className="flex flex-wrap items-center gap-3 text-sm">
+                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${getPriorityBadge(submission.priority_level)}`}>
+                          <Zap className="h-3 w-3 mr-1" />
                           {submission.priority_level} Priority
                         </span>
-                        <div className="flex items-center gap-1">
-                          {getStatusIcon(submission.langchain_status || 'pending')}
-                          <span className="text-sm font-medium text-gray-700">
-                            Generated
+                        <span className="inline-flex items-center text-gray-600">
+                          <Target className="h-4 w-4 mr-1" />
+                          {submission.stage}
+                        </span>
+                        <span className="inline-flex items-center text-gray-600">
+                          <Building className="h-4 w-4 mr-1" />
+                          {submission.therapeutic_area}
+                        </span>
+                        {submission.target_audience && submission.target_audience.length > 0 && (
+                          <span className="inline-flex items-center text-gray-600">
+                            <Users className="h-4 w-4 mr-1" />
+                            {submission.target_audience.join(', ')}
                           </span>
-                        </div>
+                        )}
                       </div>
+                    </div>
+                    <ChevronRight className="h-5 w-5 text-gray-400 group-hover:text-blue-600 transition-colors mt-1" />
+                  </div>
+
+                  {/* Medical Information */}
+                  {submission.medical_indication && (
+                    <div className="mb-3 p-3 bg-blue-50 rounded-lg">
+                      <p className="text-sm text-gray-700">
+                        <span className="font-semibold">Medical Indication:</span> {submission.medical_indication}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Key Differentiators */}
+                  {submission.key_differentiators && submission.key_differentiators.length > 0 && (
+                    <div className="mb-3">
+                      <div className="flex flex-wrap gap-2">
+                        {submission.key_differentiators.slice(0, 3).map((diff, index) => (
+                          <span key={index} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                            <Tag className="h-3 w-3 mr-1" />
+                            {diff}
+                          </span>
+                        ))}
+                        {submission.key_differentiators.length > 3 && (
+                          <span className="text-xs text-gray-500">
+                            +{submission.key_differentiators.length - 3} more
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* SEO Preview */}
+                  <div className="mb-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-gray-50 p-3 rounded-lg">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-medium text-gray-500">SEO Keywords</span>
+                        <Hash className="h-3 w-3 text-gray-400" />
+                      </div>
+                      <p className="text-lg font-semibold text-gray-900">
+                        {submission.seo_keywords?.length || 0}
+                      </p>
+                    </div>
+                    <div className="bg-gray-50 p-3 rounded-lg">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-medium text-gray-500">Long-tail Keywords</span>
+                        <TrendingUp className="h-3 w-3 text-gray-400" />
+                      </div>
+                      <p className="text-lg font-semibold text-gray-900">
+                        {submission.long_tail_keywords?.length || 0}
+                      </p>
+                    </div>
+                    <div className="bg-gray-50 p-3 rounded-lg">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-medium text-gray-500">Consumer Questions</span>
+                        <MessageSquare className="h-3 w-3 text-gray-400" />
+                      </div>
+                      <p className="text-lg font-semibold text-gray-900">
+                        {submission.consumer_questions?.length || 0}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Footer */}
+                  <div className="flex items-center justify-between pt-3 border-t border-gray-200">
+                    <div className="flex items-center gap-6 text-sm">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-gray-400" />
+                        <span className="text-gray-600">
+                          {format(new Date(submission.created_at), 'MMM d, yyyy')}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <User className="h-4 w-4 text-gray-400" />
+                        <span className="text-gray-600">{submission.submitter_name}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-gray-400" />
+                        <span className="text-gray-600">
+                          {getDaysInQueue(submission.created_at)} days in queue
+                        </span>
+                      </div>
+                      {submission.geography && submission.geography.length > 0 && (
+                        <div className="flex items-center gap-2">
+                          <Globe className="h-4 w-4 text-gray-400" />
+                          <span className="text-gray-600">{submission.geography.join(', ')}</span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="flex items-center gap-1">
+                      {getStatusIcon(submission.langchain_status || 'pending')}
+                      <span className="text-sm font-medium text-gray-700">
+                        AI Generated
+                      </span>
                     </div>
                   </div>
                 </div>
               </div>
-            </Link>
+            </div>
           ))
         )}
       </div>
+
+      {/* SEO Review Modal */}
+      {selectedSubmission && (
+        <SEOReviewModal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          submission={selectedSubmission}
+        />
+      )}
     </div>
   )
 }

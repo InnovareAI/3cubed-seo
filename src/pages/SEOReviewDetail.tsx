@@ -9,8 +9,6 @@ import {
   XCircle,
   MessageSquare,
   Copy,
-  ExternalLink,
-  AlertCircle,
   ChevronDown,
   ChevronUp,
   Sparkles
@@ -44,7 +42,6 @@ export default function SEOReviewDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['keywords', 'questions', 'recommendations']))
-  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
   const [showRejectModal, setShowRejectModal] = useState(false)
   const [rejectionReason, setRejectionReason] = useState('')
 
@@ -90,16 +87,6 @@ export default function SEOReviewDetail() {
       newExpanded.add(section)
     }
     setExpandedSections(newExpanded)
-  }
-
-  const toggleItem = (itemId: string) => {
-    const newSelected = new Set(selectedItems)
-    if (newSelected.has(itemId)) {
-      newSelected.delete(itemId)
-    } else {
-      newSelected.add(itemId)
-    }
-    setSelectedItems(newSelected)
   }
 
   const handleApprove = () => {
