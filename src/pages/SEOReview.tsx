@@ -42,7 +42,7 @@ export default function SEOReview() {
       const { data, error } = await supabase
         .from('submissions')
         .select('*')
-        .in('workflow_stage', ['seo_review', 'Form_Submitted'])
+        .eq('workflow_stage', 'SEO_Review')
         .order('created_at', { ascending: true }) // Oldest first
       
       if (error) throw error

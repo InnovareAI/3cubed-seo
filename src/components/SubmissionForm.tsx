@@ -161,7 +161,7 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         // Default values for new submissions
         priority_level: 'Medium',
         langchain_status: 'needs_processing',
-        workflow_stage: 'submitted',
+        workflow_stage: 'Form_Submitted',
         langchain_retry_count: 0,
         compliance_id: `COMP-${Date.now()}`
       };
