@@ -1,6 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
+<<<<<<< Updated upstream
 import { supabase, type Submission } from '../lib/supabase'
 import { Link } from 'react-router-dom'
+=======
+import { supabase } from '../lib/supabase'
+import { Search, Filter, ChevronRight, AlertCircle, CheckCircle, Clock, XCircle } from 'lucide-react'
+>>>>>>> Stashed changes
 import { format } from 'date-fns'
 import { Search, Calendar, Building2, User, ExternalLink } from 'lucide-react'
 
