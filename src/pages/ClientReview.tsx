@@ -11,17 +11,95 @@ import {
   Users,
   FileText,
   ArrowRight,
-  Info
+  Info,
+  Settings
 } from 'lucide-react'
 import { format } from 'date-fns'
 import ClientApprovalModal from '../components/ClientApprovalModal'
 
+// Dummy data for demonstration
+const DUMMY_SUBMISSIONS: Submission[] = [
+  {
+    id: 'dummy-1',
+    compliance_id: 'COMP-2024-001',
+    submitter_name: 'Sarah Johnson',
+    submitter_email: 'sarah.johnson@pharmatech.com',
+    submitter_company: 'PharmaTech Solutions',
+    product_name: 'Nexafib',
+    therapeutic_area: 'Cardiology',
+    stage: 'Launch',
+    priority_level: 'High',
+    raw_input_content: 'Nexafib is a novel fibrate therapy...',
+    ai_output: 'SEO Strategy: Focus on long-tail keywords targeting cardiologists and primary care physicians. Content pillars include mechanism of action, clinical trial data, and patient selection criteria. Estimated organic traffic increase: 150-200% within 6 months.',
+    langchain_status: 'seo_approved',
+    workflow_stage: 'Client_Review',
+    langchain_retry_count: 0,
+    created_at: new Date('2024-01-15').toISOString(),
+    updated_at: new Date().toISOString(),
+    seo_keywords: ['nexafib cardiology', 'novel fibrate therapy', 'lipid management innovation'],
+    target_audience: ['Cardiologists', 'Primary Care Physicians', 'Endocrinologists'],
+    medical_indication: 'Hyperlipidemia and cardiovascular risk reduction',
+    dosage_form: 'Oral tablet, 100mg once daily',
+    competitors: ['Fenofibrate', 'Gemfibrozil', 'Statins'],
+    positioning: 'Next-generation fibrate with superior efficacy'
+  },
+  {
+    id: 'dummy-2',
+    compliance_id: 'COMP-2024-002',
+    submitter_name: 'Michael Chen',
+    submitter_email: 'mchen@biogeninnovations.com',
+    submitter_company: 'BioGen Innovations',
+    product_name: 'OncoShield Plus',
+    therapeutic_area: 'Oncology',
+    stage: 'Pre-Launch',
+    priority_level: 'High',
+    raw_input_content: 'OncoShield Plus is an immunotherapy combination...',
+    ai_output: 'SEO Strategy: Target oncology specialists and cancer centers. Focus on clinical efficacy data, safety profile, and patient access programs. Projected ROI: 3.5x within first year.',
+    langchain_status: 'seo_approved',
+    workflow_stage: 'Client_Review',
+    langchain_retry_count: 0,
+    created_at: new Date('2024-01-18').toISOString(),
+    updated_at: new Date().toISOString(),
+    seo_keywords: ['oncoshield immunotherapy', 'cancer treatment innovation', 'PD-1 inhibitor combination'],
+    target_audience: ['Oncologists', 'Cancer Centers', 'Patients'],
+    medical_indication: 'Advanced non-small cell lung cancer',
+    dosage_form: 'IV infusion, 200mg every 3 weeks',
+    competitors: ['Keytruda', 'Opdivo', 'Tecentriq'],
+    positioning: 'Best-in-class combination immunotherapy'
+  },
+  {
+    id: 'dummy-3',
+    compliance_id: 'COMP-2024-003',
+    submitter_name: 'Emily Rodriguez',
+    submitter_email: 'erodriguez@neurotherapeutics.com',
+    submitter_company: 'NeuroTherapeutics Inc',
+    product_name: 'CogniMax',
+    therapeutic_area: 'Neurology',
+    stage: 'Phase III',
+    priority_level: 'Medium',
+    raw_input_content: 'CogniMax is a breakthrough treatment for Alzheimer\'s...',
+    ai_output: 'SEO Strategy: Build authority in Alzheimer\'s treatment space. Target neurologists, geriatricians, and caregivers. Content focus on mechanism of action, clinical trial results, and patient quality of life.',
+    langchain_status: 'seo_approved',
+    workflow_stage: 'Client_Review',
+    langchain_retry_count: 0,
+    created_at: new Date('2024-01-20').toISOString(),
+    updated_at: new Date().toISOString(),
+    seo_keywords: ['cognimax alzheimers', 'cognitive enhancement therapy', 'dementia treatment'],
+    target_audience: ['Neurologists', 'Geriatricians', 'Caregivers', 'Patients'],
+    medical_indication: 'Mild to moderate Alzheimer\'s disease',
+    dosage_form: 'Oral solution, 10mg/5mL twice daily',
+    competitors: ['Aricept', 'Namenda', 'Exelon'],
+    positioning: 'First disease-modifying therapy with cognitive benefits'
+  }
+]
+
 export default function ClientReview() {
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null)
   const [expandedCard, setExpandedCard] = useState<string | null>(null)
+  const [useDummyData, setUseDummyData] = useState(true) // Default to dummy data
   const queryClient = useQueryClient()
 
-  const { data: submissions, isLoading } = useQuery({
+  const { data: liveSubmissions, isLoading } = useQuery({
     queryKey: ['client-review-submissions'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -32,8 +110,12 @@ export default function ClientReview() {
       
       if (error) throw error
       return data as Submission[]
-    }
+    },
+    enabled: !useDummyData
   })
+
+  // Use dummy data or live data based on toggle
+  const submissions = useDummyData ? DUMMY_SUBMISSIONS : liveSubmissions
 
   // Get SEO review data for selected submission
   const { data: seoReviewData } = useQuery({
@@ -41,8 +123,7 @@ export default function ClientReview() {
     queryFn: async () => {
       if (!selectedSubmission?.id) return null
       
-      // In a real app, this would fetch the SEO review results
-      // For now, we'll use the data from the submission
+      // Return dummy SEO review data
       return {
         keywords: selectedSubmission.seo_keywords || [],
         strategy: selectedSubmission.ai_output,
@@ -56,7 +137,7 @@ export default function ClientReview() {
     enabled: !!selectedSubmission?.id
   })
 
-  if (isLoading) {
+  if (!useDummyData && isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -72,6 +153,13 @@ export default function ClientReview() {
         <p className="mt-2 text-sm text-gray-500">
           Submissions will appear here after SEO team approval.
         </p>
+        <button
+          onClick={() => setUseDummyData(!useDummyData)}
+          className="mt-4 inline-flex items-center px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+        >
+          <Settings className="h-4 w-4 mr-2" />
+          {useDummyData ? 'Switch to Live Data' : 'Show Demo Data'}
+        </button>
       </div>
     )
   }
@@ -85,23 +173,37 @@ export default function ClientReview() {
             <h2 className="text-lg font-medium text-gray-900 flex items-center gap-2">
               <Building2 className="h-5 w-5 text-blue-600" />
               Client Review Queue
+              {useDummyData && (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                  Demo Data
+                </span>
+              )}
             </h2>
             <p className="mt-1 text-sm text-gray-500">
               Review SEO content for brand alignment before MLR submission
             </p>
           </div>
-          <div className="flex items-center gap-6 text-sm">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-              <span className="text-gray-600">SEO Approved</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-              <span className="text-gray-600">Awaiting Your Review</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
-              <span className="text-gray-600">Next: MLR Review</span>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setUseDummyData(!useDummyData)}
+              className="inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-md text-xs font-medium text-gray-700 bg-white hover:bg-gray-50"
+            >
+              <Settings className="h-3.5 w-3.5 mr-1.5" />
+              {useDummyData ? 'Live Data' : 'Demo Data'}
+            </button>
+            <div className="flex items-center gap-6 text-sm">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                <span className="text-gray-600">SEO Approved</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                <span className="text-gray-600">Awaiting Your Review</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+                <span className="text-gray-600">Next: MLR Review</span>
+              </div>
             </div>
           </div>
         </div>
