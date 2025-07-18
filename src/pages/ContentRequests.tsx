@@ -14,7 +14,6 @@ import {
   MoreVertical
 } from 'lucide-react'
 import { format } from 'date-fns'
-import { SubmissionModal } from '../components/SubmissionModal'
 
 type RequestStatus = 'in-review' | 'draft' | 'compliance-review' | 'approved' | 'rejected'
 type Priority = 'high' | 'medium' | 'low'

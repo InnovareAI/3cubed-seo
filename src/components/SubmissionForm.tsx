@@ -11,18 +11,48 @@ interface FormData {
   reviewer_name: string;
   reviewer_email: string;
   
-  // Basic Information
+  // Product Information
   product_name: string;
   therapeutic_area: string;
   stage: string;
   indication: string;
   mechanism_of_action: string;
+  patient_population: string;
   competitive_landscape: string;
   key_differentiators: string;
+  value_proposition: string;
+  
+  // Clinical Trial Info
+  clinical_trial_status: string;
+  trial_endpoints: string;
+  expected_approval_date: string;
+  
+  // Market Analysis
+  market_size: string;
+  market_share_projection: string;
+  pricing_strategy: string;
   
   // Target Demographics
   target_audience: string;
+  target_hcp_specialties: string;
+  target_patient_demographics: string;
   target_markets: string;
+  
+  // Content Requirements
+  content_type: string;
+  key_messages: string;
+  tone_style: string;
+  content_timeline: string;
+  
+  // Regulatory
+  regulatory_considerations: string;
+  mlr_requirements: string;
+  
+  // Additional Info
+  reference_materials: string;
+  competitor_examples: string;
+  specific_requirements: string;
+  success_metrics: string;
 }
 
 export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClose }) => {
@@ -34,10 +64,30 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
     stage: '',
     indication: '',
     mechanism_of_action: '',
+    patient_population: '',
     competitive_landscape: '',
     key_differentiators: '',
+    value_proposition: '',
+    clinical_trial_status: '',
+    trial_endpoints: '',
+    expected_approval_date: '',
+    market_size: '',
+    market_share_projection: '',
+    pricing_strategy: '',
     target_audience: '',
-    target_markets: ''
+    target_hcp_specialties: '',
+    target_patient_demographics: '',
+    target_markets: '',
+    content_type: '',
+    key_messages: '',
+    tone_style: '',
+    content_timeline: '',
+    regulatory_considerations: '',
+    mlr_requirements: '',
+    reference_materials: '',
+    competitor_examples: '',
+    specific_requirements: '',
+    success_metrics: ''
   });
   
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -66,14 +116,14 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         key_differentiators: formData.key_differentiators,
         target_audience: formData.target_audience,
         target_markets: formData.target_markets,
-        // Raw input content for processing
+        // Store all form data in raw_input_content
         raw_input_content: JSON.stringify(formData),
         // Default values for new submissions
         priority_level: 'Medium',
         langchain_status: 'needs_processing',
         workflow_stage: 'initial_processing',
         langchain_retry_count: 0,
-        compliance_id: `COMP-${Date.now()}` // Generate a unique compliance ID
+        compliance_id: `COMP-${Date.now()}`
       };
 
       const { error: supabaseError } = await supabase
@@ -91,10 +141,30 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         stage: '',
         indication: '',
         mechanism_of_action: '',
+        patient_population: '',
         competitive_landscape: '',
         key_differentiators: '',
+        value_proposition: '',
+        clinical_trial_status: '',
+        trial_endpoints: '',
+        expected_approval_date: '',
+        market_size: '',
+        market_share_projection: '',
+        pricing_strategy: '',
         target_audience: '',
-        target_markets: ''
+        target_hcp_specialties: '',
+        target_patient_demographics: '',
+        target_markets: '',
+        content_type: '',
+        key_messages: '',
+        tone_style: '',
+        content_timeline: '',
+        regulatory_considerations: '',
+        mlr_requirements: '',
+        reference_materials: '',
+        competitor_examples: '',
+        specific_requirements: '',
+        success_metrics: ''
       });
       
       if (onSuccess) onSuccess();
@@ -108,14 +178,14 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-lg shadow">
+    <form onSubmit={handleSubmit} className="space-y-8">
       {error && (
         <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm">
           {error}
         </div>
       )}
 
-      {/* Reviewer Information Section */}
+      {/* Reviewer Information */}
       <div className="border-b pb-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Reviewer Information</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -152,72 +222,91 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         </div>
       </div>
 
-      {/* Basic Information Section */}
+      {/* Product Information */}
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-gray-900">Basic Information</h3>
+        <h3 className="text-lg font-semibold text-gray-900">Product Information</h3>
         
-        <div>
-          <label htmlFor="product_name" className="block text-sm font-medium text-gray-700 mb-1">
-            Product Name <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            id="product_name"
-            name="product_name"
-            value={formData.product_name}
-            onChange={handleChange}
-            required
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="e.g., KEYTRUDA®, Humira®"
-          />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="product_name" className="block text-sm font-medium text-gray-700 mb-1">
+              Product Name <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="product_name"
+              name="product_name"
+              value={formData.product_name}
+              onChange={handleChange}
+              required
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="e.g., KEYTRUDA®, Humira®"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="therapeutic_area" className="block text-sm font-medium text-gray-700 mb-1">
+              Therapeutic Area <span className="text-red-500">*</span>
+            </label>
+            <select
+              id="therapeutic_area"
+              name="therapeutic_area"
+              value={formData.therapeutic_area}
+              onChange={handleChange}
+              required
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Select therapeutic area</option>
+              <option value="Oncology">Oncology</option>
+              <option value="Cardiovascular">Cardiovascular</option>
+              <option value="Neurology">Neurology</option>
+              <option value="Immunology">Immunology</option>
+              <option value="Rare Diseases">Rare Diseases</option>
+              <option value="Endocrinology">Endocrinology</option>
+              <option value="Respiratory">Respiratory</option>
+              <option value="Gastroenterology">Gastroenterology</option>
+              <option value="Hematology">Hematology</option>
+              <option value="Infectious Diseases">Infectious Diseases</option>
+              <option value="Ophthalmology">Ophthalmology</option>
+              <option value="Dermatology">Dermatology</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
         </div>
 
-        <div>
-          <label htmlFor="therapeutic_area" className="block text-sm font-medium text-gray-700 mb-1">
-            Therapeutic Area <span className="text-red-500">*</span>
-          </label>
-          <select
-            id="therapeutic_area"
-            name="therapeutic_area"
-            value={formData.therapeutic_area}
-            onChange={handleChange}
-            required
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">Select therapeutic area</option>
-            <option value="Oncology">Oncology</option>
-            <option value="Cardiovascular">Cardiovascular</option>
-            <option value="Neurology">Neurology</option>
-            <option value="Immunology">Immunology</option>
-            <option value="Rare Diseases">Rare Diseases</option>
-            <option value="Endocrinology">Endocrinology</option>
-            <option value="Respiratory">Respiratory</option>
-            <option value="Gastroenterology">Gastroenterology</option>
-            <option value="Hematology">Hematology</option>
-            <option value="Infectious Diseases">Infectious Diseases</option>
-            <option value="Ophthalmology">Ophthalmology</option>
-            <option value="Dermatology">Dermatology</option>
-            <option value="Other">Other</option>
-          </select>
-        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="stage" className="block text-sm font-medium text-gray-700 mb-1">
+              Development Stage <span className="text-red-500">*</span>
+            </label>
+            <select
+              id="stage"
+              name="stage"
+              value={formData.stage}
+              onChange={handleChange}
+              required
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Select stage</option>
+              <option value="Phase III">Phase III</option>
+              <option value="Market Shaping">Market Shaping</option>
+              <option value="Market Launch">Market Launch</option>
+            </select>
+          </div>
 
-        <div>
-          <label htmlFor="stage" className="block text-sm font-medium text-gray-700 mb-1">
-            Development Stage <span className="text-red-500">*</span>
-          </label>
-          <select
-            id="stage"
-            name="stage"
-            value={formData.stage}
-            onChange={handleChange}
-            required
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">Select stage</option>
-            <option value="Phase III">Phase III</option>
-            <option value="Market Shaping">Market Shaping</option>
-            <option value="Market Launch">Market Launch</option>
-          </select>
+          <div>
+            <label htmlFor="clinical_trial_status" className="block text-sm font-medium text-gray-700 mb-1">
+              Clinical Trial Status
+            </label>
+            <input
+              type="text"
+              id="clinical_trial_status"
+              name="clinical_trial_status"
+              value={formData.clinical_trial_status}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="e.g., Phase III ongoing, enrollment complete"
+            />
+          </div>
         </div>
 
         <div>
@@ -252,6 +341,21 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         </div>
 
         <div>
+          <label htmlFor="patient_population" className="block text-sm font-medium text-gray-700 mb-1">
+            Patient Population
+          </label>
+          <textarea
+            id="patient_population"
+            name="patient_population"
+            value={formData.patient_population}
+            onChange={handleChange}
+            rows={2}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="e.g., Adults 18+ with advanced/metastatic NSCLC, first-line treatment"
+          />
+        </div>
+
+        <div>
           <label htmlFor="competitive_landscape" className="block text-sm font-medium text-gray-700 mb-1">
             Competitive Landscape
           </label>
@@ -280,9 +384,111 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
             placeholder="e.g., Superior efficacy in first-line treatment, better safety profile, convenient dosing"
           />
         </div>
+
+        <div>
+          <label htmlFor="value_proposition" className="block text-sm font-medium text-gray-700 mb-1">
+            Value Proposition
+          </label>
+          <textarea
+            id="value_proposition"
+            name="value_proposition"
+            value={formData.value_proposition}
+            onChange={handleChange}
+            rows={3}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="What unique value does your product offer?"
+          />
+        </div>
       </div>
 
-      {/* Target Demographics Section */}
+      {/* Clinical Trial Information */}
+      <div className="space-y-4 border-t pt-6">
+        <h3 className="text-lg font-semibold text-gray-900">Clinical Trial Information</h3>
+        
+        <div>
+          <label htmlFor="trial_endpoints" className="block text-sm font-medium text-gray-700 mb-1">
+            Trial Endpoints
+          </label>
+          <textarea
+            id="trial_endpoints"
+            name="trial_endpoints"
+            value={formData.trial_endpoints}
+            onChange={handleChange}
+            rows={3}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Primary and secondary endpoints"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="expected_approval_date" className="block text-sm font-medium text-gray-700 mb-1">
+            Expected Approval Date
+          </label>
+          <input
+            type="text"
+            id="expected_approval_date"
+            name="expected_approval_date"
+            value={formData.expected_approval_date}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="e.g., Q4 2024"
+          />
+        </div>
+      </div>
+
+      {/* Market Analysis */}
+      <div className="space-y-4 border-t pt-6">
+        <h3 className="text-lg font-semibold text-gray-900">Market Analysis</h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label htmlFor="market_size" className="block text-sm font-medium text-gray-700 mb-1">
+              Market Size
+            </label>
+            <input
+              type="text"
+              id="market_size"
+              name="market_size"
+              value={formData.market_size}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="e.g., $5.2B globally"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="market_share_projection" className="block text-sm font-medium text-gray-700 mb-1">
+              Market Share Projection
+            </label>
+            <input
+              type="text"
+              id="market_share_projection"
+              name="market_share_projection"
+              value={formData.market_share_projection}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="e.g., 15% by 2026"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="pricing_strategy" className="block text-sm font-medium text-gray-700 mb-1">
+              Pricing Strategy
+            </label>
+            <input
+              type="text"
+              id="pricing_strategy"
+              name="pricing_strategy"
+              value={formData.pricing_strategy}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="e.g., Premium pricing"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Target Demographics */}
       <div className="space-y-4 border-t pt-6">
         <h3 className="text-lg font-semibold text-gray-900">Target Demographics</h3>
         
@@ -306,6 +512,36 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
             <option value="Investors">Investors</option>
             <option value="General Public">General Public</option>
           </select>
+        </div>
+
+        <div>
+          <label htmlFor="target_hcp_specialties" className="block text-sm font-medium text-gray-700 mb-1">
+            Target HCP Specialties
+          </label>
+          <input
+            type="text"
+            id="target_hcp_specialties"
+            name="target_hcp_specialties"
+            value={formData.target_hcp_specialties}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="e.g., Oncologists, Pulmonologists, Pathologists"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="target_patient_demographics" className="block text-sm font-medium text-gray-700 mb-1">
+            Target Patient Demographics
+          </label>
+          <textarea
+            id="target_patient_demographics"
+            name="target_patient_demographics"
+            value={formData.target_patient_demographics}
+            onChange={handleChange}
+            rows={2}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Age range, gender, disease stage, treatment history"
+          />
         </div>
 
         <div>
@@ -333,6 +569,187 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
             <option value="India">India</option>
             <option value="Global">Global</option>
           </select>
+        </div>
+      </div>
+
+      {/* Content Requirements */}
+      <div className="space-y-4 border-t pt-6">
+        <h3 className="text-lg font-semibold text-gray-900">Content Requirements</h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="content_type" className="block text-sm font-medium text-gray-700 mb-1">
+              Content Type
+            </label>
+            <select
+              id="content_type"
+              name="content_type"
+              value={formData.content_type}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Select content type</option>
+              <option value="Website Copy">Website Copy</option>
+              <option value="Blog Articles">Blog Articles</option>
+              <option value="White Papers">White Papers</option>
+              <option value="Case Studies">Case Studies</option>
+              <option value="Email Campaigns">Email Campaigns</option>
+              <option value="Social Media">Social Media</option>
+              <option value="Press Releases">Press Releases</option>
+              <option value="Product Brochures">Product Brochures</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="tone_style" className="block text-sm font-medium text-gray-700 mb-1">
+              Tone & Style
+            </label>
+            <select
+              id="tone_style"
+              name="tone_style"
+              value={formData.tone_style}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Select tone</option>
+              <option value="Professional/Clinical">Professional/Clinical</option>
+              <option value="Educational">Educational</option>
+              <option value="Conversational">Conversational</option>
+              <option value="Empathetic">Empathetic</option>
+              <option value="Authoritative">Authoritative</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label htmlFor="key_messages" className="block text-sm font-medium text-gray-700 mb-1">
+            Key Messages
+          </label>
+          <textarea
+            id="key_messages"
+            name="key_messages"
+            value={formData.key_messages}
+            onChange={handleChange}
+            rows={3}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Main points to communicate"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="content_timeline" className="block text-sm font-medium text-gray-700 mb-1">
+            Content Timeline
+          </label>
+          <input
+            type="text"
+            id="content_timeline"
+            name="content_timeline"
+            value={formData.content_timeline}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="e.g., 2 weeks, 1 month"
+          />
+        </div>
+      </div>
+
+      {/* Regulatory Considerations */}
+      <div className="space-y-4 border-t pt-6">
+        <h3 className="text-lg font-semibold text-gray-900">Regulatory Considerations</h3>
+        
+        <div>
+          <label htmlFor="regulatory_considerations" className="block text-sm font-medium text-gray-700 mb-1">
+            Regulatory Considerations
+          </label>
+          <textarea
+            id="regulatory_considerations"
+            name="regulatory_considerations"
+            value={formData.regulatory_considerations}
+            onChange={handleChange}
+            rows={3}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="FDA guidelines, local regulations, compliance requirements"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="mlr_requirements" className="block text-sm font-medium text-gray-700 mb-1">
+            MLR Requirements
+          </label>
+          <textarea
+            id="mlr_requirements"
+            name="mlr_requirements"
+            value={formData.mlr_requirements}
+            onChange={handleChange}
+            rows={2}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Medical Legal Review requirements"
+          />
+        </div>
+      </div>
+
+      {/* Additional Information */}
+      <div className="space-y-4 border-t pt-6">
+        <h3 className="text-lg font-semibold text-gray-900">Additional Information</h3>
+        
+        <div>
+          <label htmlFor="reference_materials" className="block text-sm font-medium text-gray-700 mb-1">
+            Reference Materials
+          </label>
+          <textarea
+            id="reference_materials"
+            name="reference_materials"
+            value={formData.reference_materials}
+            onChange={handleChange}
+            rows={2}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Links to studies, guidelines, existing materials"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="competitor_examples" className="block text-sm font-medium text-gray-700 mb-1">
+            Competitor Examples
+          </label>
+          <textarea
+            id="competitor_examples"
+            name="competitor_examples"
+            value={formData.competitor_examples}
+            onChange={handleChange}
+            rows={2}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="URLs or descriptions of competitor content"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="specific_requirements" className="block text-sm font-medium text-gray-700 mb-1">
+            Specific Requirements
+          </label>
+          <textarea
+            id="specific_requirements"
+            name="specific_requirements"
+            value={formData.specific_requirements}
+            onChange={handleChange}
+            rows={3}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Any specific requirements or constraints"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="success_metrics" className="block text-sm font-medium text-gray-700 mb-1">
+            Success Metrics
+          </label>
+          <textarea
+            id="success_metrics"
+            name="success_metrics"
+            value={formData.success_metrics}
+            onChange={handleChange}
+            rows={2}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="How will success be measured?"
+          />
         </div>
       </div>
 
