@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import { format } from 'date-fns'
 import SEOReviewModal from '../components/SEOReviewModal'
+import { mockSEOReviews } from '../data/mockSEOReviews'
 import { 
   Search,
   Filter,
@@ -55,7 +56,7 @@ export default function SEOReview() {
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
 
-  const { data: submissions, isLoading } = useQuery({
+  const { data: dbSubmissions, isLoading } = useQuery({
     queryKey: ['seo-review-queue'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -69,6 +70,13 @@ export default function SEOReview() {
     },
     refetchInterval: 30000 // Refresh every 30 seconds
   })
+
+  // Combine database submissions with mock data
+  const submissions = useMemo(() => {
+    const dbData = dbSubmissions || []
+    // If we have real data from DB, use it; otherwise use mock data
+    return dbData.length > 0 ? dbData : mockSEOReviews
+  }, [dbSubmissions])
 
   const filteredSubmissions = submissions?.filter(submission => {
     if (searchTerm && !submission.product_name.toLowerCase().includes(searchTerm.toLowerCase()) &&
