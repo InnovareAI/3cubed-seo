@@ -1,59 +1,117 @@
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
-import { BarChart3, TrendingUp, Clock, CheckCircle2 } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { format } from 'date-fns'
+import { Clock, CheckCircle, AlertCircle, XCircle, Edit2, Eye } from 'lucide-react'
 
-interface CurrentProjectsData {
-  client_id: string
-  client_name: string
-  company_domain: string
-  client_status: string
-  products_count: number
-  active_campaigns: number
-  pending_reviews: number
-  approval_rate: number
-  approval_rate_display: string
-  last_activity: string
-  last_activity_date: string
+type WorkflowStage = 'submitted' | 'seo_review' | 'mlr_review' | 'client_review' | 'approved' | 'rejected' | 'initial_processing'
+
+interface Submission {
+  id: string
+  product_name: string
+  therapeutic_area: string
+  stage: string
+  workflow_stage: WorkflowStage
+  priority_level: string
+  submitter_name: string
+  submitter_email: string
+  created_at: string
+  updated_at: string
+  indication?: string
+  target_audience?: string
 }
 
-interface DashboardStats {
-  total_clients: number
-  active_projects: number
-  pending_reviews: number
-  avg_approval_rate: number
+const getStatusBadge = (status: WorkflowStage) => {
+  const config = {
+    'submitted': { 
+      class: 'bg-gray-100 text-gray-800', 
+      icon: <Edit2 className="h-3 w-3" />,
+      label: 'Submitted'
+    },
+    'initial_processing': { 
+      class: 'bg-gray-100 text-gray-800', 
+      icon: <Edit2 className="h-3 w-3" />,
+      label: 'Processing'
+    },
+    'seo_review': { 
+      class: 'bg-yellow-100 text-yellow-800', 
+      icon: <Clock className="h-3 w-3" />,
+      label: 'SEO Review'
+    },
+    'mlr_review': { 
+      class: 'bg-purple-100 text-purple-800', 
+      icon: <Clock className="h-3 w-3" />,
+      label: 'MLR Review'
+    },
+    'client_review': { 
+      class: 'bg-blue-100 text-blue-800', 
+      icon: <Clock className="h-3 w-3" />,
+      label: 'Client Review'
+    },
+    'approved': { 
+      class: 'bg-green-100 text-green-800', 
+      icon: <CheckCircle className="h-3 w-3" />,
+      label: 'Approved'
+    },
+    'rejected': { 
+      class: 'bg-red-100 text-red-800', 
+      icon: <XCircle className="h-3 w-3" />,
+      label: 'Rejected'
+    }
+  }
+
+  const statusConfig = config[status] || config['submitted']
+  
+  return (
+    <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${statusConfig.class}`}>
+      {statusConfig.icon}
+      {statusConfig.label}
+    </span>
+  )
+}
+
+const getPriorityBadge = (priority: string) => {
+  const classes = {
+    'high': 'bg-red-100 text-red-800',
+    'medium': 'bg-yellow-100 text-yellow-800',
+    'low': 'bg-green-100 text-green-800'
+  }
+  
+  return (
+    <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${classes[priority.toLowerCase() as keyof typeof classes] || classes.medium}`}>
+      {priority}
+    </span>
+  )
 }
 
 export default function CurrentProjects() {
-  const { data: projects, isLoading: projectsLoading } = useQuery({
-    queryKey: ['current-projects'],
+  const { data: submissions, isLoading } = useQuery({
+    queryKey: ['current-projects-submissions'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('current_projects_dashboard')
+        .from('submissions')
         .select('*')
-        .order('last_activity_date', { ascending: false })
+        .in('workflow_stage', ['submitted', 'initial_processing', 'seo_review', 'mlr_review', 'client_review'])
+        .order('created_at', { ascending: false })
       
       if (error) throw error
-      return data as CurrentProjectsData[]
-    }
+      return data as Submission[]
+    },
+    refetchInterval: 30000 // Refresh every 30 seconds
   })
 
-  const { data: stats, isLoading: statsLoading } = useQuery({
-    queryKey: ['dashboard-stats'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('dashboard_summary_stats')
-        .select('*')
-        .single()
-      
-      if (error) throw error
-      return data as DashboardStats
-    }
-  })
+  // Calculate summary stats
+  const stats = {
+    total: submissions?.length || 0,
+    inReview: submissions?.filter(s => ['seo_review', 'mlr_review', 'client_review'].includes(s.workflow_stage)).length || 0,
+    submitted: submissions?.filter(s => ['submitted', 'initial_processing'].includes(s.workflow_stage)).length || 0,
+    highPriority: submissions?.filter(s => s.priority_level.toLowerCase() === 'high').length || 0
+  }
 
-  if (projectsLoading || statsLoading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
       </div>
     )
   }
@@ -63,7 +121,7 @@ export default function CurrentProjects() {
       <div>
         <h1 className="text-2xl font-semibold text-gray-900">Current Projects</h1>
         <p className="mt-1 text-sm text-gray-500">
-          Active client projects and SEO content production
+          Active SEO content projects in progress
         </p>
       </div>
 
@@ -72,36 +130,13 @@ export default function CurrentProjects() {
         <div className="bg-white overflow-hidden shadow rounded-lg">
           <div className="p-5">
             <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <BarChart3 className="h-6 w-6 text-gray-400" />
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">
-                    Total Clients
-                  </dt>
-                  <dd className="text-lg font-medium text-gray-900">
-                    {stats?.total_clients || 0}
-                  </dd>
-                </dl>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white overflow-hidden shadow rounded-lg">
-          <div className="p-5">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <TrendingUp className="h-6 w-6 text-green-400" />
-              </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate">
                     Active Projects
                   </dt>
-                  <dd className="text-lg font-medium text-gray-900">
-                    {stats?.active_projects || 0}
+                  <dd className="text-2xl font-semibold text-gray-900">
+                    {stats.total}
                   </dd>
                 </dl>
               </div>
@@ -112,16 +147,13 @@ export default function CurrentProjects() {
         <div className="bg-white overflow-hidden shadow rounded-lg">
           <div className="p-5">
             <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <Clock className="h-6 w-6 text-yellow-400" />
-              </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate">
-                    Pending Reviews
+                    In Review
                   </dt>
-                  <dd className="text-lg font-medium text-gray-900">
-                    {stats?.pending_reviews || 0}
+                  <dd className="text-2xl font-semibold text-gray-900">
+                    {stats.inReview}
                   </dd>
                 </dl>
               </div>
@@ -132,16 +164,30 @@ export default function CurrentProjects() {
         <div className="bg-white overflow-hidden shadow rounded-lg">
           <div className="p-5">
             <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <CheckCircle2 className="h-6 w-6 text-blue-400" />
-              </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate">
-                    Avg Approval Rate
+                    Newly Submitted
                   </dt>
-                  <dd className="text-lg font-medium text-gray-900">
-                    {stats?.avg_approval_rate || 0}%
+                  <dd className="text-2xl font-semibold text-gray-900">
+                    {stats.submitted}
+                  </dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white overflow-hidden shadow rounded-lg">
+          <div className="p-5">
+            <div className="flex items-center">
+              <div className="ml-5 w-0 flex-1">
+                <dl>
+                  <dt className="text-sm font-medium text-gray-500 truncate">
+                    High Priority
+                  </dt>
+                  <dd className="text-2xl font-semibold text-gray-900">
+                    {stats.highPriority}
                   </dd>
                 </dl>
               </div>
@@ -151,87 +197,88 @@ export default function CurrentProjects() {
       </div>
 
       {/* Projects Table */}
-      <div className="bg-white shadow overflow-hidden sm:rounded-md">
+      <div className="bg-white shadow overflow-hidden sm:rounded-lg">
         <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
           <h3 className="text-lg leading-6 font-medium text-gray-900">
-            Active Projects by Client
+            Active Projects
           </h3>
         </div>
-        <div className="bg-white">
+        <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Client
+                  Product
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Products
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Active Campaigns
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Pending Reviews
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Approval Rate
+                  Stage
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Last Activity
+                  Priority
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Submitted By
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Date
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {projects?.map((project) => (
-                <tr key={project.client_id} className="hover:bg-gray-50">
+              {submissions?.map((submission) => (
+                <tr key={submission.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
                       <div className="text-sm font-medium text-gray-900">
-                        {project.client_name}
+                        {submission.product_name}
                       </div>
                       <div className="text-sm text-gray-500">
-                        {project.company_domain}
+                        {submission.therapeutic_area}
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {project.products_count}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {project.active_campaigns}
+                    {submission.stage}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      project.pending_reviews > 0 ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'
-                    }`}>
-                      {project.pending_reviews}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {project.approval_rate_display}
+                    {getStatusBadge(submission.workflow_stage)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      project.client_status === 'active' 
-                        ? 'bg-green-100 text-green-800' 
-                        : project.client_status === 'paused'
-                        ? 'bg-yellow-100 text-yellow-800'
-                        : 'bg-gray-100 text-gray-800'
-                    }`}>
-                      {project.client_status}
-                    </span>
+                    {getPriorityBadge(submission.priority_level)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">{submission.submitter_name}</div>
+                    <div className="text-sm text-gray-500">{submission.submitter_email}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {project.last_activity}
+                    {format(new Date(submission.created_at), 'MMM d, yyyy')}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <Link
+                      to={`/submissions/${submission.id}`}
+                      className="text-blue-600 hover:text-blue-900 inline-flex items-center gap-1"
+                    >
+                      <Eye className="h-4 w-4" />
+                      View
+                    </Link>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+        
+        {(!submissions || submissions.length === 0) && (
+          <div className="text-center py-12 text-gray-500">
+            No active projects at this time
+          </div>
+        )}
       </div>
     </div>
   )
