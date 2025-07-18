@@ -140,7 +140,6 @@ export default function ContentRequests() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<RequestStatus | 'all'>('all')
   const [priorityFilter, setPriorityFilter] = useState<Priority | 'all'>('all')
-  const [isModalOpen, setIsModalOpen] = useState(false)
 
   const { data: requests = mockRequests } = useQuery({
     queryKey: ['content-requests'],
