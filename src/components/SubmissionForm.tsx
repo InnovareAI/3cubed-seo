@@ -8,8 +8,12 @@ interface SubmissionFormProps {
 
 interface FormData {
   // Reviewer Information
-  reviewer_name: string;
-  reviewer_email: string;
+  reviewer1_name: string;
+  reviewer1_email: string;
+  reviewer2_name: string;
+  reviewer2_email: string;
+  reviewer3_name: string;
+  reviewer3_email: string;
   
   // Product Information
   product_name: string;
@@ -57,8 +61,12 @@ interface FormData {
 
 export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClose }) => {
   const [formData, setFormData] = useState<FormData>({
-    reviewer_name: '',
-    reviewer_email: '',
+    reviewer1_name: '',
+    reviewer1_email: '',
+    reviewer2_name: '',
+    reviewer2_email: '',
+    reviewer3_name: '',
+    reviewer3_email: '',
     product_name: '',
     therapeutic_area: '',
     stage: '',
@@ -105,8 +113,8 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
 
     try {
       const submissionData = {
-        submitter_name: formData.reviewer_name,
-        submitter_email: formData.reviewer_email,
+        submitter_name: formData.reviewer1_name, // Primary reviewer
+        submitter_email: formData.reviewer1_email,
         product_name: formData.product_name,
         therapeutic_area: formData.therapeutic_area,
         stage: formData.stage,
@@ -134,8 +142,12 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
 
       // Reset form
       setFormData({
-        reviewer_name: '',
-        reviewer_email: '',
+        reviewer1_name: '',
+        reviewer1_email: '',
+        reviewer2_name: '',
+        reviewer2_email: '',
+        reviewer3_name: '',
+        reviewer3_email: '',
         product_name: '',
         therapeutic_area: '',
         stage: '',
@@ -188,36 +200,111 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
       {/* Reviewer Information */}
       <div className="border-b pb-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Reviewer Information</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="reviewer_name" className="block text-sm font-medium text-gray-700 mb-1">
-              Your Name <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              id="reviewer_name"
-              name="reviewer_name"
-              value={formData.reviewer_name}
-              onChange={handleChange}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="John Doe"
-            />
+        
+        {/* Reviewer 1 */}
+        <div className="mb-4">
+          <h4 className="text-md font-medium text-gray-700 mb-3">Reviewer 1 (Primary)</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="reviewer1_name" className="block text-sm font-medium text-gray-700 mb-1">
+                Name <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                id="reviewer1_name"
+                name="reviewer1_name"
+                value={formData.reviewer1_name}
+                onChange={handleChange}
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="John Doe"
+              />
+            </div>
+            <div>
+              <label htmlFor="reviewer1_email" className="block text-sm font-medium text-gray-700 mb-1">
+                Email <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="email"
+                id="reviewer1_email"
+                name="reviewer1_email"
+                value={formData.reviewer1_email}
+                onChange={handleChange}
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="john.doe@example.com"
+              />
+            </div>
           </div>
-          <div>
-            <label htmlFor="reviewer_email" className="block text-sm font-medium text-gray-700 mb-1">
-              Your Email <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="email"
-              id="reviewer_email"
-              name="reviewer_email"
-              value={formData.reviewer_email}
-              onChange={handleChange}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="john.doe@example.com"
-            />
+        </div>
+
+        {/* Reviewer 2 */}
+        <div className="mb-4">
+          <h4 className="text-md font-medium text-gray-700 mb-3">Reviewer 2</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="reviewer2_name" className="block text-sm font-medium text-gray-700 mb-1">
+                Name
+              </label>
+              <input
+                type="text"
+                id="reviewer2_name"
+                name="reviewer2_name"
+                value={formData.reviewer2_name}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Jane Smith"
+              />
+            </div>
+            <div>
+              <label htmlFor="reviewer2_email" className="block text-sm font-medium text-gray-700 mb-1">
+                Email
+              </label>
+              <input
+                type="email"
+                id="reviewer2_email"
+                name="reviewer2_email"
+                value={formData.reviewer2_email}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="jane.smith@example.com"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Reviewer 3 */}
+        <div>
+          <h4 className="text-md font-medium text-gray-700 mb-3">Reviewer 3</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="reviewer3_name" className="block text-sm font-medium text-gray-700 mb-1">
+                Name
+              </label>
+              <input
+                type="text"
+                id="reviewer3_name"
+                name="reviewer3_name"
+                value={formData.reviewer3_name}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Bob Johnson"
+              />
+            </div>
+            <div>
+              <label htmlFor="reviewer3_email" className="block text-sm font-medium text-gray-700 mb-1">
+                Email
+              </label>
+              <input
+                type="email"
+                id="reviewer3_email"
+                name="reviewer3_email"
+                value={formData.reviewer3_email}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="bob.johnson@example.com"
+              />
+            </div>
           </div>
         </div>
       </div>
