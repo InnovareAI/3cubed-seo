@@ -16,6 +16,7 @@ import AuditTrail from './pages/AuditTrail'
 import Administration from './pages/Administration'
 import ClientDashboard from './pages/ClientDashboard'
 import SubmissionDetail from './pages/SubmissionDetail'
+import SEOReviewDetail from './pages/SEOReviewDetail'
 
 // Temporary placeholder component for missing pages
 function ComingSoon({ title }: { title: string }) {
@@ -76,6 +77,7 @@ function App() {
             <Route path="submissions/:id" element={<SubmissionDetail />} />
             <Route path="hitl-review" element={<HITLReview />} />
             <Route path="seo-review" element={<SEOReview />} />
+            <Route path="seo-review/:id" element={<SEOReviewDetail />} />
             <Route path="client-review" element={<ClientReview />} />
             <Route path="compliance" element={<Compliance />} />
             <Route path="revision-requests" element={<RevisionRequests />} />
