@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Outlet, NavLink } from 'react-router-dom'
+import { Outlet, NavLink, useLocation } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import { 
@@ -16,7 +16,9 @@ import {
   Activity,
   Users,
   Edit3,
-  FileCheck
+  FileCheck,
+  ChevronDown,
+  ChevronRight
 } from 'lucide-react'
 
 const navigation = [
@@ -29,11 +31,21 @@ const navigation = [
   { name: 'MLR Review', href: '/mlr-review', icon: FileCheck },
   { name: 'SEO Content Hub', href: '/content-hub', icon: Library },
   { name: 'Audit Trail', href: '/audit', icon: Activity },
-  { name: 'Administration', href: '/admin', icon: Settings },
+  { 
+    name: 'Administration', 
+    href: '/admin', 
+    icon: Settings,
+    subItems: [
+      { name: 'General Settings', href: '/admin' },
+      { name: 'Client Management', href: '/admin/clients' }
+    ]
+  },
 ]
 
 export default function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [adminExpanded, setAdminExpanded] = useState(false)
+  const location = useLocation()
 
   // Fetch pending review count with error handling
   const { data: pendingCount } = useQuery({
@@ -60,6 +72,77 @@ export default function DashboardLayout() {
     retry: false
   })
 
+  const renderNavItem = (item: any, isMobile = false) => {
+    const hasSubItems = item.subItems && item.subItems.length > 0
+    const isAdminActive = location.pathname.startsWith('/admin')
+
+    if (hasSubItems) {
+      return (
+        <div key={item.name}>
+          <button
+            onClick={() => setAdminExpanded(!adminExpanded)}
+            className={`w-full flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors mb-1 ${
+              isAdminActive
+                ? 'bg-blue-50 text-blue-700'
+                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+            }`}
+          >
+            <item.icon className="h-5 w-5" />
+            <span className="flex-1 text-left">{item.name}</span>
+            {adminExpanded ? (
+              <ChevronDown className="h-4 w-4" />
+            ) : (
+              <ChevronRight className="h-4 w-4" />
+            )}
+          </button>
+          {adminExpanded && (
+            <div className="ml-8 mt-1 space-y-1">
+              {item.subItems.map((subItem: any) => (
+                <NavLink
+                  key={subItem.href}
+                  to={subItem.href}
+                  className={({ isActive }) =>
+                    `block rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                      isActive
+                        ? 'bg-blue-50 text-blue-700'
+                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    }`
+                  }
+                  onClick={() => isMobile && setSidebarOpen(false)}
+                >
+                  {subItem.name}
+                </NavLink>
+              ))}
+            </div>
+          )}
+        </div>
+      )
+    }
+
+    return (
+      <NavLink
+        key={item.name}
+        to={item.href}
+        className={({ isActive }) =>
+          `flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors mb-1 ${
+            isActive
+              ? 'bg-blue-50 text-blue-700'
+              : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+          }`
+        }
+        onClick={() => isMobile && setSidebarOpen(false)}
+      >
+        <item.icon className="h-5 w-5" />
+        <span className="flex-1">{item.name}</span>
+        {item.showBadge && (pendingCount || 0) > 0 && (
+          <span className="bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full">
+            {pendingCount}
+          </span>
+        )}
+      </NavLink>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Mobile sidebar */}
@@ -83,28 +166,7 @@ export default function DashboardLayout() {
             </button>
           </div>
           <nav className="mt-5 px-3">
-            {navigation.map((item) => (
-              <NavLink
-                key={item.name}
-                to={item.href}
-                className={({ isActive }) =>
-                  `flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors mb-1 ${
-                    isActive
-                      ? 'bg-blue-50 text-blue-700'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                  }`
-                }
-                onClick={() => setSidebarOpen(false)}
-              >
-                <item.icon className="h-5 w-5" />
-                <span className="flex-1">{item.name}</span>
-                {item.showBadge && (pendingCount || 0) > 0 && (
-                  <span className="bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full">
-                    {pendingCount}
-                  </span>
-                )}
-              </NavLink>
-            ))}
+            {navigation.map((item) => renderNavItem(item, true))}
           </nav>
         </div>
       </div>
@@ -116,33 +178,13 @@ export default function DashboardLayout() {
             <h2 className="text-xl font-semibold text-gray-900">3Cubed SEO</h2>
           </div>
           <nav className="flex-1 space-y-1 px-3 py-5">
-            {navigation.map((item) => (
-              <NavLink
-                key={item.name}
-                to={item.href}
-                className={({ isActive }) =>
-                  `flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                    isActive
-                      ? 'bg-blue-50 text-blue-700'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                  }`
-                }
-              >
-                <item.icon className="h-5 w-5" />
-                <span className="flex-1">{item.name}</span>
-                {item.showBadge && (pendingCount || 0) > 0 && (
-                  <span className="bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full">
-                    {pendingCount}
-                  </span>
-                )}
-              </NavLink>
-            ))}
+            {navigation.map((item) => renderNavItem(item))}
           </nav>
           <div className="border-t border-gray-200 p-4">
             <div className="flex items-center">
               <div className="flex-1">
-                <p className="text-sm font-medium text-gray-900">John Doe</p>
-                <p className="text-xs text-gray-500">john.doe@3cubed.com</p>
+                <p className="text-sm font-medium text-gray-900">Admin User</p>
+                <p className="text-xs text-gray-500">admin@3cubed.com</p>
               </div>
               <button className="p-2 text-gray-400 hover:text-gray-600">
                 <Settings className="h-5 w-5" />
@@ -151,7 +193,7 @@ export default function DashboardLayout() {
           </div>
           {/* Version indicator - temporary for debugging */}
           <div className="px-4 pb-2">
-            <p className="text-xs text-gray-400">v2.0 - Updated Navigation</p>
+            <p className="text-xs text-gray-400">v2.1 - Complete Workflow</p>
           </div>
         </div>
       </div>

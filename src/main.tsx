@@ -5,31 +5,54 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import App from './App.tsx'
 import './index.css'
 
+// Add error handling
+window.addEventListener('unhandledrejection', (event) => {
+  console.error('Unhandled promise rejection:', event.reason)
+})
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 1,
       refetchOnWindowFocus: false,
     },
+    mutations: {
+      retry: 0,
+    },
   },
 })
 
 console.log('Pharma SEO Dashboard initializing...')
 console.log('Environment:', import.meta.env.MODE)
+console.log('Base URL:', import.meta.env.BASE_URL)
 
-const rootElement = document.getElementById('root')
-if (!rootElement) {
-  console.error('Root element not found!')
-} else {
+try {
+  const rootElement = document.getElementById('root')
+  if (!rootElement) {
+    throw new Error('Root element not found!')
+  }
+  
   console.log('Root element found, rendering app...')
   
-  ReactDOM.createRoot(rootElement).render(
+  const root = ReactDOM.createRoot(rootElement)
+  
+  root.render(
     <React.StrictMode>
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
           <App />
         </BrowserRouter>
       </QueryClientProvider>
-    </React.StrictMode>,
+    </React.StrictMode>
   )
+  
+  console.log('App rendered successfully')
+} catch (error) {
+  console.error('Failed to initialize app:', error)
+  // Show error in the UI
+  const errorEl = document.getElementById('error-message')
+  if (errorEl) {
+    errorEl.style.display = 'block'
+    errorEl.textContent = `Failed to initialize: ${error instanceof Error ? error.message : 'Unknown error'}`
+  }
 }
