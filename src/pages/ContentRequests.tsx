@@ -8,9 +8,7 @@ import {
   Clock,
   CheckCircle,
   AlertCircle,
-  XCircle,
-  FileText,
-  MoreVertical
+  XCircle
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { supabase } from '@/lib/supabase'
