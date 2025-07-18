@@ -54,7 +54,7 @@ export const mockSEOReviews = [
     submitter_name: 'Michael Rodriguez',
     submitter_email: 'mrodriguez@neurocare.com',
     priority_level: 'Medium',
-    medical_indication: 'Treatment of mild to moderate Alzheimer's disease symptoms',
+    medical_indication: 'Treatment of mild to moderate Alzheimer\'s disease symptoms',
     langchain_status: 'complete',
     geography: ['United States', 'European Union'],
     client_name: 'NeuroCare Pharmaceuticals',
@@ -66,26 +66,26 @@ export const mockSEOReviews = [
       'Once-daily oral dosing'
     ],
     seo_keywords: [
-      'Alzheimer's treatment',
+      'Alzheimer\'s treatment',
       'dementia medication',
       'cognitive enhancement drug',
       'neuroprotective therapy',
       'acetylcholinesterase inhibitor'
     ],
     long_tail_keywords: [
-      'new Alzheimer's medication 2025',
+      'new Alzheimer\'s medication 2025',
       'best drugs for early stage dementia',
-      'how to slow Alzheimer's progression',
+      'how to slow Alzheimer\'s progression',
       'NeurogeniX clinical trial results'
     ],
     consumer_questions: [
-      'What makes NeurogeniX different from other Alzheimer's drugs?',
+      'What makes NeurogeniX different from other Alzheimer\'s drugs?',
       'Can NeurogeniX reverse memory loss?',
       'What are the side effects of NeurogeniX?',
       'When will NeurogeniX be available?'
     ],
-    h1_tag: 'NeurogeniX®: Breakthrough Dual-Action Treatment for Alzheimer's Disease',
-    meta_description: 'Discover NeurogeniX®, an innovative Alzheimer's treatment combining cognitive enhancement with neuroprotection. Currently in Phase III trials with promising results.'
+    h1_tag: 'NeurogeniX®: Breakthrough Dual-Action Treatment for Alzheimer\'s Disease',
+    meta_description: 'Discover NeurogeniX®, an innovative Alzheimer\'s treatment combining cognitive enhancement with neuroprotection. Currently in Phase III trials with promising results.'
   },
   {
     id: 'mock-3',
