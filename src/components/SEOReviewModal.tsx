@@ -13,7 +13,15 @@ import {
   ChevronUp,
   Copy,
   Check,
-  MessageCircle
+  MessageCircle,
+  Shield,
+  Users,
+  Bot,
+  TrendingUp,
+  Target,
+  Search,
+  Globe,
+  BarChart3
 } from 'lucide-react'
 
 interface SEOReviewModalProps {
@@ -25,21 +33,29 @@ interface SEOReviewModalProps {
 interface KeywordStatus {
   [key: string]: {
     status: 'approved' | 'rejected' | null
-    comment?: string
+    comments?: {
+      internal?: string
+      client?: string
+      ai?: string
+    }
   }
 }
 
+type CommentType = 'internal' | 'client' | 'ai'
+
 export default function SEOReviewModal({ isOpen, onClose, submission }: SEOReviewModalProps) {
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['keywords', 'questions', 'recommendations']))
-  const [showRejectModal, setShowRejectModal] = useState(false)
-  const [rejectionReason, setRejectionReason] = useState('')
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['strategy', 'keywords']))
   const [keywordStatuses, setKeywordStatuses] = useState<KeywordStatus>({})
-  const [activeCommentIndex, setActiveCommentIndex] = useState<string | null>(null)
+  const [activeCommentKey, setActiveCommentKey] = useState<string | null>(null)
+  const [activeCommentType, setActiveCommentType] = useState<CommentType>('internal')
   const [commentText, setCommentText] = useState('')
 
   const updateWorkflowStage = useMutation({
     mutationFn: async ({ stage, reason }: { stage: string; reason?: string }) => {
-      const updateData: any = { workflow_stage: stage }
+      const updateData: any = { 
+        workflow_stage: stage,
+        keyword_statuses: keywordStatuses 
+      }
       if (reason) {
         updateData.rejection_reason = reason
         updateData.rejected_at = new Date().toISOString()
@@ -67,44 +83,41 @@ export default function SEOReviewModal({ isOpen, onClose, submission }: SEORevie
     setExpandedSections(newExpanded)
   }
 
-  const handleApprove = () => {
-    updateWorkflowStage.mutate({ stage: 'Client_Review' })
-  }
-
-  const handleReject = () => {
-    if (rejectionReason.trim()) {
-      updateWorkflowStage.mutate({ stage: 'Rejected', reason: rejectionReason })
-    }
-  }
-
-  const handleRequestChanges = () => {
-    updateWorkflowStage.mutate({ stage: 'Revision_Requested' })
-  }
-
   const handleKeywordAction = (keyword: string, type: string, action: 'approved' | 'rejected') => {
     const key = `${type}-${keyword}`
     setKeywordStatuses(prev => ({
       ...prev,
-      [key]: { status: action }
+      [key]: { 
+        ...prev[key],
+        status: action 
+      }
     }))
   }
 
-  const handleKeywordComment = (keyword: string, type: string) => {
+  const handleKeywordComment = (keyword: string, type: string, commentType: CommentType) => {
     const key = `${type}-${keyword}`
-    if (activeCommentIndex === key) {
+    
+    if (activeCommentKey === key && activeCommentType === commentType) {
       // Save comment
       if (commentText.trim()) {
         setKeywordStatuses(prev => ({
           ...prev,
-          [key]: { ...prev[key], comment: commentText }
+          [key]: { 
+            ...prev[key],
+            comments: {
+              ...prev[key]?.comments,
+              [commentType]: commentText
+            }
+          }
         }))
       }
-      setActiveCommentIndex(null)
+      setActiveCommentKey(null)
       setCommentText('')
     } else {
       // Open comment
-      setActiveCommentIndex(key)
-      setCommentText(keywordStatuses[key]?.comment || '')
+      setActiveCommentKey(key)
+      setActiveCommentType(commentType)
+      setCommentText(keywordStatuses[key]?.comments?.[commentType] || '')
     }
   }
 
@@ -115,6 +128,49 @@ export default function SEOReviewModal({ isOpen, onClose, submission }: SEORevie
 
   // Mock SEO content for demo
   const seoContent = {
+    strategy_overview: {
+      executive_summary: "Based on our comprehensive SEO analysis, this clinical trial has significant search visibility opportunities in the oncology treatment space. The competitive landscape shows moderate competition with clear differentiation opportunities through targeted long-tail keywords and local SEO optimization.",
+      competitive_analysis: {
+        summary: "Analysis of top 5 competitors reveals gaps in patient-focused content and local trial information",
+        competitors: [
+          { name: "ClinicalTrials.gov", domain_authority: 91, strengths: "Authority, comprehensive listings", weaknesses: "Poor user experience, generic content" },
+          { name: "Mayo Clinic Trials", domain_authority: 89, strengths: "Brand trust, medical authority", weaknesses: "Limited to Mayo locations" },
+          { name: "Cancer.org Trials", domain_authority: 87, strengths: "Patient resources, educational content", weaknesses: "Not trial-focused" }
+        ],
+        opportunities: [
+          "Create location-specific landing pages for each trial site",
+          "Develop patient journey content missing from competitor sites",
+          "Target underserved long-tail keywords with high intent"
+        ]
+      },
+      search_volume_analysis: {
+        total_monthly_volume: 145000,
+        growth_trend: "+23% YoY",
+        seasonal_patterns: "Peak searches in January and September",
+        top_queries: [
+          { query: "cancer clinical trials near me", volume: 12100, difficulty: "Medium" },
+          { query: "phase 3 oncology trials", volume: 8400, difficulty: "High" },
+          { query: "clinical trial eligibility cancer", volume: 6700, difficulty: "Low" }
+        ]
+      },
+      content_gap_analysis: [
+        "Patient testimonial content (0 competitors have this)",
+        "Trial timeline and process visualization",
+        "Insurance and financial assistance information",
+        "Family/caregiver resources"
+      ],
+      technical_recommendations: [
+        "Implement structured data for clinical trials",
+        "Optimize Core Web Vitals (current LCP: 3.2s, target: <2.5s)",
+        "Create mobile-first experience (60% of searches are mobile)",
+        "Implement local schema for each trial location"
+      ],
+      projected_impact: {
+        traffic_increase: "150-200% in 6 months",
+        qualified_leads: "80-120 additional inquiries/month",
+        roi_estimate: "3.5x based on patient acquisition value"
+      }
+    },
     seo_keywords: submission.seo_keywords || [
       'cancer treatment clinical trial',
       'phase 3 oncology study',
@@ -192,7 +248,7 @@ export default function SEOReviewModal({ isOpen, onClose, submission }: SEORevie
   const renderKeywordItem = (keyword: string, index: number, type: string) => {
     const status = getKeywordStatus(keyword, type)
     const key = `${type}-${keyword}`
-    const isCommenting = activeCommentIndex === key
+    const isCommenting = activeCommentKey === key
 
     return (
       <div key={index} className="space-y-2">
@@ -238,20 +294,46 @@ export default function SEOReviewModal({ isOpen, onClose, submission }: SEORevie
                 <X className="h-3.5 w-3.5" />
               </button>
               
-              <button
-                onClick={() => handleKeywordComment(keyword, type)}
-                className={`p-1.5 rounded text-sm transition-colors ${
-                  status?.comment || isCommenting
-                    ? 'bg-blue-600 text-white' 
-                    : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-50'
-                }`}
-                title="Add Comment"
-              >
-                <MessageCircle className="h-3.5 w-3.5" />
-              </button>
+              <div className="flex items-center border-l pl-2 gap-1">
+                <button
+                  onClick={() => handleKeywordComment(keyword, type, 'internal')}
+                  className={`p-1.5 rounded text-sm transition-colors ${
+                    status?.comments?.internal || (isCommenting && activeCommentType === 'internal')
+                      ? 'bg-purple-600 text-white' 
+                      : 'bg-white text-purple-600 border border-purple-600 hover:bg-purple-50'
+                  }`}
+                  title="Internal Comment"
+                >
+                  <Shield className="h-3.5 w-3.5" />
+                </button>
+                
+                <button
+                  onClick={() => handleKeywordComment(keyword, type, 'client')}
+                  className={`p-1.5 rounded text-sm transition-colors ${
+                    status?.comments?.client || (isCommenting && activeCommentType === 'client')
+                      ? 'bg-blue-600 text-white' 
+                      : 'bg-white text-blue-600 border border-blue-600 hover:bg-blue-50'
+                  }`}
+                  title="Client Comment"
+                >
+                  <Users className="h-3.5 w-3.5" />
+                </button>
+                
+                <button
+                  onClick={() => handleKeywordComment(keyword, type, 'ai')}
+                  className={`p-1.5 rounded text-sm transition-colors ${
+                    status?.comments?.ai || (isCommenting && activeCommentType === 'ai')
+                      ? 'bg-orange-600 text-white' 
+                      : 'bg-white text-orange-600 border border-orange-600 hover:bg-orange-50'
+                  }`}
+                  title="AI Feedback"
+                >
+                  <Bot className="h-3.5 w-3.5" />
+                </button>
+              </div>
               
               <button
-                className="p-1.5 bg-white text-blue-600 border border-blue-600 rounded hover:bg-blue-50 text-sm transition-colors"
+                className="p-1.5 bg-white text-blue-600 border border-blue-600 rounded hover:bg-blue-50 text-sm transition-colors ml-2"
                 title="Ask AI"
               >
                 <Sparkles className="h-3.5 w-3.5" />
@@ -262,17 +344,28 @@ export default function SEOReviewModal({ isOpen, onClose, submission }: SEORevie
         
         {isCommenting && (
           <div className="ml-4 p-3 bg-white border border-gray-200 rounded-lg">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-xs font-medium text-gray-500">
+                {activeCommentType === 'internal' && 'Internal Note (not visible to client)'}
+                {activeCommentType === 'client' && 'Client Feedback (visible in client portal)'}
+                {activeCommentType === 'ai' && 'AI Instructions (for regeneration)'}
+              </span>
+            </div>
             <textarea
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
-              placeholder="Add a comment..."
+              placeholder={
+                activeCommentType === 'internal' ? 'Add internal notes...' :
+                activeCommentType === 'client' ? 'Add feedback for client...' :
+                'Add instructions for AI regeneration...'
+              }
               className="w-full p-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               rows={2}
             />
             <div className="mt-2 flex justify-end gap-2">
               <button
                 onClick={() => {
-                  setActiveCommentIndex(null)
+                  setActiveCommentKey(null)
                   setCommentText('')
                 }}
                 className="px-3 py-1 text-sm text-gray-600 hover:text-gray-800"
@@ -280,7 +373,7 @@ export default function SEOReviewModal({ isOpen, onClose, submission }: SEORevie
                 Cancel
               </button>
               <button
-                onClick={() => handleKeywordComment(keyword, type)}
+                onClick={() => handleKeywordComment(keyword, type, activeCommentType)}
                 className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
               >
                 Save
@@ -289,9 +382,27 @@ export default function SEOReviewModal({ isOpen, onClose, submission }: SEORevie
           </div>
         )}
         
-        {status?.comment && !isCommenting && (
-          <div className="ml-4 p-2 bg-blue-50 border-l-2 border-blue-400 text-sm text-gray-700">
-            {status.comment}
+        {/* Display existing comments */}
+        {status?.comments && (
+          <div className="ml-4 space-y-2">
+            {status.comments.internal && (
+              <div className="p-2 bg-purple-50 border-l-2 border-purple-400 text-sm">
+                <span className="font-medium text-purple-700">Internal: </span>
+                <span className="text-gray-700">{status.comments.internal}</span>
+              </div>
+            )}
+            {status.comments.client && (
+              <div className="p-2 bg-blue-50 border-l-2 border-blue-400 text-sm">
+                <span className="font-medium text-blue-700">Client: </span>
+                <span className="text-gray-700">{status.comments.client}</span>
+              </div>
+            )}
+            {status.comments.ai && (
+              <div className="p-2 bg-orange-50 border-l-2 border-orange-400 text-sm">
+                <span className="font-medium text-orange-700">AI: </span>
+                <span className="text-gray-700">{status.comments.ai}</span>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -324,7 +435,7 @@ export default function SEOReviewModal({ isOpen, onClose, submission }: SEORevie
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-6xl transform overflow-hidden rounded-2xl bg-white text-left align-middle shadow-xl transition-all">
+              <Dialog.Panel className="w-full max-w-7xl transform overflow-hidden rounded-2xl bg-white text-left align-middle shadow-xl transition-all">
                 {/* Header */}
                 <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-6 py-4">
                   <div className="flex items-center justify-between">
@@ -351,7 +462,159 @@ export default function SEOReviewModal({ isOpen, onClose, submission }: SEORevie
                   </div>
                 </div>
 
-                <div className="max-h-[calc(100vh-200px)] overflow-y-auto p-6 space-y-6">
+                <div className="max-h-[calc(100vh-120px)] overflow-y-auto p-6 space-y-6">
+                  {/* Strategy Overview Section - First */}
+                  <div className="bg-white rounded-lg border border-gray-200">
+                    <div
+                      className="px-6 py-4 border-b border-gray-200 flex items-center justify-between cursor-pointer hover:bg-gray-50"
+                      onClick={() => toggleSection('strategy')}
+                    >
+                      <div className="flex items-center gap-3">
+                        <BarChart3 className="h-5 w-5 text-blue-600" />
+                        <h2 className="text-lg font-medium text-gray-900">SEO Strategy Overview & Competitive Analysis</h2>
+                      </div>
+                      {expandedSections.has('strategy') ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                    </div>
+                    {expandedSections.has('strategy') && (
+                      <div className="p-6 space-y-6">
+                        {/* Executive Summary */}
+                        <div>
+                          <h3 className="text-sm font-semibold text-gray-900 mb-3">Executive Summary</h3>
+                          <p className="text-sm text-gray-700 leading-relaxed">
+                            {seoContent.strategy_overview.executive_summary}
+                          </p>
+                        </div>
+
+                        {/* Competitive Analysis */}
+                        <div>
+                          <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                            <Target className="h-4 w-4" />
+                            Competitive Landscape
+                          </h3>
+                          <div className="bg-gray-50 p-4 rounded-lg space-y-3">
+                            <p className="text-sm text-gray-700">{seoContent.strategy_overview.competitive_analysis.summary}</p>
+                            
+                            <div className="space-y-2">
+                              {seoContent.strategy_overview.competitive_analysis.competitors.map((comp, idx) => (
+                                <div key={idx} className="bg-white p-3 rounded border border-gray-200">
+                                  <div className="flex items-center justify-between mb-1">
+                                    <span className="font-medium text-sm">{comp.name}</span>
+                                    <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">DA: {comp.domain_authority}</span>
+                                  </div>
+                                  <div className="text-xs text-gray-600">
+                                    <span className="text-green-600">Strengths: {comp.strengths}</span> • 
+                                    <span className="text-red-600 ml-1">Weaknesses: {comp.weaknesses}</span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+
+                            <div className="mt-3">
+                              <h4 className="text-xs font-semibold text-gray-700 mb-2">Key Opportunities:</h4>
+                              <ul className="space-y-1">
+                                {seoContent.strategy_overview.competitive_analysis.opportunities.map((opp, idx) => (
+                                  <li key={idx} className="text-sm text-gray-600 flex items-start">
+                                    <span className="text-green-500 mr-2">•</span>
+                                    {opp}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Search Volume Analysis */}
+                        <div>
+                          <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                            <Search className="h-4 w-4" />
+                            Search Volume Analysis
+                          </h3>
+                          <div className="grid grid-cols-3 gap-4 mb-4">
+                            <div className="bg-blue-50 p-3 rounded-lg">
+                              <p className="text-xs text-gray-600">Total Monthly Volume</p>
+                              <p className="text-lg font-semibold text-gray-900">{seoContent.strategy_overview.search_volume_analysis.total_monthly_volume.toLocaleString()}</p>
+                            </div>
+                            <div className="bg-green-50 p-3 rounded-lg">
+                              <p className="text-xs text-gray-600">Growth Trend</p>
+                              <p className="text-lg font-semibold text-green-700">{seoContent.strategy_overview.search_volume_analysis.growth_trend}</p>
+                            </div>
+                            <div className="bg-purple-50 p-3 rounded-lg">
+                              <p className="text-xs text-gray-600">Peak Season</p>
+                              <p className="text-sm font-medium text-gray-900">{seoContent.strategy_overview.search_volume_analysis.seasonal_patterns}</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Content Gap Analysis */}
+                        <div>
+                          <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                            <TrendingUp className="h-4 w-4" />
+                            Content Gap Opportunities
+                          </h3>
+                          <div className="bg-yellow-50 p-4 rounded-lg">
+                            <ul className="space-y-2">
+                              {seoContent.strategy_overview.content_gap_analysis.map((gap, idx) => (
+                                <li key={idx} className="text-sm text-gray-700 flex items-center">
+                                  <CheckCircle className="h-4 w-4 text-yellow-600 mr-2" />
+                                  {gap}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+
+                        {/* Projected Impact */}
+                        <div>
+                          <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                            <Globe className="h-4 w-4" />
+                            Projected Impact
+                          </h3>
+                          <div className="grid grid-cols-3 gap-4">
+                            <div className="text-center p-3 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg">
+                              <p className="text-2xl font-bold text-blue-700">{seoContent.strategy_overview.projected_impact.traffic_increase}</p>
+                              <p className="text-xs text-gray-600">Traffic Increase</p>
+                            </div>
+                            <div className="text-center p-3 bg-gradient-to-br from-green-50 to-green-100 rounded-lg">
+                              <p className="text-2xl font-bold text-green-700">{seoContent.strategy_overview.projected_impact.qualified_leads}</p>
+                              <p className="text-xs text-gray-600">Qualified Leads</p>
+                            </div>
+                            <div className="text-center p-3 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg">
+                              <p className="text-2xl font-bold text-purple-700">{seoContent.strategy_overview.projected_impact.roi_estimate}</p>
+                              <p className="text-xs text-gray-600">ROI Estimate</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Action buttons for strategy section */}
+                        <div className="pt-4 border-t flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => handleKeywordAction('strategy-overview', 'strategy', 'approved')}
+                            className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
+                              getKeywordStatus('strategy-overview', 'strategy')?.status === 'approved'
+                                ? 'bg-green-600 text-white' 
+                                : 'bg-white text-green-600 border border-green-600 hover:bg-green-50'
+                            }`}
+                          >
+                            <Check className="h-4 w-4 mr-1 inline" />
+                            Approve Strategy
+                          </button>
+                          
+                          <button
+                            onClick={() => handleKeywordAction('strategy-overview', 'strategy', 'rejected')}
+                            className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
+                              getKeywordStatus('strategy-overview', 'strategy')?.status === 'rejected'
+                                ? 'bg-red-600 text-white' 
+                                : 'bg-white text-red-600 border border-red-600 hover:bg-red-50'
+                            }`}
+                          >
+                            <X className="h-4 w-4 mr-1 inline" />
+                            Request Changes
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
                   {/* SEO Keywords Section */}
                   <div className="bg-white rounded-lg border border-gray-200">
                     <div
@@ -482,67 +745,6 @@ export default function SEOReviewModal({ isOpen, onClose, submission }: SEORevie
                     </div>
                   </div>
                 </div>
-
-                {/* Action Buttons */}
-                <div className="sticky bottom-0 bg-gray-50 px-6 py-4 border-t border-gray-200">
-                  <div className="flex justify-between">
-                    <button
-                      onClick={() => setShowRejectModal(true)}
-                      className="px-6 py-3 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
-                    >
-                      <XCircle className="h-4 w-4 mr-2 inline" />
-                      Reject All
-                    </button>
-                    <div className="flex gap-3">
-                      <button
-                        onClick={handleRequestChanges}
-                        className="px-6 py-3 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
-                      >
-                        <MessageSquare className="h-4 w-4 mr-2 inline" />
-                        Request Changes
-                      </button>
-                      <button
-                        onClick={handleApprove}
-                        disabled={updateWorkflowStage.isPending}
-                        className="px-6 py-3 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 disabled:opacity-50"
-                      >
-                        <CheckCircle className="h-4 w-4 mr-2 inline" />
-                        Approve & Send to Client
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Reject Modal */}
-                {showRejectModal && (
-                  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-lg p-6 max-w-md w-full">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Reject Submission</h3>
-                      <textarea
-                        value={rejectionReason}
-                        onChange={(e) => setRejectionReason(e.target.value)}
-                        placeholder="Please provide a reason for rejection..."
-                        className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                        rows={4}
-                      />
-                      <div className="mt-4 flex justify-end gap-3">
-                        <button
-                          onClick={() => setShowRejectModal(false)}
-                          className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          onClick={handleReject}
-                          disabled={!rejectionReason.trim()}
-                          className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50"
-                        >
-                          Confirm Rejection
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
               </Dialog.Panel>
             </Transition.Child>
           </div>
