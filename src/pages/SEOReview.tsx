@@ -38,8 +38,9 @@ interface Submission {
   seo_keywords?: string[]
   long_tail_keywords?: string[]
   consumer_questions?: string[]
-  h1_tag?: any
-  meta_description?: any
+  h1_tag?: string
+  meta_title?: string
+  meta_description?: string
 }
 
 export default function SEOReview() {

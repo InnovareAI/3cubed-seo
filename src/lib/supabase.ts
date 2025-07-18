@@ -67,18 +67,34 @@ export interface Submission {
   completed_at?: string
   created_at: string
   updated_at: string
-  // Additional fields for client review
+  // SEO fields
   seo_keywords?: string[]
+  long_tail_keywords?: string[]
+  consumer_questions?: string[]
+  h1_tag?: string
+  meta_title?: string
+  meta_description?: string
+  // Additional fields for client review
   target_audience?: string[]
   medical_indication?: string
   dosage_form?: string
   competitors?: string[]
   positioning?: string
+  key_differentiators?: string[]
+  mechanism_of_action?: string
+  geography?: string[]
+  client_name?: string
   client_review_responses?: any
   client_review_comments?: any
   client_reviewed_at?: string
   client_reviewed_by?: string
   ready_for_mlr?: boolean
+  // SEO review fields
+  seo_reviewed_at?: string
+  seo_reviewed_by?: string
+  seo_keyword_approvals?: Record<string, boolean>
+  seo_internal_notes?: string
+  seo_client_feedback?: string
 }
 
 export interface AuditLog {

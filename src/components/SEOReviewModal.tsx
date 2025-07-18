@@ -198,21 +198,28 @@ export default function SEOReviewModal({ isOpen, onClose, submission }: SEORevie
       title: 'Content Optimization',
       icon: <TrendingUp className="h-5 w-5" />,
       collapsible: true,
-      defaultExpanded: false,
+      defaultExpanded: true,
       content: (
         <div className="space-y-4">
           <div>
+            <h4 className="text-sm font-medium text-gray-700 mb-2">H1 Tag</h4>
+            <p className="text-sm bg-gray-50 p-3 rounded font-medium">
+              {submission.h1_tag || `${submission.product_name}: Revolutionary ${submission.therapeutic_area} Treatment`}
+            </p>
+          </div>
+          <div>
             <h4 className="text-sm font-medium text-gray-700 mb-2">Meta Title</h4>
             <p className="text-sm bg-gray-50 p-3 rounded">
-              {submission.product_name}: Revolutionary {submission.therapeutic_area} Treatment | Brand Name
+              {submission.meta_title || submission.h1_tag || `${submission.product_name}: ${submission.therapeutic_area} Treatment | Brand Name`}
             </p>
+            <p className="text-xs text-gray-500 mt-1">Character count: {(submission.meta_title || submission.h1_tag || `${submission.product_name}: ${submission.therapeutic_area} Treatment | Brand Name`).length} / 60 recommended</p>
           </div>
           <div>
             <h4 className="text-sm font-medium text-gray-700 mb-2">Meta Description</h4>
             <p className="text-sm bg-gray-50 p-3 rounded">
-              Discover {submission.product_name}, a breakthrough treatment for {submission.medical_indication}. 
-              Learn about efficacy, safety, and patient outcomes. Healthcare professionals click here.
+              {submission.meta_description || `Discover ${submission.product_name}, a breakthrough treatment for ${submission.medical_indication}. Learn about efficacy, safety, and patient outcomes. Healthcare professionals click here.`}
             </p>
+            <p className="text-xs text-gray-500 mt-1">Character count: {(submission.meta_description || `Discover ${submission.product_name}, a breakthrough treatment for ${submission.medical_indication}. Learn about efficacy, safety, and patient outcomes. Healthcare professionals click here.`).length} / 160 recommended</p>
           </div>
         </div>
       )
