@@ -7,6 +7,7 @@ import SEOReview from './pages/SEOReview'
 import ClientReview from './pages/ClientReview'
 import Compliance from './pages/Compliance'
 import RevisionRequests from './pages/RevisionRequests'
+import RevisionDashboard from './pages/RevisionDashboard'
 import MLRReview from './pages/MLRReview'
 import ClientManagement from './pages/ClientManagement'
 import CurrentProjects from './pages/CurrentProjects'
@@ -81,6 +82,7 @@ function App() {
             <Route path="client-review" element={<ClientReview />} />
             <Route path="compliance" element={<Compliance />} />
             <Route path="revision-requests" element={<RevisionRequests />} />
+            <Route path="revision-dashboard" element={<RevisionDashboard />} />
             <Route path="mlr-review" element={<MLRReview />} />
             <Route path="client-management" element={<ClientManagement />} />
             <Route path="current-projects" element={<CurrentProjects />} />
