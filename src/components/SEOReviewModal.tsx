@@ -11,9 +11,7 @@ import {
   Sparkles,
   ChevronDown,
   ChevronUp,
-  Copy,
-  ExternalLink,
-  AlertCircle
+  Copy
 } from 'lucide-react'
 
 interface SEOReviewModalProps {
@@ -212,7 +210,7 @@ export default function SEOReviewModal({ isOpen, onClose, submission }: SEORevie
                     </div>
                     {expandedSections.has('keywords') && (
                       <div className="p-6 space-y-3">
-                        {seoContent.seo_keywords.map((keyword, index) => (
+                        {seoContent.seo_keywords.map((keyword: string, index: number) => (
                           <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                             <span className="text-sm font-medium text-gray-900">{keyword}</span>
                             <button className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700">
@@ -236,7 +234,7 @@ export default function SEOReviewModal({ isOpen, onClose, submission }: SEORevie
                     </div>
                     {expandedSections.has('longtail') && (
                       <div className="p-6 space-y-3">
-                        {seoContent.longtail_keywords.map((keyword, index) => (
+                        {seoContent.longtail_keywords.map((keyword: string, index: number) => (
                           <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                             <span className="text-sm text-gray-900">{keyword}</span>
                             <button className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700">
@@ -260,7 +258,7 @@ export default function SEOReviewModal({ isOpen, onClose, submission }: SEORevie
                     </div>
                     {expandedSections.has('questions') && (
                       <div className="p-6 space-y-3">
-                        {seoContent.consumer_questions.map((question, index) => (
+                        {seoContent.consumer_questions.map((question: string, index: number) => (
                           <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                             <span className="text-sm text-gray-900">{question}</span>
                             <button className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700">
