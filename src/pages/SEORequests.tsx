@@ -1,11 +1,15 @@
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { supabase, type Submission } from '../lib/supabase'
 import { Link } from 'react-router-dom'
 import { format } from 'date-fns'
-import { Search, Calendar, Building2, User, ExternalLink } from 'lucide-react'
+import { Search, Calendar, Building2, User, ExternalLink, Plus, ChevronDown, ChevronUp } from 'lucide-react'
+import { SubmissionForm } from '../components/SubmissionForm'
 
 export default function SEORequests() {
-  const { data: requests, isLoading } = useQuery({
+  const [showForm, setShowForm] = useState(false)
+  
+  const { data: requests, isLoading, refetch } = useQuery({
     queryKey: ['seo-requests'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -41,6 +45,11 @@ export default function SEORequests() {
     )
   }
 
+  const handleFormSuccess = () => {
+    setShowForm(false)
+    refetch()
+  }
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -58,8 +67,33 @@ export default function SEORequests() {
             All pharmaceutical SEO content generation requests
           </p>
         </div>
+        <button
+          onClick={() => setShowForm(!showForm)}
+          className="mt-4 sm:mt-0 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+        >
+          {showForm ? (
+            <>
+              <ChevronUp className="h-4 w-4 mr-2" />
+              Hide Form
+            </>
+          ) : (
+            <>
+              <Plus className="h-4 w-4 mr-2" />
+              New SEO Request
+            </>
+          )}
+        </button>
       </div>
 
+      {/* Submission Form */}
+      {showForm && (
+        <div className="bg-white shadow rounded-lg p-6">
+          <h2 className="text-lg font-medium text-gray-900 mb-4">Create New SEO Content Request</h2>
+          <SubmissionForm onSuccess={handleFormSuccess} onClose={() => setShowForm(false)} />
+        </div>
+      )}
+
+      {/* Requests List */}
       <div className="bg-white shadow overflow-hidden sm:rounded-md">
         <ul className="divide-y divide-gray-200">
           {requests?.map((request) => (
