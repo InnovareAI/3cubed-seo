@@ -13,6 +13,7 @@ import {
   FileText,
   Calendar,
   User,
+  Users,
   Target,
   Globe,
   TrendingUp,
