@@ -154,119 +154,55 @@ export default function AuditTrail() {
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="bg-white rounded-lg shadow p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500">Total Activities</p>
-              <p className="mt-1 text-2xl font-semibold text-gray-900">
-                {stats?.totalActivities || 0}
-              </p>
+      {/* Stats - Only show when there's data */}
+      {stats && stats.totalActivities > 0 && (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500">Total Activities</p>
+                <p className="mt-1 text-2xl font-semibold text-gray-900">
+                  {stats.totalActivities}
+                </p>
+              </div>
+              <Database className="h-8 w-8 text-gray-400" />
             </div>
-            <Database className="h-8 w-8 text-gray-400" />
           </div>
-        </div>
-        <div className="bg-white rounded-lg shadow p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500">Success Rate</p>
-              <p className="mt-1 text-2xl font-semibold text-gray-900">
-                {stats?.successRate || 0}%
-              </p>
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500">Success Rate</p>
+                <p className="mt-1 text-2xl font-semibold text-gray-900">
+                  {stats.successRate}%
+                </p>
+              </div>
+              <CheckCircle className="h-8 w-8 text-green-500" />
             </div>
-            <CheckCircle className="h-8 w-8 text-green-500" />
           </div>
-        </div>
-        <div className="bg-white rounded-lg shadow p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500">Active Users</p>
-              <p className="mt-1 text-2xl font-semibold text-gray-900">
-                {stats?.activeUsers || 0}
-              </p>
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500">Active Users</p>
+                <p className="mt-1 text-2xl font-semibold text-gray-900">
+                  {stats.activeUsers}
+                </p>
+              </div>
+              <User className="h-8 w-8 text-gray-400" />
             </div>
-            <User className="h-8 w-8 text-gray-400" />
           </div>
-        </div>
-        <div className="bg-white rounded-lg shadow p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500">Compliance Score</p>
-              <p className="mt-1 text-2xl font-semibold text-gray-900">
-                {stats?.complianceScore || 0}%
-              </p>
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500">Compliance Score</p>
+                <p className="mt-1 text-2xl font-semibold text-gray-900">
+                  {stats.complianceScore}%
+                </p>
+              </div>
+              <Shield className="h-8 w-8 text-primary-600" />
             </div>
-            <Shield className="h-8 w-8 text-primary-600" />
           </div>
         </div>
-      </div>
-
-      {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-4">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search actions..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-3 py-2 border border-gray-300 rounded-md w-full text-sm"
-            />
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4 text-gray-400" />
-            <select
-              value={activityType}
-              onChange={(e) => setActivityType(e.target.value as ActivityType)}
-              className="border border-gray-300 rounded-md text-sm flex-1 px-3 py-2"
-            >
-              <option value="all">All Activities</option>
-              <option value="submission">Submissions</option>
-              <option value="auth">Authentication</option>
-              <option value="user">User Actions</option>
-              <option value="system">System</option>
-              <option value="client">Clients</option>
-              <option value="project">Projects</option>
-            </select>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-gray-400" />
-            <select
-              value={dateRange}
-              onChange={(e) => setDateRange(e.target.value as DateRange)}
-              className="border border-gray-300 rounded-md text-sm flex-1 px-3 py-2"
-            >
-              <option value="last24h">Last 24 Hours</option>
-              <option value="last7d">Last 7 Days</option>
-              <option value="last30d">Last 30 Days</option>
-              <option value="last90d">Last 90 Days</option>
-              <option value="lastYear">Last Year</option>
-              <option value="all">All Time</option>
-            </select>
-          </div>
-          
-          <div className="flex gap-2">
-            <button 
-              onClick={() => refetch()}
-              className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-sm"
-            >
-              <RefreshCw className="h-4 w-4" />
-              Refresh
-            </button>
-            <button 
-              onClick={handleExport}
-              className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-sm"
-            >
-              <Download className="h-4 w-4" />
-              Export
-            </button>
-          </div>
-        </div>
-      </div>
+      )}
 
       {/* Audit Log Table */}
       <div className="bg-white shadow rounded-lg overflow-hidden">
@@ -276,93 +212,167 @@ export default function AuditTrail() {
             <p className="mt-2 text-sm text-gray-500">Loading audit logs...</p>
           </div>
         ) : auditEntries.length === 0 ? (
-          <div className="p-6 text-center">
-            <Database className="h-12 w-12 text-gray-400 mx-auto" />
-            <p className="mt-2 text-sm text-gray-500">No audit logs found</p>
-            <p className="text-xs text-gray-400 mt-1">Activities will appear here as users interact with the system</p>
+          <div className="p-12 text-center">
+            <Shield className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Audit Trail Ready</h3>
+            <p className="text-sm text-gray-500 mb-1">Your 21 CFR Part 11 compliant audit system is active and monitoring.</p>
+            <p className="text-sm text-gray-500">All user activities will be logged here automatically.</p>
+            <div className="mt-6 text-xs text-gray-400">
+              <p>Activities tracked include:</p>
+              <p className="mt-1">• User authentication • Content creation and updates</p>
+              <p>• Approvals and rejections • Data exports • System events</p>
+            </div>
           </div>
         ) : (
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Timestamp
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  User
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Action
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Details
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  IP Address
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="relative px-6 py-3">
-                  <span className="sr-only">Actions</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {auditEntries.map((entry: any) => (
-                <tr key={entry.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {format(new Date(entry.created_at), 'yyyy-MM-dd HH:mm:ss')}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    <div className="flex items-center gap-2">
-                      <User className="h-4 w-4 text-gray-400" />
-                      {entry.user_email}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <div className="flex items-center gap-2">
-                      {getCategoryIcon(entry.entity_type)}
-                      <span className={getActionColor(entry.action)}>
-                        {formatActionName(entry.action)}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">
-                    <span className="font-medium">{entry.entity_type}:</span> {entry.entity_id}
-                    {entry.changes && Object.keys(entry.changes).length > 0 && (
-                      <span className="ml-2 text-xs text-gray-400">
-                        ({Object.keys(entry.changes).length} changes)
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {entry.ip_address}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center gap-2">
-                      {getStatusIcon(entry.status)}
-                      <span className={`text-sm ${
-                        entry.status === 'success' ? 'text-green-600' :
-                        entry.status === 'warning' ? 'text-yellow-600' :
-                        'text-red-600'
-                      }`}>
-                        {entry.status}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button
-                      onClick={() => setSelectedEntry(entry)}
-                      className="text-primary-600 hover:text-primary-900"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </button>
-                  </td>
+          <>
+            {/* Filters - Show above table when there's data */}
+            <div className="bg-gray-50 p-4 border-b border-gray-200">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search actions..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 pr-3 py-2 border border-gray-300 rounded-md w-full text-sm bg-white"
+                  />
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <Filter className="h-4 w-4 text-gray-400" />
+                  <select
+                    value={activityType}
+                    onChange={(e) => setActivityType(e.target.value as ActivityType)}
+                    className="border border-gray-300 rounded-md text-sm flex-1 px-3 py-2 bg-white"
+                  >
+                    <option value="all">All Activities</option>
+                    <option value="submission">Submissions</option>
+                    <option value="auth">Authentication</option>
+                    <option value="user">User Actions</option>
+                    <option value="system">System</option>
+                    <option value="client">Clients</option>
+                    <option value="project">Projects</option>
+                  </select>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-gray-400" />
+                  <select
+                    value={dateRange}
+                    onChange={(e) => setDateRange(e.target.value as DateRange)}
+                    className="border border-gray-300 rounded-md text-sm flex-1 px-3 py-2 bg-white"
+                  >
+                    <option value="last24h">Last 24 Hours</option>
+                    <option value="last7d">Last 7 Days</option>
+                    <option value="last30d">Last 30 Days</option>
+                    <option value="last90d">Last 90 Days</option>
+                    <option value="lastYear">Last Year</option>
+                    <option value="all">All Time</option>
+                  </select>
+                </div>
+                
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => refetch()}
+                    className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-sm"
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                    Refresh
+                  </button>
+                  <button 
+                    onClick={handleExport}
+                    className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-sm"
+                  >
+                    <Download className="h-4 w-4" />
+                    Export
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Timestamp
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    User
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Action
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Details
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    IP Address
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="relative px-6 py-3">
+                    <span className="sr-only">Actions</span>
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {auditEntries.map((entry: any) => (
+                  <tr key={entry.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {format(new Date(entry.created_at), 'yyyy-MM-dd HH:mm:ss')}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <div className="flex items-center gap-2">
+                        <User className="h-4 w-4 text-gray-400" />
+                        {entry.user_email}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <div className="flex items-center gap-2">
+                        {getCategoryIcon(entry.entity_type)}
+                        <span className={getActionColor(entry.action)}>
+                          {formatActionName(entry.action)}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">
+                      <span className="font-medium">{entry.entity_type}:</span> {entry.entity_id}
+                      {entry.changes && Object.keys(entry.changes).length > 0 && (
+                        <span className="ml-2 text-xs text-gray-400">
+                          ({Object.keys(entry.changes).length} changes)
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {entry.ip_address}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-2">
+                        {getStatusIcon(entry.status)}
+                        <span className={`text-sm ${
+                          entry.status === 'success' ? 'text-green-600' :
+                          entry.status === 'warning' ? 'text-yellow-600' :
+                          'text-red-600'
+                        }`}>
+                          {entry.status}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <button
+                        onClick={() => setSelectedEntry(entry)}
+                        className="text-primary-600 hover:text-primary-900"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </>
         )}
       </div>
 
