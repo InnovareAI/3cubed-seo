@@ -480,16 +480,16 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
           </label>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
             {[
-              { id: 'geo_usa', value: 'United States', label: 'United States' },
-              { id: 'geo_canada', value: 'Canada', label: 'Canada' },
-              { id: 'geo_eu', value: 'European Union', label: 'European Union' },
-              { id: 'geo_uk', value: 'United Kingdom', label: 'United Kingdom' },
-              { id: 'geo_china', value: 'China', label: 'China' },
-              { id: 'geo_japan', value: 'Japan', label: 'Japan' },
-              { id: 'geo_india', value: 'India', label: 'India' },
-              { id: 'geo_brazil', value: 'Brazil', label: 'Brazil' },
-              { id: 'geo_korea', value: 'South Korea', label: 'South Korea' },
               { id: 'geo_aus', value: 'Australia', label: 'Australia' },
+              { id: 'geo_brazil', value: 'Brazil', label: 'Brazil' },
+              { id: 'geo_canada', value: 'Canada', label: 'Canada' },
+              { id: 'geo_china', value: 'China', label: 'China' },
+              { id: 'geo_eu', value: 'European Union', label: 'European Union' },
+              { id: 'geo_india', value: 'India', label: 'India' },
+              { id: 'geo_japan', value: 'Japan', label: 'Japan' },
+              { id: 'geo_korea', value: 'South Korea', label: 'South Korea' },
+              { id: 'geo_uk', value: 'United Kingdom', label: 'United Kingdom' },
+              { id: 'geo_usa', value: 'United States', label: 'United States' },
               { id: 'geo_global', value: 'Global', label: 'Global' }
             ].map(option => (
               <div key={option.id} className="flex items-center">
