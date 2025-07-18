@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { 
-  Plus,
   Search,
   Filter,
   Download,
@@ -171,12 +170,6 @@ export default function ContentRequests() {
             Manage and track all SEO content requests
           </p>
         </div>
-        <button 
-          onClick={() => setIsModalOpen(true)}
-          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
-          <Plus className="h-4 w-4" />
-          New Request
-        </button>
       </div>
 
       {/* Filters */}
