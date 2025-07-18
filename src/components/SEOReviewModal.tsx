@@ -48,6 +48,82 @@ export default function SEOReviewModal({ isOpen, onClose, submission }: SEORevie
     }
   })
 
+  // Generate product-specific GEO recommendations
+  const getGeoRecommendations = () => {
+    const recommendations: { [key: string]: string[] } = {
+      'Xeltoris™ (evolocumab)': [
+        'Create structured comparison table: "Xeltoris vs Statins: 60% Greater LDL Reduction" with clinical data points',
+        'Implement dosing calculator: "Is Once-Monthly Xeltoris Right for You?" decision tree',
+        'Add insurance coverage checker widget with state-specific formulary data',
+        'Structure FAQ schema: "How does PCSK9 inhibition differ from statin therapy?" with mechanism diagrams'
+      ],
+      'NeurogeniX®': [
+        'Build interactive cognitive assessment tool: "Track Alzheimer\'s Progression with NeurogeniX Therapy"',
+        'Create caregiver resource hub: "Week-by-Week Guide to NeurogeniX Treatment"',
+        'Structure clinical trial data: "Phase III Results: 43% Slower Cognitive Decline" with visual charts',
+        'Implement voice-optimized Q&A: "What stage of Alzheimer\'s is NeurogeniX approved for?"'
+      ],
+      'ImmunoShield™': [
+        'Develop RA symptom tracker: "Monitor Your Progress on ImmunoShield" with exportable reports',
+        'Create safety comparison matrix: "ImmunoShield vs Other JAK Inhibitors: No Routine Monitoring"',
+        'Structure onset timeline: "When to Expect Results: 2 Weeks vs 3 Months for DMARDs"',
+        'Build medication interaction checker: "Can I Take ImmunoShield with My Current Medications?"'
+      ],
+      // Client review products
+      'Nexafib': [
+        'Structure lipid panel interpreter: "Understanding Your Results with Nexafib Treatment"',
+        'Create dosing compliance tracker: "Once-Daily Nexafib Reminder System"',
+        'Build comparison tool: "Nexafib vs Fenofibrate: Superior Triglyceride Reduction"',
+        'Implement patient eligibility quiz: "Is Nexafib Right for Your Cardiovascular Risk?"'
+      ],
+      'OncoShield Plus': [
+        'Develop treatment timeline: "Your First 12 Weeks on OncoShield Plus Immunotherapy"',
+        'Create side effect management guide: "Managing Immune-Related Adverse Events" with action thresholds',
+        'Structure survival data visualization: "OncoShield Plus: 18-Month Overall Survival Rates"',
+        'Build patient support finder: "OncoShield Plus Financial Assistance Programs by State"'
+      ],
+      'CogniMax': [
+        'Create cognitive improvement tracker: "Measure Your Progress with CogniMax"',
+        'Structure dosing guide: "CogniMax Oral Solution: Proper Administration Technique"',
+        'Build caregiver communication tool: "Share CogniMax Progress with Your Care Team"',
+        'Implement FAQ schema: "CogniMax vs Traditional Alzheimer\'s Medications: Key Differences"'
+      ]
+    }
+
+    // Default recommendations based on therapeutic area if product not found
+    const defaultByArea: { [key: string]: string[] } = {
+      'Cardiology': [
+        `Structure ${submission.product_name} mechanism of action in numbered steps for AI comprehension`,
+        `Create comparison table: "${submission.product_name} vs ${submission.competitors?.[0] || 'Standard Treatment'}"`,
+        `Add clinical endpoint data with clear headers: "Primary Outcomes", "Safety Profile"`,
+        `Implement Q&A schema for: "Who is eligible for ${submission.product_name} treatment?"`
+      ],
+      'Oncology': [
+        `Build treatment journey timeline: "Week 1-12 on ${submission.product_name}"`,
+        `Structure survival data: "${submission.product_name} Overall Survival vs Progression-Free Survival"`,
+        `Create side effect comparison matrix with severity ratings`,
+        `Add patient selection criteria in checklist format for AI extraction`
+      ],
+      'Neurology': [
+        `Develop symptom improvement tracker: "Measuring ${submission.product_name} Efficacy"`,
+        `Structure dosing information: "Starting Dose → Titration → Maintenance" flow`,
+        `Create caregiver resource section with actionable bullet points`,
+        `Build cognitive assessment integration: "Track Your Progress with ${submission.product_name}"`
+      ]
+    }
+
+    return recommendations[submission.product_name] || 
+           defaultByArea[submission.therapeutic_area] || 
+           [
+             `Create structured comparison: "${submission.product_name} vs Current Standard of Care"`,
+             `Build Q&A content for: "How does ${submission.product_name} work?" with visual diagrams`,
+             `Add patient eligibility checker with clear yes/no criteria`,
+             `Structure clinical data with headers: "Efficacy", "Safety", "Quality of Life"`
+           ]
+  }
+
+  const geoRecommendations = getGeoRecommendations()
+
   const sections = [
     {
       id: 'keywords',
@@ -151,24 +227,37 @@ export default function SEOReviewModal({ isOpen, onClose, submission }: SEORevie
         <div className="space-y-3">
           <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
             <p className="text-sm text-purple-900">
-              <span className="font-medium">AI Optimization Score:</span> 92/100
+              <span className="font-medium">AI Optimization Score:</span> {submission.product_name === 'Xeltoris™ (evolocumab)' ? '94' : submission.product_name === 'NeurogeniX®' ? '91' : submission.product_name === 'ImmunoShield™' ? '93' : '89'}/100
             </p>
             <p className="text-xs text-purple-700 mt-1">
-              Content is well-structured for AI extraction and featured snippets
+              Product-specific optimizations for {submission.product_name} in {submission.therapeutic_area}
             </p>
           </div>
+          
           <div className="space-y-2">
-            {[
-              'Clear Q&A format for voice search',
-              'Structured data markup ready',
-              'Concise, authoritative statements',
-              'FAQ schema implementation'
-            ].map((item, index) => (
-              <label key={index} className="flex items-center gap-2 text-sm">
-                <input type="checkbox" defaultChecked className="rounded text-purple-600" />
-                <span>{item}</span>
-              </label>
+            <p className="text-sm font-medium text-gray-700 mb-2">Specific GEO Recommendations:</p>
+            {geoRecommendations.map((recommendation, index) => (
+              <div key={index} className="flex items-start gap-2">
+                <input 
+                  type="checkbox" 
+                  id={`geo-${index}`}
+                  className="rounded text-purple-600 mt-0.5" 
+                />
+                <label 
+                  htmlFor={`geo-${index}`}
+                  className="text-sm text-gray-700 cursor-pointer"
+                >
+                  {recommendation}
+                </label>
+              </div>
             ))}
+          </div>
+
+          <div className="mt-4 p-3 bg-purple-100 rounded-lg">
+            <p className="text-xs text-purple-800">
+              <span className="font-semibold">Priority Action:</span> Implement structured data for {submission.key_differentiators?.[0] || 'key differentiator'} 
+              to improve visibility in AI-powered search results and medical knowledge graphs.
+            </p>
           </div>
         </div>
       )
