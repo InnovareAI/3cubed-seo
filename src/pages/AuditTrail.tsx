@@ -16,7 +16,7 @@ import {
   Eye,
   RefreshCw
 } from 'lucide-react'
-import { format, subDays, startOfDay, endOfDay } from 'date-fns'
+import { format, subDays } from 'date-fns'
 import { useAuditLogs, useAuditLogStats, formatActionName, getActionColor } from '../hooks/useAuditLogs'
 import { AuditLogger } from '../lib/auditLogger'
 
