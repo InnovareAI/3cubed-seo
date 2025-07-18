@@ -11,7 +11,9 @@ import {
   Sparkles,
   ChevronDown,
   ChevronUp,
-  Copy
+  Copy,
+  Check,
+  MessageCircle
 } from 'lucide-react'
 
 interface SEOReviewModalProps {
@@ -20,10 +22,20 @@ interface SEOReviewModalProps {
   submission: any
 }
 
+interface KeywordStatus {
+  [key: string]: {
+    status: 'approved' | 'rejected' | null
+    comment?: string
+  }
+}
+
 export default function SEOReviewModal({ isOpen, onClose, submission }: SEOReviewModalProps) {
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['keywords', 'questions', 'recommendations']))
   const [showRejectModal, setShowRejectModal] = useState(false)
   const [rejectionReason, setRejectionReason] = useState('')
+  const [keywordStatuses, setKeywordStatuses] = useState<KeywordStatus>({})
+  const [activeCommentIndex, setActiveCommentIndex] = useState<string | null>(null)
+  const [commentText, setCommentText] = useState('')
 
   const updateWorkflowStage = useMutation({
     mutationFn: async ({ stage, reason }: { stage: string; reason?: string }) => {
@@ -67,6 +79,38 @@ export default function SEOReviewModal({ isOpen, onClose, submission }: SEORevie
 
   const handleRequestChanges = () => {
     updateWorkflowStage.mutate({ stage: 'Revision_Requested' })
+  }
+
+  const handleKeywordAction = (keyword: string, type: string, action: 'approve' | 'reject') => {
+    const key = `${type}-${keyword}`
+    setKeywordStatuses(prev => ({
+      ...prev,
+      [key]: { status: action }
+    }))
+  }
+
+  const handleKeywordComment = (keyword: string, type: string) => {
+    const key = `${type}-${keyword}`
+    if (activeCommentIndex === key) {
+      // Save comment
+      if (commentText.trim()) {
+        setKeywordStatuses(prev => ({
+          ...prev,
+          [key]: { ...prev[key], comment: commentText }
+        }))
+      }
+      setActiveCommentIndex(null)
+      setCommentText('')
+    } else {
+      // Open comment
+      setActiveCommentIndex(key)
+      setCommentText(keywordStatuses[key]?.comment || '')
+    }
+  }
+
+  const getKeywordStatus = (keyword: string, type: string) => {
+    const key = `${type}-${keyword}`
+    return keywordStatuses[key]
   }
 
   // Mock SEO content for demo
@@ -145,6 +189,113 @@ export default function SEOReviewModal({ isOpen, onClose, submission }: SEORevie
     }
   }
 
+  const renderKeywordItem = (keyword: string, index: number, type: string) => {
+    const status = getKeywordStatus(keyword, type)
+    const key = `${type}-${keyword}`
+    const isCommenting = activeCommentIndex === key
+
+    return (
+      <div key={index} className="space-y-2">
+        <div className={`p-3 rounded-lg transition-all ${
+          status?.status === 'approved' ? 'bg-green-50 border border-green-200' : 
+          status?.status === 'rejected' ? 'bg-red-50 border border-red-200' : 
+          'bg-gray-50'
+        }`}>
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-gray-900 flex-1">{keyword}</span>
+            {status?.status && (
+              <span className={`text-xs px-2 py-1 rounded-full ${
+                status.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+              }`}>
+                {status.status === 'approved' ? 'Approved' : 'Rejected'}
+              </span>
+            )}
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => handleKeywordAction(keyword, type, 'approve')}
+              className={`p-1.5 rounded text-sm transition-colors ${
+                status?.status === 'approved' 
+                  ? 'bg-green-600 text-white' 
+                  : 'bg-white text-green-600 border border-green-600 hover:bg-green-50'
+              }`}
+              title="Approve"
+            >
+              <Check className="h-3.5 w-3.5" />
+            </button>
+            
+            <button
+              onClick={() => handleKeywordAction(keyword, type, 'reject')}
+              className={`p-1.5 rounded text-sm transition-colors ${
+                status?.status === 'rejected' 
+                  ? 'bg-red-600 text-white' 
+                  : 'bg-white text-red-600 border border-red-600 hover:bg-red-50'
+              }`}
+              title="Reject"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+            
+            <button
+              onClick={() => handleKeywordComment(keyword, type)}
+              className={`p-1.5 rounded text-sm transition-colors ${
+                status?.comment || isCommenting
+                  ? 'bg-blue-600 text-white' 
+                  : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-50'
+              }`}
+              title="Add Comment"
+            >
+              <MessageCircle className="h-3.5 w-3.5" />
+            </button>
+            
+            <button
+              className="p-1.5 bg-white text-blue-600 border border-blue-600 rounded hover:bg-blue-50 text-sm transition-colors"
+              title="Ask AI"
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        </div>
+        
+        {isCommenting && (
+          <div className="ml-4 p-3 bg-white border border-gray-200 rounded-lg">
+            <textarea
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+              placeholder="Add a comment..."
+              className="w-full p-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              rows={2}
+            />
+            <div className="mt-2 flex justify-end gap-2">
+              <button
+                onClick={() => {
+                  setActiveCommentIndex(null)
+                  setCommentText('')
+                }}
+                className="px-3 py-1 text-sm text-gray-600 hover:text-gray-800"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleKeywordComment(keyword, type)}
+                className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        )}
+        
+        {status?.comment && !isCommenting && (
+          <div className="ml-4 p-2 bg-blue-50 border-l-2 border-blue-400 text-sm text-gray-700">
+            {status.comment}
+          </div>
+        )}
+      </div>
+    )
+  }
+
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-50" onClose={onClose}>
@@ -210,15 +361,9 @@ export default function SEOReviewModal({ isOpen, onClose, submission }: SEORevie
                     </div>
                     {expandedSections.has('keywords') && (
                       <div className="p-6 space-y-3">
-                        {seoContent.seo_keywords.map((keyword: string, index: number) => (
-                          <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                            <span className="text-sm font-medium text-gray-900">{keyword}</span>
-                            <button className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700">
-                              <Sparkles className="h-4 w-4" />
-                              Ask AI
-                            </button>
-                          </div>
-                        ))}
+                        {seoContent.seo_keywords.map((keyword: string, index: number) => 
+                          renderKeywordItem(keyword, index, 'seo')
+                        )}
                       </div>
                     )}
                   </div>
@@ -234,15 +379,9 @@ export default function SEOReviewModal({ isOpen, onClose, submission }: SEORevie
                     </div>
                     {expandedSections.has('longtail') && (
                       <div className="p-6 space-y-3">
-                        {seoContent.longtail_keywords.map((keyword: string, index: number) => (
-                          <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                            <span className="text-sm text-gray-900">{keyword}</span>
-                            <button className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700">
-                              <Sparkles className="h-4 w-4" />
-                              Ask AI
-                            </button>
-                          </div>
-                        ))}
+                        {seoContent.longtail_keywords.map((keyword: string, index: number) => 
+                          renderKeywordItem(keyword, index, 'longtail')
+                        )}
                       </div>
                     )}
                   </div>
@@ -258,15 +397,9 @@ export default function SEOReviewModal({ isOpen, onClose, submission }: SEORevie
                     </div>
                     {expandedSections.has('questions') && (
                       <div className="p-6 space-y-3">
-                        {seoContent.consumer_questions.map((question: string, index: number) => (
-                          <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                            <span className="text-sm text-gray-900">{question}</span>
-                            <button className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700">
-                              <Sparkles className="h-4 w-4" />
-                              Ask AI
-                            </button>
-                          </div>
-                        ))}
+                        {seoContent.consumer_questions.map((question: string, index: number) => 
+                          renderKeywordItem(question, index, 'question')
+                        )}
                       </div>
                     )}
                   </div>
@@ -285,29 +418,17 @@ export default function SEOReviewModal({ isOpen, onClose, submission }: SEORevie
                         <div>
                           <h3 className="text-sm font-semibold text-gray-900 mb-3">H1 Recommendations:</h3>
                           <div className="space-y-3">
-                            {seoContent.h1_recommendations.map((h1, index) => (
-                              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                <span className="text-sm text-gray-900">{h1}</span>
-                                <button className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700">
-                                  <Sparkles className="h-4 w-4" />
-                                  Ask AI
-                                </button>
-                              </div>
-                            ))}
+                            {seoContent.h1_recommendations.map((h1, index) => 
+                              renderKeywordItem(h1, index, 'h1')
+                            )}
                           </div>
                         </div>
                         <div>
                           <h3 className="text-sm font-semibold text-gray-900 mb-3">H2 Recommendations:</h3>
                           <div className="space-y-3">
-                            {seoContent.h2_recommendations.map((h2, index) => (
-                              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                <span className="text-sm text-gray-900">{h2}</span>
-                                <button className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700">
-                                  <Sparkles className="h-4 w-4" />
-                                  Ask AI
-                                </button>
-                              </div>
-                            ))}
+                            {seoContent.h2_recommendations.map((h2, index) => 
+                              renderKeywordItem(h2, index, 'h2')
+                            )}
                           </div>
                         </div>
                       </div>
