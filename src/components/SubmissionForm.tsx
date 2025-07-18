@@ -259,21 +259,11 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
             />
           </div>
 
-          <div>
-            <label htmlFor="client_name" className="block text-sm font-medium text-gray-700 mb-1">
-              Client Name
-            </label>
-            <input
-              type="text"
-              id="client_name"
-              name="client_name"
-              value={formData.client_name}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Company or client name"
-            />
-          </div>
 
+
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label htmlFor="client_reviewer_name" className="block text-sm font-medium text-gray-700 mb-1">
               Client Reviewer Name
@@ -339,6 +329,21 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
       {/* Basic Information */}
       <div className="space-y-4 border-b pb-6">
         <h3 className="text-lg font-semibold text-gray-900">Basic Information</h3>
+        
+        <div>
+          <label htmlFor="client_name" className="block text-sm font-medium text-gray-700 mb-1">
+            Client Name
+          </label>
+          <input
+            type="text"
+            id="client_name"
+            name="client_name"
+            value={formData.client_name}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Company or client name"
+          />
+        </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
