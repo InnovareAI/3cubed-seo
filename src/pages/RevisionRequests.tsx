@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase, type Submission } from '../lib/supabase'
+import { AuditLogger } from '../lib/auditLogger'
 import { RefreshCw, MessageSquare, CheckCircle, XCircle, ChevronDown, ChevronUp } from 'lucide-react'
 import { format } from 'date-fns'
 
@@ -24,22 +25,34 @@ export default function RevisionRequests() {
   })
 
   const updateSubmission = useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: any }) => {
+    mutationFn: async ({ id, updates, action }: { id: string; updates: any; action: string }) => {
       const { error } = await supabase
         .from('submissions')
         .update(updates)
         .eq('id', id)
       
       if (error) throw error
+
+      // Log the action to audit trail
+      await AuditLogger.log({
+        entityType: 'submission',
+        entityId: id,
+        action: action,
+        changes: updates
+      })
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['revision-requests'] })
       setSelectedSubmission(null)
       setRevisionNotes({})
+    },
+    onError: async (error, variables) => {
+      // Log the error to audit trail
+      await AuditLogger.logError('submission', variables.id, variables.action, error)
     }
   })
 
-  const handleResubmit = (submission: Submission) => {
+  const handleResubmit = async (submission: Submission) => {
     // Determine which stage to return to based on rejection stage
     let newStage = 'SEO_Review'
     let newStatus = 'needs_review'
@@ -52,28 +65,35 @@ export default function RevisionRequests() {
       newStatus = 'mlr_review'
     }
 
+    const updates = {
+      workflow_stage: newStage,
+      langchain_status: newStatus,
+      rejection_stage: null,
+      rejection_reason: null,
+      rejected_by: null,
+      rejected_at: null,
+      revision_notes: revisionNotes[submission.id] || null,
+      updated_at: new Date().toISOString()
+    }
+
     updateSubmission.mutate({
       id: submission.id,
-      updates: {
-        workflow_stage: newStage,
-        langchain_status: newStatus,
-        rejection_stage: null,
-        rejection_reason: null,
-        rejected_by: null,
-        rejected_at: null,
-        updated_at: new Date().toISOString()
-      }
+      updates,
+      action: 'revision_resubmitted'
     })
   }
 
-  const handleCancel = (id: string) => {
+  const handleCancel = async (id: string) => {
+    const updates = {
+      workflow_stage: 'Cancelled',
+      langchain_status: 'cancelled',
+      updated_at: new Date().toISOString()
+    }
+
     updateSubmission.mutate({
       id,
-      updates: {
-        workflow_stage: 'Published',
-        langchain_status: 'rejected',
-        updated_at: new Date().toISOString()
-      }
+      updates,
+      action: 'submission_cancelled'
     })
   }
 

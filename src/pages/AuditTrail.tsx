@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
 import { 
   FileText, 
   CheckCircle, 
@@ -14,114 +13,35 @@ import {
   Shield,
   Key,
   Database,
-  Eye
+  Eye,
+  RefreshCw
 } from 'lucide-react'
-import { format } from 'date-fns'
+import { format, subDays, startOfDay, endOfDay } from 'date-fns'
+import { useAuditLogs, useAuditLogStats, formatActionName, getActionColor } from '../hooks/useAuditLogs'
+import { AuditLogger } from '../lib/auditLogger'
 
-type ActivityType = 'all' | 'content' | 'approval' | 'compliance' | 'security' | 'system' | 'data'
+type ActivityType = 'all' | 'submission' | 'auth' | 'user' | 'system' | 'client' | 'project'
 type DateRange = 'last24h' | 'last7d' | 'last30d' | 'last90d' | 'lastYear' | 'all'
-type Status = 'success' | 'warning' | 'error'
 
-interface AuditEntry {
-  id: string
-  timestamp: Date
-  user: string
-  action: string
-  details: string
-  ipAddress: string
-  status: Status
-  category: ActivityType
-  metadata?: {
-    objectId?: string
-    objectType?: string
-    changes?: Record<string, any>
+const getDateRangeFilter = (range: DateRange) => {
+  const now = new Date()
+  switch (range) {
+    case 'last24h':
+      return { start: subDays(now, 1), end: now }
+    case 'last7d':
+      return { start: subDays(now, 7), end: now }
+    case 'last30d':
+      return { start: subDays(now, 30), end: now }
+    case 'last90d':
+      return { start: subDays(now, 90), end: now }
+    case 'lastYear':
+      return { start: subDays(now, 365), end: now }
+    default:
+      return undefined
   }
 }
 
-const mockAuditData: AuditEntry[] = [
-  {
-    id: '1',
-    timestamp: new Date('2024-01-15 14:32:18'),
-    user: 'Sarah Johnson',
-    action: 'Content Created',
-    details: 'Created new landing page: KEYTRUDA® HCP Information',
-    ipAddress: '192.168.1.145',
-    status: 'success',
-    category: 'content'
-  },
-  {
-    id: '2',
-    timestamp: new Date('2024-01-15 13:45:22'),
-    user: 'Dr. Michael Chen',
-    action: 'MLR Approval',
-    details: 'Approved content for publication with minor edits',
-    ipAddress: '192.168.1.203',
-    status: 'success',
-    category: 'approval'
-  },
-  {
-    id: '3',
-    timestamp: new Date('2024-01-15 11:22:09'),
-    user: 'Emily Rodriguez',
-    action: 'Compliance Check',
-    details: 'Automated compliance scan completed',
-    ipAddress: '192.168.1.167',
-    status: 'warning',
-    category: 'compliance'
-  },
-  {
-    id: '4',
-    timestamp: new Date('2024-01-15 10:15:43'),
-    user: 'System',
-    action: 'API Key Generated',
-    details: 'New API key created for PubMed integration',
-    ipAddress: 'System',
-    status: 'success',
-    category: 'security'
-  },
-  {
-    id: '5',
-    timestamp: new Date('2024-01-15 09:30:12'),
-    user: 'James Wilson',
-    action: 'User Permission Change',
-    details: 'Updated user permissions for Marketing Team',
-    ipAddress: '192.168.1.112',
-    status: 'success',
-    category: 'security'
-  },
-  {
-    id: '6',
-    timestamp: new Date('2024-01-15 08:45:33'),
-    user: 'Dr. Lisa Park',
-    action: 'Content Rejection',
-    details: 'Rejected blog post due to unsupported claims',
-    ipAddress: '192.168.1.189',
-    status: 'error',
-    category: 'approval'
-  },
-  {
-    id: '7',
-    timestamp: new Date('2024-01-14 16:20:45'),
-    user: 'System',
-    action: 'Backup Completed',
-    details: 'Daily backup completed successfully',
-    ipAddress: 'System',
-    status: 'success',
-    category: 'system'
-  },
-  {
-    id: '8',
-    timestamp: new Date('2024-01-14 15:18:22'),
-    user: 'Robert Martinez',
-    action: 'Bulk Export',
-    details: 'Exported content library for Q4 2023 review',
-    ipAddress: '192.168.1.134',
-    status: 'success',
-    category: 'data'
-  }
-]
-
-const getStatusIcon = (status: Status) => {
+const getStatusIcon = (status: string) => {
   switch (status) {
     case 'success':
       return <CheckCircle className="h-4 w-4 text-green-500" />
@@ -129,23 +49,24 @@ const getStatusIcon = (status: Status) => {
       return <AlertCircle className="h-4 w-4 text-yellow-500" />
     case 'error':
       return <XCircle className="h-4 w-4 text-red-500" />
+    default:
+      return <Info className="h-4 w-4 text-gray-500" />
   }
 }
 
-const getCategoryIcon = (category: ActivityType) => {
-  switch (category) {
-    case 'content':
+const getCategoryIcon = (entityType: string) => {
+  switch (entityType) {
+    case 'submission':
       return <FileText className="h-4 w-4" />
-    case 'approval':
-      return <CheckCircle className="h-4 w-4" />
-    case 'compliance':
-      return <Shield className="h-4 w-4" />
-    case 'security':
+    case 'auth':
       return <Key className="h-4 w-4" />
+    case 'user':
+      return <User className="h-4 w-4" />
     case 'system':
       return <Database className="h-4 w-4" />
-    case 'data':
-      return <Download className="h-4 w-4" />
+    case 'client':
+    case 'project':
+      return <Shield className="h-4 w-4" />
     default:
       return <Info className="h-4 w-4" />
   }
@@ -155,33 +76,59 @@ export default function AuditTrail() {
   const [searchTerm, setSearchTerm] = useState('')
   const [activityType, setActivityType] = useState<ActivityType>('all')
   const [dateRange, setDateRange] = useState<DateRange>('last7d')
-  const [selectedEntry, setSelectedEntry] = useState<AuditEntry | null>(null)
+  const [selectedEntry, setSelectedEntry] = useState<any>(null)
 
-  // In a real app, this would fetch from the API
-  const { data: auditEntries = mockAuditData } = useQuery({
-    queryKey: ['audit-trail', activityType, dateRange, searchTerm],
-    queryFn: async () => {
-      // Simulate API call
-      return mockAuditData
-    }
-  })
+  // Get filter configuration
+  const filters = {
+    entityType: activityType === 'all' ? undefined : activityType,
+    dateRange: getDateRangeFilter(dateRange),
+    action: searchTerm || undefined,
+  }
 
-  const filteredEntries = auditEntries.filter(entry => {
-    if (searchTerm && !entry.details.toLowerCase().includes(searchTerm.toLowerCase()) &&
-        !entry.user.toLowerCase().includes(searchTerm.toLowerCase())) {
-      return false
-    }
-    if (activityType !== 'all' && entry.category !== activityType) {
-      return false
-    }
-    return true
-  })
+  // Fetch real audit logs
+  const { data: auditEntries = [], isLoading, error, refetch } = useAuditLogs(filters)
+  const { data: stats } = useAuditLogStats()
 
-  const stats = {
-    totalActivities: filteredEntries.length,
-    successRate: Math.round((filteredEntries.filter(e => e.status === 'success').length / filteredEntries.length) * 100),
-    activeUsers: new Set(filteredEntries.map(e => e.user)).size,
-    complianceScore: 98.2
+  const handleExport = async () => {
+    // Log the export action
+    await AuditLogger.logDataExport('audit_trail', {
+      dateRange,
+      activityType,
+      searchTerm,
+      recordCount: auditEntries.length
+    })
+
+    // Convert to CSV
+    const headers = ['Timestamp', 'User', 'Action', 'Entity Type', 'Entity ID', 'IP Address', 'Status']
+    const rows = auditEntries.map(entry => [
+      format(new Date(entry.created_at), 'yyyy-MM-dd HH:mm:ss'),
+      entry.user_email,
+      entry.action,
+      entry.entity_type,
+      entry.entity_id,
+      entry.ip_address,
+      entry.status
+    ])
+
+    const csv = [headers, ...rows].map(row => row.join(',')).join('\n')
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `audit_trail_${format(new Date(), 'yyyy-MM-dd_HH-mm-ss')}.csv`
+    a.click()
+    window.URL.revokeObjectURL(url)
+  }
+
+  if (error) {
+    return (
+      <div className="p-6">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-red-800">Error loading audit logs. Please ensure the audit_logs table exists in your database.</p>
+          <p className="text-sm text-red-600 mt-2">Error: {error.message}</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -213,7 +160,9 @@ export default function AuditTrail() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-500">Total Activities</p>
-              <p className="mt-1 text-2xl font-semibold text-gray-900">{stats.totalActivities}</p>
+              <p className="mt-1 text-2xl font-semibold text-gray-900">
+                {stats?.totalActivities || 0}
+              </p>
             </div>
             <Database className="h-8 w-8 text-gray-400" />
           </div>
@@ -222,7 +171,9 @@ export default function AuditTrail() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-500">Success Rate</p>
-              <p className="mt-1 text-2xl font-semibold text-gray-900">{stats.successRate}%</p>
+              <p className="mt-1 text-2xl font-semibold text-gray-900">
+                {stats?.successRate || 0}%
+              </p>
             </div>
             <CheckCircle className="h-8 w-8 text-green-500" />
           </div>
@@ -231,7 +182,9 @@ export default function AuditTrail() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-500">Active Users</p>
-              <p className="mt-1 text-2xl font-semibold text-gray-900">{stats.activeUsers}</p>
+              <p className="mt-1 text-2xl font-semibold text-gray-900">
+                {stats?.activeUsers || 0}
+              </p>
             </div>
             <User className="h-8 w-8 text-gray-400" />
           </div>
@@ -240,7 +193,9 @@ export default function AuditTrail() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-500">Compliance Score</p>
-              <p className="mt-1 text-2xl font-semibold text-gray-900">{stats.complianceScore}%</p>
+              <p className="mt-1 text-2xl font-semibold text-gray-900">
+                {stats?.complianceScore || 0}%
+              </p>
             </div>
             <Shield className="h-8 w-8 text-primary-600" />
           </div>
@@ -254,7 +209,7 @@ export default function AuditTrail() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Search activities..."
+              placeholder="Search actions..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 pr-3 py-2 border border-gray-300 rounded-md w-full text-sm"
@@ -266,15 +221,15 @@ export default function AuditTrail() {
             <select
               value={activityType}
               onChange={(e) => setActivityType(e.target.value as ActivityType)}
-              className="border border-gray-300 rounded-md text-sm flex-1"
+              className="border border-gray-300 rounded-md text-sm flex-1 px-3 py-2"
             >
               <option value="all">All Activities</option>
-              <option value="content">Content Changes</option>
-              <option value="approval">Approvals</option>
-              <option value="compliance">Compliance</option>
-              <option value="security">Security</option>
+              <option value="submission">Submissions</option>
+              <option value="auth">Authentication</option>
+              <option value="user">User Actions</option>
               <option value="system">System</option>
-              <option value="data">Data Operations</option>
+              <option value="client">Clients</option>
+              <option value="project">Projects</option>
             </select>
           </div>
           
@@ -283,7 +238,7 @@ export default function AuditTrail() {
             <select
               value={dateRange}
               onChange={(e) => setDateRange(e.target.value as DateRange)}
-              className="border border-gray-300 rounded-md text-sm flex-1"
+              className="border border-gray-300 rounded-md text-sm flex-1 px-3 py-2"
             >
               <option value="last24h">Last 24 Hours</option>
               <option value="last7d">Last 7 Days</option>
@@ -294,89 +249,121 @@ export default function AuditTrail() {
             </select>
           </div>
           
-          <button className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-sm">
-            <Download className="h-4 w-4" />
-            Export
-          </button>
+          <div className="flex gap-2">
+            <button 
+              onClick={() => refetch()}
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-sm"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Refresh
+            </button>
+            <button 
+              onClick={handleExport}
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-sm"
+            >
+              <Download className="h-4 w-4" />
+              Export
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Audit Log Table */}
       <div className="bg-white shadow rounded-lg overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Timestamp
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                User
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Action
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Details
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                IP Address
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Status
-              </th>
-              <th className="relative px-6 py-3">
-                <span className="sr-only">Actions</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {filteredEntries.map((entry) => (
-              <tr key={entry.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {format(entry.timestamp, 'yyyy-MM-dd HH:mm:ss')}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  <div className="flex items-center gap-2">
-                    <User className="h-4 w-4 text-gray-400" />
-                    {entry.user}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  <div className="flex items-center gap-2">
-                    {getCategoryIcon(entry.category)}
-                    {entry.action}
-                  </div>
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">
-                  {entry.details}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {entry.ipAddress}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center gap-2">
-                    {getStatusIcon(entry.status)}
-                    <span className={`text-sm ${
-                      entry.status === 'success' ? 'text-green-600' :
-                      entry.status === 'warning' ? 'text-yellow-600' :
-                      'text-red-600'
-                    }`}>
-                      {entry.status}
-                    </span>
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <button
-                    onClick={() => setSelectedEntry(entry)}
-                    className="text-primary-600 hover:text-primary-900"
-                  >
-                    <Eye className="h-4 w-4" />
-                  </button>
-                </td>
+        {isLoading ? (
+          <div className="p-6 text-center">
+            <RefreshCw className="h-8 w-8 text-gray-400 animate-spin mx-auto" />
+            <p className="mt-2 text-sm text-gray-500">Loading audit logs...</p>
+          </div>
+        ) : auditEntries.length === 0 ? (
+          <div className="p-6 text-center">
+            <Database className="h-12 w-12 text-gray-400 mx-auto" />
+            <p className="mt-2 text-sm text-gray-500">No audit logs found</p>
+            <p className="text-xs text-gray-400 mt-1">Activities will appear here as users interact with the system</p>
+          </div>
+        ) : (
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Timestamp
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  User
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Action
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Details
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  IP Address
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="relative px-6 py-3">
+                  <span className="sr-only">Actions</span>
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {auditEntries.map((entry: any) => (
+                <tr key={entry.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {format(new Date(entry.created_at), 'yyyy-MM-dd HH:mm:ss')}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <div className="flex items-center gap-2">
+                      <User className="h-4 w-4 text-gray-400" />
+                      {entry.user_email}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <div className="flex items-center gap-2">
+                      {getCategoryIcon(entry.entity_type)}
+                      <span className={getActionColor(entry.action)}>
+                        {formatActionName(entry.action)}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">
+                    <span className="font-medium">{entry.entity_type}:</span> {entry.entity_id}
+                    {entry.changes && Object.keys(entry.changes).length > 0 && (
+                      <span className="ml-2 text-xs text-gray-400">
+                        ({Object.keys(entry.changes).length} changes)
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {entry.ip_address}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center gap-2">
+                      {getStatusIcon(entry.status)}
+                      <span className={`text-sm ${
+                        entry.status === 'success' ? 'text-green-600' :
+                        entry.status === 'warning' ? 'text-yellow-600' :
+                        'text-red-600'
+                      }`}>
+                        {entry.status}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <button
+                      onClick={() => setSelectedEntry(entry)}
+                      className="text-primary-600 hover:text-primary-900"
+                    >
+                      <Eye className="h-4 w-4" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
 
       {/* Detail Modal */}
@@ -390,24 +377,34 @@ export default function AuditTrail() {
               <div>
                 <p className="text-sm font-medium text-gray-500">Timestamp</p>
                 <p className="mt-1 text-sm text-gray-900">
-                  {format(selectedEntry.timestamp, 'EEEE, MMMM d, yyyy HH:mm:ss')}
+                  {format(new Date(selectedEntry.created_at), 'EEEE, MMMM d, yyyy HH:mm:ss')}
                 </p>
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-500">User</p>
-                <p className="mt-1 text-sm text-gray-900">{selectedEntry.user}</p>
+                <p className="mt-1 text-sm text-gray-900">{selectedEntry.user_email}</p>
+                {selectedEntry.user_id && (
+                  <p className="text-xs text-gray-500">ID: {selectedEntry.user_id}</p>
+                )}
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-500">Action</p>
-                <p className="mt-1 text-sm text-gray-900">{selectedEntry.action}</p>
+                <p className="mt-1 text-sm text-gray-900">{formatActionName(selectedEntry.action)}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-500">Details</p>
-                <p className="mt-1 text-sm text-gray-900">{selectedEntry.details}</p>
+                <p className="text-sm font-medium text-gray-500">Entity</p>
+                <p className="mt-1 text-sm text-gray-900">
+                  Type: {selectedEntry.entity_type}<br />
+                  ID: {selectedEntry.entity_id}
+                </p>
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-500">IP Address</p>
-                <p className="mt-1 text-sm text-gray-900">{selectedEntry.ipAddress}</p>
+                <p className="mt-1 text-sm text-gray-900">{selectedEntry.ip_address}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">User Agent</p>
+                <p className="mt-1 text-sm text-gray-900 text-xs break-all">{selectedEntry.user_agent}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-500">Status</p>
@@ -416,11 +413,17 @@ export default function AuditTrail() {
                   <span className="text-sm text-gray-900">{selectedEntry.status}</span>
                 </div>
               </div>
-              {selectedEntry.metadata && (
+              {selectedEntry.error_message && (
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Additional Metadata</p>
+                  <p className="text-sm font-medium text-gray-500">Error Message</p>
+                  <p className="mt-1 text-sm text-red-600">{selectedEntry.error_message}</p>
+                </div>
+              )}
+              {selectedEntry.changes && Object.keys(selectedEntry.changes).length > 0 && (
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Changes</p>
                   <pre className="mt-1 text-sm text-gray-900 bg-gray-50 p-3 rounded-md overflow-x-auto">
-                    {JSON.stringify(selectedEntry.metadata, null, 2)}
+                    {JSON.stringify(selectedEntry.changes, null, 2)}
                   </pre>
                 </div>
               )}
