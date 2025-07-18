@@ -81,7 +81,7 @@ export default function SEOReviewModal({ isOpen, onClose, submission }: SEORevie
     updateWorkflowStage.mutate({ stage: 'Revision_Requested' })
   }
 
-  const handleKeywordAction = (keyword: string, type: string, action: 'approve' | 'reject') => {
+  const handleKeywordAction = (keyword: string, type: string, action: 'approved' | 'rejected') => {
     const key = `${type}-${keyword}`
     setKeywordStatuses(prev => ({
       ...prev,
@@ -214,7 +214,7 @@ export default function SEOReviewModal({ isOpen, onClose, submission }: SEORevie
           
           <div className="flex items-center gap-2">
             <button
-              onClick={() => handleKeywordAction(keyword, type, 'approve')}
+              onClick={() => handleKeywordAction(keyword, type, 'approved')}
               className={`p-1.5 rounded text-sm transition-colors ${
                 status?.status === 'approved' 
                   ? 'bg-green-600 text-white' 
@@ -226,7 +226,7 @@ export default function SEOReviewModal({ isOpen, onClose, submission }: SEORevie
             </button>
             
             <button
-              onClick={() => handleKeywordAction(keyword, type, 'reject')}
+              onClick={() => handleKeywordAction(keyword, type, 'rejected')}
               className={`p-1.5 rounded text-sm transition-colors ${
                 status?.status === 'rejected' 
                   ? 'bg-red-600 text-white' 
