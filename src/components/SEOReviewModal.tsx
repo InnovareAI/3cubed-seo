@@ -18,7 +18,13 @@ import {
   Target,
   BarChart3,
   FileText,
-  AlertCircle
+  AlertCircle,
+  Hash,
+  Heading1,
+  Heading2,
+  Code,
+  Globe2,
+  Map
 } from 'lucide-react'
 
 interface SEOReviewModalProps {
@@ -52,13 +58,18 @@ export default function SEOReviewModal({ isOpen, onClose, submission }: SEORevie
     client: '',
     ai: ''
   })
+  const [strategyComments, setStrategyComments] = useState({
+    client: '',
+    ai: ''
+  })
 
   const updateWorkflowStage = useMutation({
     mutationFn: async ({ stage, comments }: { stage: string; comments?: any }) => {
       const updateData: any = { 
         workflow_stage: stage,
         keyword_statuses: keywordStatuses,
-        review_comments: comments
+        review_comments: comments,
+        strategy_comments: strategyComments
       }
       
       const { error } = await supabase
@@ -305,7 +316,51 @@ Key findings:
       'What happens after the trial ends?',
       'Is travel assistance available for trial participants?',
       'How is my privacy protected during the trial?'
-    ]
+    ],
+    h1_tags: [
+      submission.h1_tag || 'Advanced Cancer Treatment Clinical Trial - Phase 3 Study',
+      'Join Our Groundbreaking Oncology Research Study',
+      'Clinical Trial for [Drug Name]: New Hope for Cancer Patients'
+    ],
+    h2_tags: [
+      'Eligibility Requirements and How to Apply',
+      'What to Expect During the Clinical Trial',
+      'Benefits of Participating in Our Study',
+      'Frequently Asked Questions About the Trial',
+      'Contact Our Research Team Today',
+      'Financial Support and Travel Assistance Available'
+    ],
+    schema_markup: {
+      type: 'MedicalStudy',
+      properties: [
+        '@context: "https://schema.org"',
+        '@type: "MedicalStudy"',
+        'name: "Phase 3 Clinical Trial for [Drug Name]"',
+        'description: "Clinical trial description"',
+        'sponsor: "Organization Name"',
+        'status: "Recruiting"',
+        'phase: "Phase 3"',
+        'studyLocation: [Multiple locations]',
+        'healthCondition: "[Medical Indication]"'
+      ]
+    },
+    geo_strategy: {
+      primary_markets: ['United States', 'Canada', 'United Kingdom'],
+      local_pages: [
+        'clinical-trials-new-york',
+        'clinical-trials-los-angeles',
+        'clinical-trials-chicago',
+        'clinical-trials-houston',
+        'clinical-trials-boston'
+      ],
+      ai_search_optimization: [
+        'Structured data for local trial sites',
+        'Natural language content for voice search',
+        'FAQ schema for common questions',
+        'Location-based landing pages',
+        'Regional dialect variations'
+      ]
+    }
   }
 
   const renderKeywordItem = (keyword: string, index: number, type: string) => {
@@ -521,19 +576,21 @@ Key findings:
 
                   <div className="max-h-[calc(100vh-200px)] overflow-y-auto p-6 space-y-6">
                     {/* SEO Strategy Document - First */}
-                    <div className="bg-white rounded-lg border border-gray-200">
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200 shadow-sm">
                       <div
-                        className="px-6 py-4 border-b border-gray-200 flex items-center justify-between cursor-pointer hover:bg-gray-50"
+                        className="px-6 py-4 border-b border-blue-200 flex items-center justify-between cursor-pointer hover:bg-blue-50/50 transition-colors"
                         onClick={() => toggleSection('strategy')}
                       >
                         <div className="flex items-center gap-3">
-                          <FileText className="h-5 w-5 text-blue-600" />
-                          <h2 className="text-lg font-medium text-gray-900">SEO Strategy & Competitive Analysis</h2>
+                          <div className="p-2 bg-blue-600 rounded-lg">
+                            <FileText className="h-5 w-5 text-white" />
+                          </div>
+                          <h2 className="text-lg font-semibold text-gray-900">SEO Strategy & Competitive Analysis</h2>
                         </div>
                         {expandedSections.has('strategy') ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
                       </div>
                       {expandedSections.has('strategy') && (
-                        <div className="p-6">
+                        <div className="p-6 bg-white/90">
                           {/* Executive Summary */}
                           <div className="mb-8">
                             <h3 className="text-lg font-semibold text-gray-900 mb-4">Executive Summary</h3>
@@ -738,6 +795,40 @@ Key findings:
                             </div>
                           </div>
 
+                          {/* Strategy Comments Section */}
+                          <div className="border-t pt-6">
+                            <h4 className="font-medium text-gray-900 mb-4">Strategy Review Comments</h4>
+                            <div className="space-y-4">
+                              <div>
+                                <label className="flex items-center gap-2 text-sm font-medium text-gray-900 mb-2">
+                                  <Users className="h-4 w-4 text-blue-600" />
+                                  Client Comments
+                                </label>
+                                <textarea
+                                  value={strategyComments.client}
+                                  onChange={(e) => setStrategyComments({ ...strategyComments, client: e.target.value })}
+                                  placeholder="Add comments for the client about the strategy..."
+                                  className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                  rows={3}
+                                />
+                              </div>
+                              
+                              <div>
+                                <label className="flex items-center gap-2 text-sm font-medium text-gray-900 mb-2">
+                                  <Bot className="h-4 w-4 text-orange-600" />
+                                  AI Instructions
+                                </label>
+                                <textarea
+                                  value={strategyComments.ai}
+                                  onChange={(e) => setStrategyComments({ ...strategyComments, ai: e.target.value })}
+                                  placeholder="Add instructions for AI to improve the strategy..."
+                                  className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                  rows={3}
+                                />
+                              </div>
+                            </div>
+                          </div>
+
                           {/* Strategy Review Actions */}
                           <div className="pt-6 border-t flex items-center justify-between">
                             <div className="text-sm text-gray-500">
@@ -774,16 +865,21 @@ Key findings:
                     </div>
 
                     {/* SEO Keywords Section */}
-                    <div className="bg-white rounded-lg border border-gray-200">
+                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200 shadow-sm">
                       <div
-                        className="px-6 py-4 border-b border-gray-200 flex items-center justify-between cursor-pointer hover:bg-gray-50"
+                        className="px-6 py-4 border-b border-green-200 flex items-center justify-between cursor-pointer hover:bg-green-50/50 transition-colors"
                         onClick={() => toggleSection('keywords')}
                       >
-                        <h2 className="text-lg font-medium text-gray-900">SEO Keywords ({seoContent.seo_keywords.length})</h2>
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-green-600 rounded-lg">
+                            <Hash className="h-5 w-5 text-white" />
+                          </div>
+                          <h2 className="text-lg font-semibold text-gray-900">SEO Keywords ({seoContent.seo_keywords.length})</h2>
+                        </div>
                         {expandedSections.has('keywords') ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
                       </div>
                       {expandedSections.has('keywords') && (
-                        <div className="p-6 space-y-3">
+                        <div className="p-6 bg-white/90 space-y-3">
                           {seoContent.seo_keywords.map((keyword: string, index: number) => 
                             renderKeywordItem(keyword, index, 'seo')
                           )}
@@ -792,16 +888,21 @@ Key findings:
                     </div>
 
                     {/* Longtail Keywords Section */}
-                    <div className="bg-white rounded-lg border border-gray-200">
+                    <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-200 shadow-sm">
                       <div
-                        className="px-6 py-4 border-b border-gray-200 flex items-center justify-between cursor-pointer hover:bg-gray-50"
+                        className="px-6 py-4 border-b border-purple-200 flex items-center justify-between cursor-pointer hover:bg-purple-50/50 transition-colors"
                         onClick={() => toggleSection('longtail')}
                       >
-                        <h2 className="text-lg font-medium text-gray-900">Longtail Keywords ({seoContent.longtail_keywords.length})</h2>
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-purple-600 rounded-lg">
+                            <TrendingUp className="h-5 w-5 text-white" />
+                          </div>
+                          <h2 className="text-lg font-semibold text-gray-900">Longtail Keywords ({seoContent.longtail_keywords.length})</h2>
+                        </div>
                         {expandedSections.has('longtail') ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
                       </div>
                       {expandedSections.has('longtail') && (
-                        <div className="p-6 space-y-3">
+                        <div className="p-6 bg-white/90 space-y-3">
                           {seoContent.longtail_keywords.map((keyword: string, index: number) => 
                             renderKeywordItem(keyword, index, 'longtail')
                           )}
@@ -810,19 +911,220 @@ Key findings:
                     </div>
 
                     {/* Consumer Questions Section */}
-                    <div className="bg-white rounded-lg border border-gray-200">
+                    <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-lg border border-orange-200 shadow-sm">
                       <div
-                        className="px-6 py-4 border-b border-gray-200 flex items-center justify-between cursor-pointer hover:bg-gray-50"
+                        className="px-6 py-4 border-b border-orange-200 flex items-center justify-between cursor-pointer hover:bg-orange-50/50 transition-colors"
                         onClick={() => toggleSection('questions')}
                       >
-                        <h2 className="text-lg font-medium text-gray-900">Consumer Questions ({seoContent.consumer_questions.length})</h2>
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-orange-600 rounded-lg">
+                            <MessageSquare className="h-5 w-5 text-white" />
+                          </div>
+                          <h2 className="text-lg font-semibold text-gray-900">Consumer Questions ({seoContent.consumer_questions.length})</h2>
+                        </div>
                         {expandedSections.has('questions') ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
                       </div>
                       {expandedSections.has('questions') && (
-                        <div className="p-6 space-y-3">
+                        <div className="p-6 bg-white/90 space-y-3">
                           {seoContent.consumer_questions.map((question: string, index: number) => 
                             renderKeywordItem(question, index, 'question')
                           )}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* H1 & H2 Tags Section */}
+                    <div className="bg-gradient-to-r from-indigo-50 to-blue-50 rounded-lg border border-indigo-200 shadow-sm">
+                      <div
+                        className="px-6 py-4 border-b border-indigo-200 flex items-center justify-between cursor-pointer hover:bg-indigo-50/50 transition-colors"
+                        onClick={() => toggleSection('headings')}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-indigo-600 rounded-lg">
+                            <Heading1 className="h-5 w-5 text-white" />
+                          </div>
+                          <h2 className="text-lg font-semibold text-gray-900">H1 & H2 Tags</h2>
+                        </div>
+                        {expandedSections.has('headings') ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                      </div>
+                      {expandedSections.has('headings') && (
+                        <div className="p-6 bg-white/90">
+                          <div className="mb-6">
+                            <h3 className="text-md font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                              <Heading1 className="h-5 w-5 text-indigo-600" />
+                              H1 Tags (Page Titles)
+                            </h3>
+                            <div className="space-y-3">
+                              {seoContent.h1_tags.map((tag: string, index: number) => 
+                                renderKeywordItem(tag, index, 'h1')
+                              )}
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <h3 className="text-md font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                              <Heading2 className="h-5 w-5 text-indigo-600" />
+                              H2 Tags (Section Headers)
+                            </h3>
+                            <div className="space-y-3">
+                              {seoContent.h2_tags.map((tag: string, index: number) => 
+                                renderKeywordItem(tag, index, 'h2')
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Schema Markup Section */}
+                    <div className="bg-gradient-to-r from-gray-50 to-slate-50 rounded-lg border border-gray-300 shadow-sm">
+                      <div
+                        className="px-6 py-4 border-b border-gray-300 flex items-center justify-between cursor-pointer hover:bg-gray-50/50 transition-colors"
+                        onClick={() => toggleSection('schema')}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-gray-600 rounded-lg">
+                            <Code className="h-5 w-5 text-white" />
+                          </div>
+                          <h2 className="text-lg font-semibold text-gray-900">Schema Markup</h2>
+                        </div>
+                        {expandedSections.has('schema') ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                      </div>
+                      {expandedSections.has('schema') && (
+                        <div className="p-6 bg-white/90">
+                          <div className="mb-4">
+                            <p className="text-sm text-gray-600 mb-3">
+                              Structured data implementation for enhanced search visibility:
+                            </p>
+                            <div className="bg-gray-900 rounded-lg p-4 overflow-x-auto">
+                              <pre className="text-sm text-gray-100">
+                                <code>{`{
+  ${seoContent.schema_markup.properties.join(',\n  ')}
+}`}</code>
+                              </pre>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center justify-between pt-4 border-t">
+                            <div className="text-sm text-gray-500">
+                              Review the schema markup structure
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <button
+                                onClick={() => handleKeywordAction('schema-markup', 'schema', 'approved')}
+                                className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
+                                  getKeywordStatus('schema-markup', 'schema')?.status === 'approved'
+                                    ? 'bg-green-600 text-white' 
+                                    : 'bg-white text-green-600 border border-green-600 hover:bg-green-50'
+                                }`}
+                              >
+                                <Check className="h-4 w-4 mr-1 inline" />
+                                Approve Schema
+                              </button>
+                              
+                              <button
+                                onClick={() => handleKeywordAction('schema-markup', 'schema', 'rejected')}
+                                className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
+                                  getKeywordStatus('schema-markup', 'schema')?.status === 'rejected'
+                                    ? 'bg-red-600 text-white' 
+                                    : 'bg-white text-red-600 border border-red-600 hover:bg-red-50'
+                                }`}
+                              >
+                                <X className="h-4 w-4 mr-1 inline" />
+                                Request Changes
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* GEO Strategy & AI Search Section */}
+                    <div className="bg-gradient-to-r from-teal-50 to-cyan-50 rounded-lg border border-teal-200 shadow-sm">
+                      <div
+                        className="px-6 py-4 border-b border-teal-200 flex items-center justify-between cursor-pointer hover:bg-teal-50/50 transition-colors"
+                        onClick={() => toggleSection('geo')}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-teal-600 rounded-lg">
+                            <Globe2 className="h-5 w-5 text-white" />
+                          </div>
+                          <h2 className="text-lg font-semibold text-gray-900">GEO Strategy & AI Search Optimization</h2>
+                        </div>
+                        {expandedSections.has('geo') ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                      </div>
+                      {expandedSections.has('geo') && (
+                        <div className="p-6 bg-white/90">
+                          <div className="mb-6">
+                            <h3 className="text-md font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                              <Map className="h-5 w-5 text-teal-600" />
+                              Primary Markets
+                            </h3>
+                            <div className="flex flex-wrap gap-2 mb-4">
+                              {seoContent.geo_strategy.primary_markets.map((market, idx) => (
+                                <span key={idx} className="px-3 py-1 bg-teal-100 text-teal-700 rounded-full text-sm font-medium">
+                                  {market}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="mb-6">
+                            <h3 className="text-md font-semibold text-gray-900 mb-3">Local Landing Pages</h3>
+                            <div className="grid grid-cols-2 gap-3">
+                              {seoContent.geo_strategy.local_pages.map((page, idx) => (
+                                <div key={idx} className="p-3 bg-gray-50 rounded-lg text-sm">
+                                  <code className="text-teal-600">/pages/{page}</code>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div>
+                            <h3 className="text-md font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                              <Bot className="h-5 w-5 text-teal-600" />
+                              AI Search Optimization
+                            </h3>
+                            <div className="space-y-3">
+                              {seoContent.geo_strategy.ai_search_optimization.map((strategy, idx) => (
+                                <div key={idx} className="flex items-start gap-3 p-3 bg-teal-50 rounded-lg">
+                                  <Check className="h-5 w-5 text-teal-600 flex-shrink-0 mt-0.5" />
+                                  <span className="text-sm text-gray-700">{strategy}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-between pt-6 border-t">
+                            <div className="text-sm text-gray-500">
+                              Review the GEO and AI search strategy
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <button
+                                onClick={() => handleKeywordAction('geo-strategy', 'geo', 'approved')}
+                                className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
+                                  getKeywordStatus('geo-strategy', 'geo')?.status === 'approved'
+                                    ? 'bg-green-600 text-white' 
+                                    : 'bg-white text-green-600 border border-green-600 hover:bg-green-50'
+                                }`}
+                              >
+                                <Check className="h-4 w-4 mr-1 inline" />
+                                Approve GEO Strategy
+                              </button>
+                              
+                              <button
+                                onClick={() => handleKeywordAction('geo-strategy', 'geo', 'rejected')}
+                                className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
+                                  getKeywordStatus('geo-strategy', 'geo')?.status === 'rejected'
+                                    ? 'bg-red-600 text-white' 
+                                    : 'bg-white text-red-600 border border-red-600 hover:bg-red-50'
+                                }`}
+                              >
+                                <X className="h-4 w-4 mr-1 inline" />
+                                Request Changes
+                              </button>
+                            </div>
+                          </div>
                         </div>
                       )}
                     </div>
