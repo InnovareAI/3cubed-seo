@@ -371,16 +371,6 @@ export default function ContentRequests() {
           </div>
         </div>
       </div>
-
-      {/* Submission Modal */}
-      <SubmissionModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)}
-        onSuccess={() => {
-          setIsModalOpen(false);
-          // Optionally refresh the data here
-        }}
-      />
     </div>
   )
 }

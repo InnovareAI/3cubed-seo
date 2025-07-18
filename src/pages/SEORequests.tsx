@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { supabase, type Submission } from '../lib/supabase'
 import { Link } from 'react-router-dom'
