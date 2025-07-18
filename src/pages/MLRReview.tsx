@@ -124,8 +124,8 @@ export default function MLRReview() {
       />
 
       <RoleInfoBanner
-        title="Your Role in MLR Review"
-        description="As the MLR reviewer, you'll ensure compliance with:"
+        title="MLR Review"
+        description="Medical legal compliance"
         bulletPoints={[
           'Medical accuracy and scientific validity of all claims',
           'Legal and regulatory requirements (FDA, FTC guidelines)',

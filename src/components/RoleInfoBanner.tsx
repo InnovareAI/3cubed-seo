@@ -45,13 +45,15 @@ export default function RoleInfoBanner({
   const classes = getVariantClasses()
 
   return (
-    <div className={`${classes.bg} border ${classes.border} rounded-lg p-4 mb-6`}>
-      <div className="flex items-start gap-3">
-        <Info className={`h-5 w-5 ${classes.icon} flex-shrink-0 mt-0.5`} />
+    <div className={`${classes.bg} border ${classes.border} rounded-lg p-3 mb-4`}>
+      <div className="flex items-start gap-2">
+        <Info className={`h-4 w-4 ${classes.icon} flex-shrink-0 mt-0.5`} />
         <div className="text-sm">
-          <p className={`font-medium mb-1 ${classes.title}`}>{title}</p>
-          <p className={classes.text}>{description}</p>
-          <ul className={`list-disc list-inside mt-1 ${classes.text}`}>
+          <div className="flex items-baseline gap-2 mb-1">
+            <span className={`font-semibold ${classes.title}`}>{title}</span>
+            <span className={`text-xs ${classes.text}`}>• {description}</span>
+          </div>
+          <ul className={`list-disc list-inside space-y-0.5 text-xs ${classes.text}`}>
             {bulletPoints.map((point, index) => (
               <li key={index}>{point}</li>
             ))}

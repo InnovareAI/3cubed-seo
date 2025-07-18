@@ -124,8 +124,8 @@ export default function ClientReview() {
       />
 
       <RoleInfoBanner
-        title="Your Role in Client Review"
-        description="As the brand representative, you'll ensure content aligns with business objectives:"
+        title="Client Review"
+        description="Brand alignment and commercial objectives"
         bulletPoints={[
           'Validate brand voice and messaging consistency',
           'Ensure commercial strategy alignment',

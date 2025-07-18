@@ -125,8 +125,8 @@ export default function SEOReview() {
       />
 
       <RoleInfoBanner
-        title="Your Role in SEO Review"
-        description="As the SEO specialist, you'll optimize content for search performance:"
+        title="SEO Review"
+        description="Search performance optimization"
         bulletPoints={[
           'Validate keyword strategy and search intent alignment',
           'Review meta descriptions and title tags for click-through optimization',
