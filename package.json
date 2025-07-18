@@ -10,7 +10,7 @@
     "deploy": "netlify deploy --prod"
   },
   "dependencies": {
-    "@headlessui/react": "^1.7.17",
+    "@headlessui/react": "^1.7.19",
     "@supabase/supabase-js": "^2.39.0",
     "@tanstack/react-query": "^5.17.0",
     "clsx": "^2.0.0",

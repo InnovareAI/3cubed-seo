@@ -5,25 +5,16 @@ import { supabase } from '../lib/supabase'
 import { 
   X,
   CheckCircle,
-  XCircle,
-  MessageSquare,
   ChevronDown,
   ChevronUp,
   Target,
-  TrendingUp,
   Users,
   Briefcase,
   Globe,
-  DollarSign,
   BarChart3,
-  FileText,
   AlertCircle,
   Info,
-  Sparkles,
   Building2,
-  Megaphone,
-  Eye,
-  ChartBar,
   ArrowRight
 } from 'lucide-react'
 
@@ -31,7 +22,7 @@ interface ClientApprovalModalProps {
   isOpen: boolean
   onClose: () => void
   submission: any
-  seoReviewData: any // Data from internal SEO review
+  seoReviewData?: any
 }
 
 interface ReviewSection {
@@ -52,7 +43,7 @@ interface ReviewItem {
   businessImpact?: 'high' | 'medium' | 'low'
 }
 
-export default function ClientApprovalModal({ isOpen, onClose, submission, seoReviewData }: ClientApprovalModalProps) {
+export default function ClientApprovalModal({ isOpen, onClose, submission }: ClientApprovalModalProps) {
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['brand']))
   const [responses, setResponses] = useState<Record<string, any>>({})
   const [comments, setComments] = useState<Record<string, string>>({})
@@ -310,7 +301,7 @@ export default function ClientApprovalModal({ isOpen, onClose, submission, seoRe
     }
   })
 
-  const renderReviewItem = (item: ReviewItem, sectionId: string) => {
+  const renderReviewItem = (item: ReviewItem) => {
     const itemKey = item.id
     const value = responses[itemKey]
 
@@ -322,29 +313,29 @@ export default function ClientApprovalModal({ isOpen, onClose, submission, seoRe
               {item.question}
               {item.required && <span className="text-red-500">*</span>}
               {item.businessImpact === 'high' && (
-                <span className="px-2 py-0.5 text-xs font-medium bg-orange-100 text-orange-700 rounded">
+                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800">
                   High Impact
                 </span>
               )}
             </h4>
-            <p className="text-xs text-gray-600 mt-1">{item.helpText}</p>
+            <p className="text-xs text-gray-500 mt-1">{item.helpText}</p>
           </div>
         </div>
 
         <div className="mt-3">
           {item.type === 'radio' && (
             <div className="space-y-2">
-              {item.options?.map(option => (
-                <label key={option} className="flex items-center gap-2 cursor-pointer">
+              {item.options?.map((option) => (
+                <label key={option} className="flex items-center">
                   <input
                     type="radio"
                     name={itemKey}
                     value={option}
                     checked={value === option}
                     onChange={(e) => updateResponse(itemKey, e.target.value)}
-                    className="text-blue-600 focus:ring-blue-500"
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500"
                   />
-                  <span className="text-sm text-gray-700">{option}</span>
+                  <span className="ml-2 text-sm text-gray-700">{option}</span>
                 </label>
               ))}
             </div>
@@ -352,47 +343,44 @@ export default function ClientApprovalModal({ isOpen, onClose, submission, seoRe
 
           {item.type === 'checkbox' && (
             <div className="space-y-2">
-              {item.options?.map(option => (
-                <label key={option} className="flex items-center gap-2 cursor-pointer">
+              {item.options?.map((option) => (
+                <label key={option} className="flex items-center">
                   <input
                     type="checkbox"
                     value={option}
                     checked={Array.isArray(value) && value.includes(option)}
                     onChange={(e) => {
-                      const currentValues = Array.isArray(value) ? value : []
+                      const current = Array.isArray(value) ? value : []
                       if (e.target.checked) {
-                        updateResponse(itemKey, [...currentValues, option])
+                        updateResponse(itemKey, [...current, option])
                       } else {
-                        updateResponse(itemKey, currentValues.filter(v => v !== option))
+                        updateResponse(itemKey, current.filter((v: string) => v !== option))
                       }
                     }}
-                    className="text-blue-600 focus:ring-blue-500 rounded"
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500"
                   />
-                  <span className="text-sm text-gray-700">{option}</span>
+                  <span className="ml-2 text-sm text-gray-700">{option}</span>
                 </label>
               ))}
             </div>
           )}
 
           {item.type === 'scale' && (
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600">Low</span>
-              <div className="flex gap-2">
-                {item.options?.map(option => (
-                  <button
-                    key={option}
-                    onClick={() => updateResponse(itemKey, option)}
-                    className={`w-10 h-10 rounded-full font-medium text-sm transition-colors ${
-                      value === option
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                    }`}
-                  >
-                    {option}
-                  </button>
-                ))}
-              </div>
-              <span className="text-sm text-gray-600">High</span>
+            <div className="flex items-center space-x-4">
+              {item.options?.map((option) => (
+                <label key={option} className="flex flex-col items-center">
+                  <input
+                    type="radio"
+                    name={itemKey}
+                    value={option}
+                    checked={value === option}
+                    onChange={(e) => updateResponse(itemKey, e.target.value)}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="mt-1 text-sm text-gray-700">{option}</span>
+                </label>
+              ))}
+              <span className="text-xs text-gray-500 ml-2">(1 = Low, 5 = High)</span>
             </div>
           )}
 
@@ -400,8 +388,7 @@ export default function ClientApprovalModal({ isOpen, onClose, submission, seoRe
             <textarea
               value={value || ''}
               onChange={(e) => updateResponse(itemKey, e.target.value)}
-              placeholder="Enter your response..."
-              className="w-full mt-2 p-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full mt-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
               rows={2}
             />
           )}
@@ -413,7 +400,7 @@ export default function ClientApprovalModal({ isOpen, onClose, submission, seoRe
   return (
     <>
       <Transition appear show={isOpen} as={Fragment}>
-        <Dialog as="div" className="relative z-50" onClose={onClose}>
+        <Dialog as="div" className="relative z-10" onClose={onClose}>
           <Transition.Child
             as={Fragment}
             enter="ease-out duration-300"
@@ -437,106 +424,105 @@ export default function ClientApprovalModal({ isOpen, onClose, submission, seoRe
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95"
               >
-                <Dialog.Panel className="w-full max-w-5xl transform overflow-hidden rounded-2xl bg-white text-left align-middle shadow-xl transition-all">
-                  {/* Header */}
-                  <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-6 py-4">
-                    <div className="flex items-center justify-between">
+                <Dialog.Panel className="w-full max-w-4xl transform overflow-hidden rounded-2xl bg-white text-left align-middle shadow-xl transition-all">
+                  <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 z-10">
+                    <div className="flex items-start justify-between">
                       <div>
-                        <Dialog.Title as="h3" className="text-2xl font-semibold text-gray-900 flex items-center gap-3">
-                          <Building2 className="h-7 w-7 text-blue-600" />
-                          Client Business Review
+                        <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900 flex items-center gap-2">
+                          <Building2 className="h-5 w-5 text-blue-600" />
+                          Client Review: {submission.product_name}
                         </Dialog.Title>
                         <p className="mt-1 text-sm text-gray-500">
                           Review SEO content for brand alignment and commercial objectives before MLR review
                         </p>
                       </div>
                       <button
+                        type="button"
+                        className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none"
                         onClick={onClose}
-                        className="rounded-md p-2 text-gray-400 hover:text-gray-600"
                       >
-                        <X className="h-5 w-5" />
+                        <X className="h-6 w-6" />
                       </button>
                     </div>
 
-                    {/* Progress */}
-                    <div className="mt-4 bg-gray-50 rounded-lg p-3">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-600">Review Progress</span>
-                        <span className="font-medium">
-                          {readiness.completed} of {readiness.totalRequired} required items
-                        </span>
+                    {/* Progress Bar */}
+                    <div className="mt-4">
+                      <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
+                        <span>{readiness.completed} of {readiness.totalRequired} required items completed</span>
+                        {readiness.highImpactConcerns > 0 && (
+                          <span className="text-orange-600 font-medium">
+                            {readiness.highImpactConcerns} high-impact concerns
+                          </span>
+                        )}
                       </div>
-                      <div className="mt-2 h-2 bg-gray-200 rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all"
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div
+                          className={`h-2 rounded-full transition-all ${
+                            readiness.canProceed ? 'bg-green-600' : 'bg-blue-600'
+                          }`}
                           style={{ width: `${(readiness.completed / readiness.totalRequired) * 100}%` }}
                         />
                       </div>
-                      {readiness.highImpactConcerns > 0 && (
-                        <p className="mt-2 text-sm text-orange-600 flex items-center gap-1">
-                          <AlertCircle className="h-4 w-4" />
-                          {readiness.highImpactConcerns} high-impact concerns identified
-                        </p>
-                      )}
                     </div>
                   </div>
 
-                  {/* Main Content */}
-                  <div className="max-h-[calc(100vh-280px)] overflow-y-auto">
-                    {/* Product Context */}
-                    <div className="px-6 py-4 bg-blue-50 border-b">
-                      <div className="flex items-start gap-4">
-                        <Sparkles className="h-5 w-5 text-blue-600 mt-0.5" />
-                        <div>
-                          <h3 className="font-medium text-gray-900">Product Context</h3>
-                          <p className="text-sm text-gray-700 mt-1">
-                            <strong>{submission.product_name}</strong> • {submission.therapeutic_area} • {submission.stage}
-                          </p>
-                          <p className="text-sm text-gray-600 mt-2">
-                            Target Audience: {submission.target_audience?.join(', ')}
+                  <div className="px-6 py-4 max-h-[70vh] overflow-y-auto">
+                    {/* Instructions */}
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                      <div className="flex items-start gap-3">
+                        <Info className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                        <div className="text-sm text-blue-900">
+                          <p className="font-medium mb-1">Your Review Focus</p>
+                          <p>As the brand owner, you're reviewing for:</p>
+                          <ul className="list-disc list-inside mt-1">
+                            <li>Brand voice and messaging consistency</li>
+                            <li>Business and commercial alignment</li>
+                            <li>Target audience appropriateness</li>
+                          </ul>
+                          <p className="mt-2 text-blue-800">
+                            MLR will handle all medical accuracy, legal compliance, and regulatory requirements.
                           </p>
                         </div>
                       </div>
                     </div>
 
                     {/* Review Sections */}
-                    <div className="p-6 space-y-6">
+                    <div className="space-y-4">
                       {reviewSections.map((section) => (
-                        <div key={section.id} className="border rounded-lg shadow-sm">
-                          <div
-                            className="px-4 py-3 bg-gray-50 flex items-center justify-between cursor-pointer hover:bg-gray-100"
+                        <div key={section.id} className="border rounded-lg overflow-hidden">
+                          <button
                             onClick={() => toggleSection(section.id)}
+                            className="w-full px-4 py-3 bg-gray-50 hover:bg-gray-100 flex items-center justify-between"
                           >
                             <div className="flex items-center gap-3">
-                              <div className="p-2 bg-white rounded-lg shadow-sm">
-                                {section.icon}
-                              </div>
-                              <div>
+                              <div className="text-gray-600">{section.icon}</div>
+                              <div className="text-left">
                                 <h3 className="font-medium text-gray-900">{section.title}</h3>
-                                <p className="text-sm text-gray-600">{section.description}</p>
+                                <p className="text-sm text-gray-500">{section.description}</p>
                               </div>
                             </div>
-                            {expandedSections.has(section.id) ? 
-                              <ChevronUp className="h-5 w-5 text-gray-400" /> : 
+                            {expandedSections.has(section.id) ? (
+                              <ChevronUp className="h-5 w-5 text-gray-400" />
+                            ) : (
                               <ChevronDown className="h-5 w-5 text-gray-400" />
-                            }
-                          </div>
+                            )}
+                          </button>
 
                           {expandedSections.has(section.id) && (
                             <div className="p-4 space-y-4">
-                              {section.items.map(item => renderReviewItem(item, section.id))}
+                              {section.items.map(renderReviewItem)}
                               
                               {/* Section Comments */}
                               <div className="mt-4 pt-4 border-t">
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                                  Additional Comments for {section.title}
+                                  Additional Comments (Optional)
                                 </label>
                                 <textarea
                                   value={comments[section.id] || ''}
                                   onChange={(e) => updateComment(section.id, e.target.value)}
-                                  placeholder="Add any specific feedback or concerns..."
-                                  className="w-full p-3 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
                                   rows={2}
+                                  placeholder="Any specific feedback for this section..."
                                 />
                               </div>
                             </div>
@@ -544,37 +530,30 @@ export default function ClientApprovalModal({ isOpen, onClose, submission, seoRe
                         </div>
                       ))}
                     </div>
-                  </div>
 
-                  {/* Action Footer */}
-                  <div className="sticky bottom-0 bg-gray-50 px-6 py-4 border-t border-gray-200">
-                    <div className="flex items-center justify-between">
-                      <div className="text-sm text-gray-600">
-                        {readiness.canProceed ? (
-                          <span className="flex items-center gap-2 text-green-600">
-                            <CheckCircle className="h-4 w-4" />
-                            Ready for MLR review
-                          </span>
-                        ) : (
-                          <span className="flex items-center gap-2">
-                            <Info className="h-4 w-4" />
-                            Complete all required items before proceeding
-                          </span>
-                        )}
-                      </div>
-                      
-                      <div className="flex items-center gap-3">
-                        <button
-                          onClick={() => {
-                            if (window.confirm('Request revisions from the SEO team?')) {
-                              submitReview.mutate('revise')
-                            }
-                          }}
-                          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-                        >
-                          <XCircle className="h-4 w-4 mr-2 inline" />
-                          Request Revisions
-                        </button>
+                    {/* Actions */}
+                    <div className="mt-6 pt-6 border-t">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-sm">
+                          {readiness.isComplete ? (
+                            <>
+                              <CheckCircle className="h-5 w-5 text-green-600" />
+                              <span className="text-green-700 font-medium">
+                                {readiness.canProceed 
+                                  ? 'Ready for MLR review'
+                                  : `${readiness.highImpactConcerns} high-impact concerns need addressing`
+                                }
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              <AlertCircle className="h-5 w-5 text-orange-600" />
+                              <span className="text-orange-700 font-medium">
+                                Complete all required items to proceed
+                              </span>
+                            </>
+                          )}
+                        </div>
                         <button
                           onClick={() => setShowSummary(true)}
                           disabled={!readiness.isComplete}

@@ -46,6 +46,7 @@ export interface Submission {
   project_id?: string
   submitter_name: string
   submitter_email: string
+  submitter_company?: string
   product_name: string
   therapeutic_area: string
   stage: string
@@ -66,6 +67,18 @@ export interface Submission {
   completed_at?: string
   created_at: string
   updated_at: string
+  // Additional fields for client review
+  seo_keywords?: string[]
+  target_audience?: string[]
+  medical_indication?: string
+  dosage_form?: string
+  competitors?: string[]
+  positioning?: string
+  client_review_responses?: any
+  client_review_comments?: any
+  client_reviewed_at?: string
+  client_reviewed_by?: string
+  ready_for_mlr?: boolean
 }
 
 export interface AuditLog {
