@@ -8,7 +8,7 @@ export const mockMLRReviews = [
     product_name: 'Arthroflex Pro',
     therapeutic_area: 'Rheumatology',
     stage: 'Launch',
-    priority_level: 'High' as const,
+    priority_level: 'high' as const,
     raw_input_content: 'Arthroflex Pro is a targeted therapy for rheumatoid arthritis...',
     ai_output: {
       strategy: 'Target rheumatologists and pain specialists with content focusing on efficacy data, safety profile, and patient quality of life improvements.',
@@ -16,7 +16,7 @@ export const mockMLRReviews = [
       contentPlan: 'Develop comprehensive content hub with clinical trial data, mechanism of action videos, and patient testimonials.'
     },
     langchain_status: 'client_approved',
-    workflow_stage: 'MLR_Review',
+    workflow_stage: 'mlr_review',
     langchain_retry_count: 0,
     created_at: new Date('2024-01-10').toISOString(),
     updated_at: new Date().toISOString(),
@@ -52,7 +52,7 @@ export const mockMLRReviews = [
     product_name: 'GlucoBalance XR',
     therapeutic_area: 'Endocrinology',
     stage: 'Pre-Launch',
-    priority_level: 'High' as const,
+    priority_level: 'high' as const,
     raw_input_content: 'GlucoBalance XR offers extended-release glucose control...',
     ai_output: {
       strategy: 'Focus on endocrinologists and primary care physicians. Emphasize 24-hour glucose control and reduced hypoglycemia risk.',
@@ -60,7 +60,7 @@ export const mockMLRReviews = [
       contentPlan: 'Create educational content on continuous glucose control, dosing convenience, and patient adherence benefits.'
     },
     langchain_status: 'client_approved',
-    workflow_stage: 'MLR_Review',
+    workflow_stage: 'mlr_review',
     langchain_retry_count: 0,
     created_at: new Date('2024-01-12').toISOString(),
     updated_at: new Date().toISOString(),
@@ -96,7 +96,7 @@ export const mockMLRReviews = [
     product_name: 'DermaClear',
     therapeutic_area: 'Dermatology',
     stage: 'Phase III',
-    priority_level: 'Medium' as const,
+    priority_level: 'medium' as const,
     raw_input_content: 'DermaClear is a breakthrough topical treatment for psoriasis...',
     ai_output: {
       strategy: 'Target dermatologists with clinical efficacy data. Secondary audience includes patients seeking alternative treatments.',
@@ -104,7 +104,7 @@ export const mockMLRReviews = [
       contentPlan: 'Develop visual before/after content, patient journey stories, and dermatologist endorsements.'
     },
     langchain_status: 'client_approved',
-    workflow_stage: 'MLR_Review',
+    workflow_stage: 'mlr_review',
     langchain_retry_count: 0,
     created_at: new Date('2024-01-14').toISOString(),
     updated_at: new Date().toISOString(),
