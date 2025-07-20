@@ -28,7 +28,7 @@ interface SEOStrategy {
   technical_seo: string[]
   content_strategy: string[]
   link_building: string[]
-  local_seo: string[]
+  geo_optimization: string[]
 }
 
 interface Submission {
@@ -109,11 +109,11 @@ export default function SEOReviewDetail() {
               'Collaborate with medical institutions',
               'Press releases for major trial milestones'
             ],
-            local_seo: [
-              'Optimize Google My Business for trial locations',
-              'Create city-specific content for each site',
-              'Target "clinical trials near me" searches',
-              'Build local medical community relationships'
+            geo_optimization: [
+              'Structure content for AI snippet extraction',
+              'Create concise, factual summaries for LLM consumption',
+              'Implement medical entity recognition markup',
+              'Optimize for voice search and conversational queries'
             ]
           }
         }
@@ -192,7 +192,7 @@ export default function SEOReviewDetail() {
     technical_seo: <Globe className="h-5 w-5" />,
     content_strategy: <BookOpen className="h-5 w-5" />,
     link_building: <Link2 className="h-5 w-5" />,
-    local_seo: <Target className="h-5 w-5" />
+    geo_optimization: <Sparkles className="h-5 w-5" />
   }
 
   const strategyTitles = {
@@ -200,7 +200,7 @@ export default function SEOReviewDetail() {
     technical_seo: 'Technical SEO',
     content_strategy: 'Content Strategy',
     link_building: 'Link Building',
-    local_seo: 'Local SEO'
+    geo_optimization: 'GEO (Generative Engine Optimization)'
   }
 
   return (

@@ -67,11 +67,12 @@ export const mockSEOReviews = [
         'Collaborate with cardiologist associations',
         'Press releases for new clinical data'
       ],
-      local_seo: [
-        'Optimize for "PCSK9 inhibitor near me" searches',
-        'Create location pages for specialty pharmacies',
-        'Target local cardiology practices',
-        'Build relationships with regional health systems'
+      geo_optimization: [
+        'Structure content for AI snippet extraction',
+        'Create concise, factual summaries for LLM consumption',
+        'Implement medical entity recognition markup',
+        'Optimize for voice search and conversational queries',
+        'Build authoritative Q&A content for AI training'
       ]
     }
   },
@@ -143,11 +144,12 @@ export const mockSEOReviews = [
         'Academic partnerships with research institutions',
         'Media outreach for trial milestones'
       ],
-      local_seo: [
-        'Target "Alzheimer\'s clinical trials near me"',
-        'Create pages for trial site locations',
-        'Partner with local neurologist offices',
-        'Community outreach programs'
+      geo_optimization: [
+        'Create AI-friendly clinical trial summaries',
+        'Optimize for "what is" and "how does" queries',
+        'Build structured data for mechanism of action',
+        'Generate clear, scannable fact sheets',
+        'Implement conversational content patterns'
       ]
     }
   },
@@ -222,11 +224,12 @@ export const mockSEOReviews = [
         'Patient advocacy group partnerships',
         'Medical journal publication outreach'
       ],
-      local_seo: [
-        'Target "rheumatologist near me" searches',
-        'Create infusion center locator',
-        'Partner with specialty pharmacies',
-        'Regional insurance coverage guides'
+      geo_optimization: [
+        'Create definition-style content for AI crawlers',
+        'Build comparative tables for LLM extraction',
+        'Optimize for zero-click search results',
+        'Structure content as knowledge graph entities',
+        'Implement citation-worthy medical facts'
       ]
     }
   }
