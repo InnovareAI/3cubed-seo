@@ -41,7 +41,39 @@ export const mockSEOReviews = [
       'Is evolocumab covered by insurance?'
     ],
     h1_tag: 'Xeltoris™ (evolocumab): Advanced PCSK9 Inhibitor for Cholesterol Management',
-    meta_description: 'Learn about Xeltoris™ (evolocumab), a once-monthly PCSK9 inhibitor that reduces LDL cholesterol by up to 60% and lowers cardiovascular risk. FDA-approved treatment option.'
+    meta_description: 'Learn about Xeltoris™ (evolocumab), a once-monthly PCSK9 inhibitor that reduces LDL cholesterol by up to 60% and lowers cardiovascular risk. FDA-approved treatment option.',
+    seo_strategy: {
+      content_architecture: [
+        'Create comprehensive cholesterol management hub page',
+        'Develop condition-specific landing pages for hyperlipidemia and cardiovascular risk',
+        'Build comparison pages: evolocumab vs statins, PCSK9 inhibitors comparison',
+        'Implement FAQ schema for common patient questions'
+      ],
+      technical_seo: [
+        'Implement MedicalDrug schema markup',
+        'Optimize page speed for mobile users',
+        'Create XML sitemap for all drug-related pages',
+        'Ensure HTTPS and security compliance for medical content'
+      ],
+      content_strategy: [
+        'Publish bi-weekly updates on cardiovascular research',
+        'Create patient success stories and testimonials',
+        'Develop downloadable cholesterol tracking tools',
+        'Regular updates on insurance coverage and access programs'
+      ],
+      link_building: [
+        'Partner with cardiovascular health organizations',
+        'Submit to medical directories and drug databases',
+        'Collaborate with cardiologist associations',
+        'Press releases for new clinical data'
+      ],
+      local_seo: [
+        'Optimize for "PCSK9 inhibitor near me" searches',
+        'Create location pages for specialty pharmacies',
+        'Target local cardiology practices',
+        'Build relationships with regional health systems'
+      ]
+    }
   },
   {
     id: 'mock-2',
@@ -85,7 +117,39 @@ export const mockSEOReviews = [
       'When will NeurogeniX be available?'
     ],
     h1_tag: 'NeurogeniX®: Breakthrough Dual-Action Treatment for Alzheimer\'s Disease',
-    meta_description: 'Discover NeurogeniX®, an innovative Alzheimer\'s treatment combining cognitive enhancement with neuroprotection. Currently in Phase III trials with promising results.'
+    meta_description: 'Discover NeurogeniX®, an innovative Alzheimer\'s treatment combining cognitive enhancement with neuroprotection. Currently in Phase III trials with promising results.',
+    seo_strategy: {
+      content_architecture: [
+        'Build comprehensive Alzheimer\'s resource center',
+        'Create stage-specific content (early, moderate, severe)',
+        'Develop caregiver support section',
+        'Clinical trial information hub'
+      ],
+      technical_seo: [
+        'Implement MedicalTrial schema for clinical studies',
+        'Ensure accessibility compliance for elderly users',
+        'Mobile optimization for caregiver access',
+        'Fast page load for global audience'
+      ],
+      content_strategy: [
+        'Weekly clinical trial updates and progress reports',
+        'Educational content about Alzheimer\'s stages',
+        'Caregiver tips and support resources',
+        'Expert interviews with neurologists'
+      ],
+      link_building: [
+        'Partner with Alzheimer\'s associations',
+        'Collaborate with memory care facilities',
+        'Academic partnerships with research institutions',
+        'Media outreach for trial milestones'
+      ],
+      local_seo: [
+        'Target "Alzheimer\'s clinical trials near me"',
+        'Create pages for trial site locations',
+        'Partner with local neurologist offices',
+        'Community outreach programs'
+      ]
+    }
   },
   {
     id: 'mock-3',
@@ -132,6 +196,38 @@ export const mockSEOReviews = [
       'Do I need regular blood tests while taking ImmunoShield?'
     ],
     h1_tag: 'ImmunoShield™: Next-Generation Selective JAK1 Inhibitor for Rheumatoid Arthritis',
-    meta_description: 'ImmunoShield™ offers targeted RA treatment with selective JAK1 inhibition. Experience rapid relief with improved safety and no routine monitoring. FDA approval pending.'
+    meta_description: 'ImmunoShield™ offers targeted RA treatment with selective JAK1 inhibition. Experience rapid relief with improved safety and no routine monitoring. FDA approval pending.',
+    seo_strategy: {
+      content_architecture: [
+        'Create RA treatment comparison hub',
+        'Build JAK inhibitor education center',
+        'Develop patient journey content',
+        'Safety comparison pages vs other JAK inhibitors'
+      ],
+      technical_seo: [
+        'Implement MedicalCondition schema for RA',
+        'Optimize for voice search queries',
+        'AMP pages for mobile users',
+        'International SEO for multi-country launch'
+      ],
+      content_strategy: [
+        'Patient success stories and case studies',
+        'Regular safety profile updates',
+        'Cost and insurance coverage guides',
+        'Treatment switching guides from DMARDs'
+      ],
+      link_building: [
+        'Partner with arthritis foundations',
+        'Collaborate with rheumatology societies',
+        'Patient advocacy group partnerships',
+        'Medical journal publication outreach'
+      ],
+      local_seo: [
+        'Target "rheumatologist near me" searches',
+        'Create infusion center locator',
+        'Partner with specialty pharmacies',
+        'Regional insurance coverage guides'
+      ]
+    }
   }
 ];

@@ -18,7 +18,6 @@ import {
   Globe,
   Link2,
   FileText,
-  TrendingUp,
   Lightbulb,
   BookOpen,
   Megaphone
