@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { 
   FileText, 
   CheckCircle, 
@@ -19,6 +19,7 @@ import {
 import { format, subDays } from 'date-fns'
 import { useAuditLogs, useAuditLogStats, formatActionName, getActionColor } from '../hooks/useAuditLogs'
 import { AuditLogger } from '../lib/auditLogger'
+import { mockAuditLogs, mockAuditStats } from '../data/mockAuditLogs'
 
 type ActivityType = 'all' | 'submission' | 'auth' | 'user' | 'system' | 'client' | 'project'
 type DateRange = 'last24h' | 'last7d' | 'last30d' | 'last90d' | 'lastYear' | 'all'
@@ -77,6 +78,7 @@ export default function AuditTrail() {
   const [activityType, setActivityType] = useState<ActivityType>('all')
   const [dateRange, setDateRange] = useState<DateRange>('last7d')
   const [selectedEntry, setSelectedEntry] = useState<any>(null)
+  const [useDemoData] = useState(true) // Toggle for demo data
 
   // Get filter configuration
   const filters = {
@@ -85,9 +87,50 @@ export default function AuditTrail() {
     action: searchTerm || undefined,
   }
 
-  // Fetch real audit logs
-  const { data: auditEntries = [], isLoading, error, refetch } = useAuditLogs(filters)
-  const { data: stats } = useAuditLogStats()
+  // Filter mock data based on current filters
+  const filteredMockData = useMemo(() => {
+    if (!useDemoData) return []
+    
+    let filtered = [...mockAuditLogs]
+    
+    // Filter by activity type
+    if (activityType !== 'all') {
+      filtered = filtered.filter(log => log.entity_type === activityType)
+    }
+    
+    // Filter by date range
+    const dateFilter = getDateRangeFilter(dateRange)
+    if (dateFilter) {
+      filtered = filtered.filter(log => {
+        const logDate = new Date(log.created_at)
+        return logDate >= dateFilter.start && logDate <= dateFilter.end
+      })
+    }
+    
+    // Filter by search term
+    if (searchTerm) {
+      const search = searchTerm.toLowerCase()
+      filtered = filtered.filter(log => 
+        log.action.toLowerCase().includes(search) ||
+        log.user_email.toLowerCase().includes(search) ||
+        log.entity_type.toLowerCase().includes(search) ||
+        log.entity_id.toLowerCase().includes(search)
+      )
+    }
+    
+    return filtered
+  }, [useDemoData, activityType, dateRange, searchTerm])
+
+  // Fetch real audit logs or use mock data
+  const { data: realAuditEntries = [], isLoading: realIsLoading, error, refetch } = useAuditLogs(
+    useDemoData ? { entityType: 'none' } : filters // Disable real query when using demo data
+  )
+  const { data: realStats } = useAuditLogStats()
+  
+  // Use mock or real data based on demo mode
+  const auditEntries = useDemoData ? filteredMockData : realAuditEntries
+  const stats = useDemoData ? mockAuditStats : realStats
+  const isLoading = useDemoData ? false : realIsLoading
 
   const handleExport = async () => {
     // Log the export action
