@@ -8,6 +8,8 @@ interface MetricCardProps {
   icon: ReactNode
   trend?: 'up' | 'down'
   status?: 'success' | 'warning' | 'danger'
+  iconColor?: string
+  iconBgColor?: string
 }
 
 export default function MetricCard({ 
@@ -16,13 +18,19 @@ export default function MetricCard({
   change, 
   icon, 
   trend,
-  status = 'success' 
+  status = 'success',
+  iconColor,
+  iconBgColor
 }: MetricCardProps) {
   const statusColors = {
     success: 'text-green-600 bg-green-50',
     warning: 'text-yellow-600 bg-yellow-50',
     danger: 'text-red-600 bg-red-50'
   }
+
+  const iconClasses = iconBgColor && iconColor 
+    ? `${iconBgColor} ${iconColor}` 
+    : statusColors[status]
 
   return (
     <div className="bg-white rounded-lg shadow p-6">
@@ -38,7 +46,7 @@ export default function MetricCard({
             </div>
           )}
         </div>
-        <div className={`rounded-lg p-3 ${statusColors[status]}`}>
+        <div className={`rounded-lg p-3 ${iconClasses}`}>
           {icon}
         </div>
       </div>
