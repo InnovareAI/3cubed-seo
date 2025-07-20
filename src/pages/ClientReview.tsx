@@ -34,15 +34,14 @@ export default function ClientReview() {
     queryKey: ['client-review-content', { searchQuery, selectedPriority, selectedClient, selectedStatus }],
     queryFn: async () => {
       if (useDemoData) {
-        // Filter mock data for Client Review stage
-        return mockSEOReviews.filter(s => 
-          s.workflow_stage === 'Client_Review' || 
-          s.workflow_stage === 'client_review'
-        ).map(s => ({
+        // Transform SEO Review mock data into Client Review data
+        return mockSEOReviews.slice(0, 6).map(s => ({
           ...s,
+          workflow_stage: 'Client_Review',
           client_review_status: Math.random() > 0.5 ? 'pending' : Math.random() > 0.5 ? 'approved' : 'revision_requested',
           client_approval_date: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
-          client_feedback: Math.random() > 0.5 ? 'Please revise the H2 tags to be more specific' : null
+          client_feedback: Math.random() > 0.5 ? 'Please revise the H2 tags to be more specific' : null,
+          seo_reviewed_at: new Date(Date.now() - Math.random() * 10 * 24 * 60 * 60 * 1000).toISOString()
         }))
       }
 
