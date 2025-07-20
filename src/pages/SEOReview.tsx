@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase } from '@/lib/supabase'
-import { ContentPiece } from '@/lib/supabase-new-schema'
+import { supabase, ContentPiece } from '@/lib/supabase'
 import { Search, CheckCircle, XCircle, AlertCircle, FileText } from 'lucide-react'
 import { format } from 'date-fns'
 
