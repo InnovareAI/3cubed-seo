@@ -8,7 +8,6 @@ import {
   ArrowLeft,
   Download,
   CheckCircle,
-  XCircle,
   MessageSquare,
   Copy,
   ChevronDown,
