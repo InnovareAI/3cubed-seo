@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { format } from 'date-fns'
 import { supabase, type ContentPiece, type ContentStatus } from '@/lib/supabase'
-import { Clock, CheckCircle, XCircle, AlertCircle, FileText, Search, Users, Shield } from 'lucide-react'
+import { Clock, CheckCircle, AlertCircle, FileText, Search, Users, Shield } from 'lucide-react'
 
 export default function ProcessingQueue() {
   const { data: contentPieces, isLoading } = useQuery({
