@@ -9,36 +9,18 @@ import {
   Filter, 
   Clock, 
   CheckCircle, 
-  AlertCircle,
   ArrowRight,
   Building,
   Calendar,
-  TrendingUp,
   MessageSquare,
   FileText,
   Users,
   ThumbsUp,
-  ThumbsDown,
   Edit3,
   Eye
 } from 'lucide-react'
 
-interface Submission {
-  id: string
-  product_name: string
-  therapeutic_area: string
-  stage: string
-  workflow_stage: string
-  target_audience: string[]
-  created_at: string
-  submitter_name: string
-  priority_level: string
-  client_name?: string
-  seo_reviewed_at?: string
-  client_review_status?: string
-  client_feedback?: string
-  client_approval_date?: string
-}
+
 
 export default function ClientReview() {
   const navigate = useNavigate()
