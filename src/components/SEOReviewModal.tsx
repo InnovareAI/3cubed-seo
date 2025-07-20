@@ -1,6 +1,6 @@
 import { Fragment } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
-import { X, Search, Target, BarChart3, AlertCircle, CheckCircle } from 'lucide-react'
+import { X, Target, BarChart3, AlertCircle, CheckCircle } from 'lucide-react'
 import { ContentPiece } from '@/lib/supabase'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
