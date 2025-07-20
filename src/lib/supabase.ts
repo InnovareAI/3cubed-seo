@@ -30,13 +30,16 @@ export interface Client {
 
 export interface Project {
   id: string
-  client_id: string
   name: string
-  product_name: string
+  client_name: string
   therapeutic_area: string
+  target_audience: string
   status: 'active' | 'completed' | 'on_hold'
   created_at: string
   updated_at: string
+  // Legacy fields from old schema
+  client_id?: string
+  product_name?: string
 }
 
 export interface Submission {
