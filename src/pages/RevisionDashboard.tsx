@@ -51,24 +51,24 @@ interface RevisionStats {
 
 const getReviewerTypeBadge = (rejectionStage: string) => {
   const config = {
-    'SEO_Review': { 
+    'seo_review': { 
       class: 'bg-blue-100 text-blue-800', 
       icon: <Search className="h-3 w-3" />,
       label: 'SEO Review'
     },
-    'Client_Review': { 
+    'client_review': { 
       class: 'bg-purple-100 text-purple-800', 
       icon: <Users className="h-3 w-3" />,
       label: 'Client Review'
     },
-    'MLR_Review': { 
+    'mlr_review': { 
       class: 'bg-green-100 text-green-800', 
       icon: <Shield className="h-3 w-3" />,
       label: 'MLR Review'
     }
   }
 
-  const typeConfig = config[rejectionStage as keyof typeof config] || config['SEO_Review']
+  const typeConfig = config[rejectionStage as keyof typeof config] || config['seo_review']
   
   return (
     <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${typeConfig.class}`}>
@@ -105,7 +105,7 @@ export default function RevisionDashboard() {
       const { data, error } = await supabase
         .from('submissions')
         .select('*')
-        .eq('workflow_stage', 'Revision_Requested')
+        .eq('workflow_stage', 'revision_requested')
         .order('rejected_at', { ascending: false })
       
       if (error) throw error
@@ -132,9 +132,9 @@ export default function RevisionDashboard() {
   // Filter submissions based on selected filter and search term
   const filteredSubmissions = submissions?.filter(submission => {
     const matchesFilter = filterBy === 'all' || 
-      (filterBy === 'seo' && submission.rejection_stage === 'SEO_Review') ||
-      (filterBy === 'client' && submission.rejection_stage === 'Client_Review') ||
-      (filterBy === 'mlr' && submission.rejection_stage === 'MLR_Review')
+      (filterBy === 'seo' && submission.rejection_stage === 'seo_review') ||
+      (filterBy === 'client' && submission.rejection_stage === 'client_review') ||
+      (filterBy === 'mlr' && submission.rejection_stage === 'mlr_review')
     
     const matchesSearch = searchTerm === '' || 
       submission.product_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -147,9 +147,9 @@ export default function RevisionDashboard() {
   // Calculate stats
   const stats: RevisionStats = {
     total: submissions?.length || 0,
-    seo: submissions?.filter(s => s.rejection_stage === 'SEO_Review').length || 0,
-    client: submissions?.filter(s => s.rejection_stage === 'Client_Review').length || 0,
-    mlr: submissions?.filter(s => s.rejection_stage === 'MLR_Review').length || 0,
+    seo: submissions?.filter(s => s.rejection_stage === 'seo_review').length || 0,
+    client: submissions?.filter(s => s.rejection_stage === 'client_review').length || 0,
+    mlr: submissions?.filter(s => s.rejection_stage === 'mlr_review').length || 0,
     high_priority: submissions?.filter(s => s.priority_level.toLowerCase() === 'high').length || 0,
     pending_7_days: submissions?.filter(s => {
       const rejectedDate = s.rejected_at ? new Date(s.rejected_at) : new Date()
@@ -170,12 +170,12 @@ export default function RevisionDashboard() {
 
   const handleResubmit = (submission: Submission) => {
     // Determine which stage to return to based on rejection stage
-    let newStage = submission.rejection_stage || 'SEO_Review'
+    let newStage = submission.rejection_stage || 'seo_review'
     let newStatus = 'needs_review'
     
-    if (submission.rejection_stage === 'Client_Review') {
+    if (submission.rejection_stage === 'client_review') {
       newStatus = 'client_review'
-    } else if (submission.rejection_stage === 'MLR_Review') {
+    } else if (submission.rejection_stage === 'mlr_review') {
       newStatus = 'mlr_review'
     }
 

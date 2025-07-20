@@ -12,10 +12,18 @@ import {
   Eye,
   EyeOff,
   Copy,
-  RefreshCw
+  RefreshCw,
+  GitBranch,
+  Bell,
+  Clock,
+  UserCheck,
+  AlertTriangle,
+  Mail,
+  MessageSquare,
+  Zap
 } from 'lucide-react'
 
-type TabType = 'users' | 'api' | 'integrations' | 'settings'
+type TabType = 'users' | 'api' | 'integrations' | 'settings' | 'workflow' | 'notifications'
 
 interface User {
   id: string
@@ -111,6 +119,8 @@ export default function Administration() {
 
   const tabs = [
     { id: 'users' as TabType, label: 'Users & Permissions', icon: Users },
+    { id: 'workflow' as TabType, label: 'Workflow Configuration', icon: GitBranch },
+    { id: 'notifications' as TabType, label: 'Notifications', icon: Bell },
     { id: 'api' as TabType, label: 'API Keys', icon: Key },
     { id: 'integrations' as TabType, label: 'Integrations', icon: Link },
     { id: 'settings' as TabType, label: 'System Settings', icon: Settings },
@@ -198,6 +208,574 @@ export default function Administration() {
           ))}
         </nav>
       </div>
+
+      {/* Workflow Configuration Tab */}
+      {activeTab === 'workflow' && (
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-lg font-medium text-gray-900">Workflow Configuration</h2>
+            <button className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary-600 bg-primary-50 rounded-md hover:bg-primary-100">
+              <RefreshCw className="h-4 w-4" />
+              Reset to Defaults
+            </button>
+          </div>
+
+          {/* SLA Configuration */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
+              <Clock className="h-5 w-5 text-gray-600" />
+              SLA Timers
+            </h3>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    SEO Review SLA
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      defaultValue="24"
+                      className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
+                    />
+                    <select className="block w-32 border-gray-300 rounded-md shadow-sm">
+                      <option>Hours</option>
+                      <option>Days</option>
+                    </select>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Time allowed for SEO optimization</p>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Client Review SLA
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      defaultValue="48"
+                      className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
+                    />
+                    <select className="block w-32 border-gray-300 rounded-md shadow-sm">
+                      <option>Hours</option>
+                      <option>Days</option>
+                    </select>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Time allowed for client approval</p>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    MLR Review SLA
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      defaultValue="72"
+                      className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
+                    />
+                    <select className="block w-32 border-gray-300 rounded-md shadow-sm">
+                      <option>Hours</option>
+                      <option>Days</option>
+                    </select>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Time allowed for medical-legal review</p>
+                </div>
+              </div>
+              
+              <div className="border-t border-gray-200 pt-4">
+                <label className="flex items-center gap-3">
+                  <input type="checkbox" defaultChecked className="rounded text-primary-600" />
+                  <span className="text-sm text-gray-700">Send reminder when 50% of SLA time has elapsed</span>
+                </label>
+                <label className="flex items-center gap-3 mt-2">
+                  <input type="checkbox" defaultChecked className="rounded text-primary-600" />
+                  <span className="text-sm text-gray-700">Auto-escalate when SLA is breached</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          {/* Auto-Assignment Rules */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
+              <UserCheck className="h-5 w-5 text-gray-600" />
+              Auto-Assignment Rules
+            </h3>
+            <div className="space-y-4">
+              <div className="border rounded-lg p-4">
+                <h4 className="font-medium text-gray-900 mb-3">SEO Review Assignment</h4>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Assignment Method</label>
+                    <select className="block w-full border-gray-300 rounded-md shadow-sm">
+                      <option>Round-robin</option>
+                      <option>Load balanced</option>
+                      <option>By therapeutic area</option>
+                      <option>Manual assignment</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Default Assignees</label>
+                    <select multiple className="block w-full border-gray-300 rounded-md shadow-sm h-20">
+                      <option selected>SEO Team Lead</option>
+                      <option selected>Content Optimizer 1</option>
+                      <option>Content Optimizer 2</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="border rounded-lg p-4">
+                <h4 className="font-medium text-gray-900 mb-3">Client Review Assignment</h4>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Assignment Method</label>
+                    <select className="block w-full border-gray-300 rounded-md shadow-sm">
+                      <option>By client account</option>
+                      <option>By product line</option>
+                      <option>Round-robin</option>
+                      <option>Manual assignment</option>
+                    </select>
+                  </div>
+                  <label className="flex items-center gap-3">
+                    <input type="checkbox" defaultChecked className="rounded text-primary-600" />
+                    <span className="text-sm text-gray-700">Auto-notify client contact via email</span>
+                  </label>
+                </div>
+              </div>
+              
+              <div className="border rounded-lg p-4">
+                <h4 className="font-medium text-gray-900 mb-3">MLR Review Assignment</h4>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Assignment Method</label>
+                    <select className="block w-full border-gray-300 rounded-md shadow-sm">
+                      <option>By therapeutic area expertise</option>
+                      <option>By risk level</option>
+                      <option>Sequential review</option>
+                      <option>Committee review</option>
+                    </select>
+                  </div>
+                  <label className="flex items-center gap-3">
+                    <input type="checkbox" defaultChecked className="rounded text-primary-600" />
+                    <span className="text-sm text-gray-700">Require minimum 2 reviewers for high-risk content</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Escalation Paths */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-gray-600" />
+              Escalation Paths
+            </h3>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">SLA Breach Escalation</label>
+                  <select className="block w-full border-gray-300 rounded-md shadow-sm">
+                    <option>Notify Team Lead</option>
+                    <option>Notify Department Manager</option>
+                    <option>Notify VP of Marketing</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Compliance Flag Escalation</label>
+                  <select className="block w-full border-gray-300 rounded-md shadow-sm">
+                    <option>Notify Legal Team</option>
+                    <option>Notify Compliance Officer</option>
+                    <option>Notify Medical Affairs Director</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">High Priority Content Escalation</label>
+                <div className="space-y-2">
+                  <label className="flex items-center gap-3">
+                    <input type="checkbox" defaultChecked className="rounded text-primary-600" />
+                    <span className="text-sm text-gray-700">Auto-escalate high priority items after 24 hours</span>
+                  </label>
+                  <label className="flex items-center gap-3">
+                    <input type="checkbox" defaultChecked className="rounded text-primary-600" />
+                    <span className="text-sm text-gray-700">Send daily digest of overdue items to management</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Workflow Triggers */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
+              <Zap className="h-5 w-5 text-gray-600" />
+              Workflow Triggers
+            </h3>
+            <div className="space-y-4">
+              <div className="border rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-medium text-gray-900">Auto-advance to next stage</h4>
+                  <input type="checkbox" defaultChecked className="rounded text-primary-600" />
+                </div>
+                <p className="text-sm text-gray-600">Automatically move content to the next review stage when approved</p>
+              </div>
+              
+              <div className="border rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-medium text-gray-900">Skip stages for low-risk content</h4>
+                  <input type="checkbox" className="rounded text-primary-600" />
+                </div>
+                <p className="text-sm text-gray-600">Allow direct submission to MLR for pre-approved content types</p>
+              </div>
+              
+              <div className="border rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-medium text-gray-900">Parallel review mode</h4>
+                  <input type="checkbox" className="rounded text-primary-600" />
+                </div>
+                <p className="text-sm text-gray-600">Allow SEO and Client reviews to happen simultaneously</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex justify-end">
+            <button className="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700">
+              Save Workflow Settings
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Notifications Tab */}
+      {activeTab === 'notifications' && (
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-lg font-medium text-gray-900">Notification Settings</h2>
+            <button className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary-600 bg-primary-50 rounded-md hover:bg-primary-100">
+              <Bell className="h-4 w-4" />
+              Test All Notifications
+            </button>
+          </div>
+
+          {/* Email Notification Templates */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
+              <Mail className="h-5 w-5 text-gray-600" />
+              Email Notification Templates
+            </h3>
+            <div className="space-y-4">
+              <div className="border rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-medium text-gray-900">New Content Submission</h4>
+                  <label className="flex items-center gap-2">
+                    <input type="checkbox" defaultChecked className="rounded text-primary-600" />
+                    <span className="text-sm text-gray-700">Enabled</span>
+                  </label>
+                </div>
+                <div className="space-y-2">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Recipients</label>
+                    <select multiple className="block w-full border-gray-300 rounded-md shadow-sm h-16 text-sm">
+                      <option selected>SEO Team</option>
+                      <option>Content Managers</option>
+                      <option>Submitter</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Subject Line</label>
+                    <input
+                      type="text"
+                      defaultValue="[New Submission] {product_name} - {therapeutic_area}"
+                      className="block w-full border-gray-300 rounded-md shadow-sm text-sm"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="border rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-medium text-gray-900">Review Stage Completion</h4>
+                  <label className="flex items-center gap-2">
+                    <input type="checkbox" defaultChecked className="rounded text-primary-600" />
+                    <span className="text-sm text-gray-700">Enabled</span>
+                  </label>
+                </div>
+                <div className="space-y-2">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Trigger Events</label>
+                    <div className="space-y-1 mt-1">
+                      <label className="flex items-center gap-2">
+                        <input type="checkbox" defaultChecked className="rounded text-primary-600" />
+                        <span className="text-sm text-gray-700">SEO Review Completed</span>
+                      </label>
+                      <label className="flex items-center gap-2">
+                        <input type="checkbox" defaultChecked className="rounded text-primary-600" />
+                        <span className="text-sm text-gray-700">Client Review Completed</span>
+                      </label>
+                      <label className="flex items-center gap-2">
+                        <input type="checkbox" defaultChecked className="rounded text-primary-600" />
+                        <span className="text-sm text-gray-700">MLR Review Completed</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="border rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-medium text-gray-900">SLA Warnings</h4>
+                  <label className="flex items-center gap-2">
+                    <input type="checkbox" defaultChecked className="rounded text-primary-600" />
+                    <span className="text-sm text-gray-700">Enabled</span>
+                  </label>
+                </div>
+                <div className="space-y-2">
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">First Warning</label>
+                      <div className="flex items-center gap-2 mt-1">
+                        <input type="number" defaultValue="50" className="block w-20 border-gray-300 rounded-md shadow-sm text-sm" />
+                        <span className="text-sm text-gray-600">% of SLA</span>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Second Warning</label>
+                      <div className="flex items-center gap-2 mt-1">
+                        <input type="number" defaultValue="75" className="block w-20 border-gray-300 rounded-md shadow-sm text-sm" />
+                        <span className="text-sm text-gray-600">% of SLA</span>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Final Warning</label>
+                      <div className="flex items-center gap-2 mt-1">
+                        <input type="number" defaultValue="90" className="block w-20 border-gray-300 rounded-md shadow-sm text-sm" />
+                        <span className="text-sm text-gray-600">% of SLA</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="border rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-medium text-gray-900">Compliance Alerts</h4>
+                  <label className="flex items-center gap-2">
+                    <input type="checkbox" defaultChecked className="rounded text-primary-600" />
+                    <span className="text-sm text-gray-700">Enabled</span>
+                  </label>
+                </div>
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2">
+                    <input type="checkbox" defaultChecked className="rounded text-primary-600" />
+                    <span className="text-sm text-gray-700">High-risk content flagged</span>
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input type="checkbox" defaultChecked className="rounded text-primary-600" />
+                    <span className="text-sm text-gray-700">Off-label promotion detected</span>
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input type="checkbox" defaultChecked className="rounded text-primary-600" />
+                    <span className="text-sm text-gray-700">Missing safety information</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Slack Integration */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
+              <MessageSquare className="h-5 w-5 text-gray-600" />
+              Slack Integration
+            </h3>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <CheckCircle className="h-5 w-5 text-green-600" />
+                  <div>
+                    <p className="font-medium text-gray-900">Connected to Workspace</p>
+                    <p className="text-sm text-gray-600">3cubed-pharma.slack.com</p>
+                  </div>
+                </div>
+                <button className="text-sm text-red-600 hover:text-red-700">Disconnect</button>
+              </div>
+
+              <div className="space-y-3">
+                <h4 className="font-medium text-gray-900">Channel Notifications</h4>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-700">New submissions</span>
+                    <div className="flex items-center gap-2">
+                      <input type="checkbox" defaultChecked className="rounded text-primary-600" />
+                      <select className="text-sm border-gray-300 rounded-md">
+                        <option>#content-updates</option>
+                        <option>#seo-team</option>
+                        <option>#general</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-700">MLR approvals</span>
+                    <div className="flex items-center gap-2">
+                      <input type="checkbox" defaultChecked className="rounded text-primary-600" />
+                      <select className="text-sm border-gray-300 rounded-md">
+                        <option>#mlr-approvals</option>
+                        <option>#content-updates</option>
+                        <option>#general</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-700">Compliance flags</span>
+                    <div className="flex items-center gap-2">
+                      <input type="checkbox" defaultChecked className="rounded text-primary-600" />
+                      <select className="text-sm border-gray-300 rounded-md">
+                        <option>#compliance-alerts</option>
+                        <option>#mlr-team</option>
+                        <option>#urgent</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Alert Thresholds */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-gray-600" />
+              Alert Thresholds
+            </h3>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Queue Size Alert
+                  </label>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-600 w-24">SEO Queue:</span>
+                      <input type="number" defaultValue="20" className="w-20 border-gray-300 rounded-md shadow-sm text-sm" />
+                      <span className="text-sm text-gray-600">items</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-600 w-24">Client Queue:</span>
+                      <input type="number" defaultValue="15" className="w-20 border-gray-300 rounded-md shadow-sm text-sm" />
+                      <span className="text-sm text-gray-600">items</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-600 w-24">MLR Queue:</span>
+                      <input type="number" defaultValue="10" className="w-20 border-gray-300 rounded-md shadow-sm text-sm" />
+                      <span className="text-sm text-gray-600">items</span>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Overdue Content Alert
+                  </label>
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2">
+                      <input type="checkbox" defaultChecked className="rounded text-primary-600" />
+                      <span className="text-sm text-gray-700">Alert when any item exceeds SLA</span>
+                    </label>
+                    <label className="flex items-center gap-2">
+                      <input type="checkbox" defaultChecked className="rounded text-primary-600" />
+                      <span className="text-sm text-gray-700">Alert when 5+ items are overdue</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Digest Settings */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
+              <Clock className="h-5 w-5 text-gray-600" />
+              Digest Email Configuration
+            </h3>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="border rounded-lg p-4">
+                  <h4 className="font-medium text-gray-900 mb-3">Daily Digest</h4>
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2">
+                      <input type="checkbox" defaultChecked className="rounded text-primary-600" />
+                      <span className="text-sm text-gray-700">Enabled</span>
+                    </label>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Send Time</label>
+                      <input type="time" defaultValue="09:00" className="mt-1 block w-full border-gray-300 rounded-md shadow-sm text-sm" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Recipients</label>
+                      <select className="mt-1 block w-full border-gray-300 rounded-md shadow-sm text-sm">
+                        <option>All Team Leads</option>
+                        <option>Management Only</option>
+                        <option>Custom List</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="border rounded-lg p-4">
+                  <h4 className="font-medium text-gray-900 mb-3">Weekly Summary</h4>
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2">
+                      <input type="checkbox" defaultChecked className="rounded text-primary-600" />
+                      <span className="text-sm text-gray-700">Enabled</span>
+                    </label>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Send Day</label>
+                      <select className="mt-1 block w-full border-gray-300 rounded-md shadow-sm text-sm">
+                        <option>Monday</option>
+                        <option>Friday</option>
+                      </select>
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      Includes: Completion metrics, SLA performance, top performers
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="border rounded-lg p-4">
+                  <h4 className="font-medium text-gray-900 mb-3">Monthly Report</h4>
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2">
+                      <input type="checkbox" defaultChecked className="rounded text-primary-600" />
+                      <span className="text-sm text-gray-700">Enabled</span>
+                    </label>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Send On</label>
+                      <select className="mt-1 block w-full border-gray-300 rounded-md shadow-sm text-sm">
+                        <option>First day of month</option>
+                        <option>Last day of month</option>
+                      </select>
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      Includes: Full analytics, compliance metrics, trend analysis
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex justify-end gap-3">
+            <button className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+              Preview Templates
+            </button>
+            <button className="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700">
+              Save Notification Settings
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Users & Permissions Tab */}
       {activeTab === 'users' && (

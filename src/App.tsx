@@ -18,6 +18,7 @@ import ClientDashboard from './pages/ClientDashboard'
 import SubmissionDetail from './pages/SubmissionDetail'
 import SEOReviewDetail from './pages/SEOReviewDetail'
 import ClientReviewDetail from './pages/ClientReviewDetail'
+import MLRReviewDetail from './pages/MLRReviewDetail'
 
 // Temporary placeholder component for missing pages
 function ComingSoon({ title }: { title: string }) {
@@ -84,7 +85,9 @@ function App() {
             <Route path="compliance" element={<Compliance />} />
             <Route path="revisions" element={<RevisionDashboard />} />
             <Route path="mlr-review" element={<MLRReview />} />
+            <Route path="mlr-review/:id" element={<MLRReviewDetail />} />
             <Route path="client-management" element={<ClientManagement />} />
+            <Route path="admin/clients" element={<ClientManagement />} />
             <Route path="current-projects" element={<CurrentProjects />} />
             <Route path="content-hub" element={<ComingSoon title="SEO Content Hub" />} />
             <Route path="audit" element={<AuditTrail />} />
