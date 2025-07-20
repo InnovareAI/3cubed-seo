@@ -19,12 +19,17 @@ export default function SEOReview() {
         .select(`
           *,
           project:projects(name, client_name, therapeutic_area),
-          assigned_user:users!assigned_to(email, full_name)
+          assigned_user:users!content_pieces_assigned_to_fkey(email, full_name)
         `)
         .eq('status', 'pending_seo_review')
         .order('created_at', { ascending: true })
       
-      if (error) throw error
+      if (error) {
+        console.error('Supabase error:', error)
+        throw error
+      }
+      
+      console.log('Fetched content:', data)
       return data as ContentPiece[]
     }
   })
