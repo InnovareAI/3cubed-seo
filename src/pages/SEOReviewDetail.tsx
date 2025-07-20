@@ -86,7 +86,7 @@ export default function SEOReviewDetail() {
   const [useDemoData] = useState(true)
   
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
-    new Set(['keywords', 'technical', 'strategy'])
+    new Set(['strategy', 'keywords', 'technical'])
   )
   const [showRejectModal, setShowRejectModal] = useState(false)
   const [rejectionReason, setRejectionReason] = useState('')
@@ -100,22 +100,18 @@ export default function SEOReviewDetail() {
         const mockSubmission = mockSEOReviews.find(s => s.id === id)
         if (!mockSubmission) throw new Error('Submission not found')
         
-        // Add missing technical fields for demo
+        // Add missing technical fields for demo with reduced tags
         return {
           ...mockSubmission,
           h2_tags: [
-            'Understanding PCSK9 Inhibition and Cholesterol Management',
-            'How Xeltoris™ Works: Mechanism of Action',
-            'Clinical Trial Results and Efficacy Data',
-            'Safety Profile and Side Effects',
-            'Dosing and Administration Guide'
+            'Understanding PCSK9 Inhibition',
+            'Clinical Trial Results',
+            'Safety and Administration'
           ],
           h3_tags: [
             'What is PCSK9?',
-            'LDL Receptor Function',
-            'Monthly Injection Benefits',
-            'Insurance Coverage Options',
-            'Patient Support Programs'
+            'Insurance Coverage',
+            'Patient Support'
           ],
           schema_markup: {
             "@context": "https://schema.org",
@@ -194,12 +190,8 @@ export default function SEOReviewDetail() {
 
   const renderReviewableItem = (item: ReviewableItem, showCompliance = false) => (
     <div key={item.id} className="bg-gray-50 rounded-lg p-4 space-y-3">
-      <div className="flex items-start justify-between">
-        <p className="text-sm text-gray-900 flex-1 mr-4">{item.content}</p>
-        <button className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 whitespace-nowrap">
-          <Sparkles className="h-4 w-4" />
-          Ask AI
-        </button>
+      <div className="flex items-start justify-between gap-4">
+        <p className="text-sm text-gray-900 flex-1">{item.content}</p>
       </div>
       
       {/* Action Buttons Row */}
@@ -209,8 +201,9 @@ export default function SEOReviewDetail() {
           variant={item.approved ? "success" : "secondary"}
           icon={<Check className="h-3 w-3" />}
           onClick={() => updateItemState(item.id, 'approved', !item.approved)}
+          className={item.approved ? "bg-green-600 hover:bg-green-700 text-white" : ""}
         >
-          {item.approved ? 'Approved' : 'Approve'}
+          Approve
         </CTAButton>
         
         <CTAButton
@@ -218,20 +211,31 @@ export default function SEOReviewDetail() {
           variant={item.rejected ? "danger" : "secondary"}
           icon={<X className="h-3 w-3" />}
           onClick={() => updateItemState(item.id, 'rejected', !item.rejected)}
+          className={item.rejected ? "bg-red-600 hover:bg-red-700 text-white" : ""}
         >
-          {item.rejected ? 'Rejected' : 'Reject'}
+          Reject
         </CTAButton>
         
         {showCompliance && (
           <CTAButton
             size="sm"
-            variant={item.complianceFlag ? "danger" : "secondary"}
+            variant="secondary"
             icon={<Shield className="h-3 w-3" />}
             onClick={() => updateItemState(item.id, 'complianceFlag', !item.complianceFlag)}
+            className={item.complianceFlag ? "bg-yellow-500 hover:bg-yellow-600 text-white" : "bg-yellow-100 text-yellow-700 hover:bg-yellow-200"}
           >
-            {item.complianceFlag ? 'Compliance Issue' : 'Flag Compliance'}
+            Compliance Check
           </CTAButton>
         )}
+        
+        <CTAButton
+          size="sm"
+          variant="primary"
+          icon={<Sparkles className="h-3 w-3" />}
+          className="bg-blue-600 hover:bg-blue-700 text-white"
+        >
+          Ask AI
+        </CTAButton>
       </div>
       
       {/* Comment Field */}
@@ -251,7 +255,7 @@ export default function SEOReviewDetail() {
         <div className="flex gap-2 text-xs">
           {item.approved && <span className="text-green-600 font-medium">✓ Approved</span>}
           {item.rejected && <span className="text-red-600 font-medium">✗ Rejected</span>}
-          {item.complianceFlag && <span className="text-orange-600 font-medium">⚠ Compliance Review</span>}
+          {item.complianceFlag && <span className="text-yellow-600 font-medium">⚠ Compliance Review Required</span>}
         </div>
       )}
     </div>
@@ -404,6 +408,137 @@ export default function SEOReviewDetail() {
         </div>
       </div>
 
+      {/* SEO Strategy Section - MOVED TO TOP */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div
+          className="px-6 py-4 border-b border-gray-200 flex items-center justify-between cursor-pointer hover:bg-gray-50"
+          onClick={() => toggleSection('strategy')}
+        >
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-green-100 rounded-lg">
+              <Lightbulb className="h-5 w-5 text-green-600" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">SEO Strategy Recommendations</h2>
+              <p className="text-sm text-gray-500">Comprehensive strategy for content, technical SEO, and AI optimization</p>
+            </div>
+          </div>
+          {expandedSections.has('strategy') ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+        </div>
+        
+        {expandedSections.has('strategy') && submission.seo_strategy && (
+          <div className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Content Architecture */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-gray-600" />
+                  <h3 className="font-semibold text-gray-900">Content Architecture</h3>
+                </div>
+                <ul className="space-y-2">
+                  {submission.seo_strategy.content_architecture.map((item, index) => (
+                    <li key={index} className="flex items-start">
+                      <span className="text-blue-500 mr-2 mt-0.5">•</span>
+                      <span className="text-sm text-gray-700">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              
+              {/* Technical SEO */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Globe className="h-5 w-5 text-gray-600" />
+                  <h3 className="font-semibold text-gray-900">Technical SEO</h3>
+                </div>
+                <ul className="space-y-2">
+                  {submission.seo_strategy.technical_seo.map((item, index) => (
+                    <li key={index} className="flex items-start">
+                      <span className="text-blue-500 mr-2 mt-0.5">•</span>
+                      <span className="text-sm text-gray-700">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              
+              {/* Content Strategy */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <BookOpen className="h-5 w-5 text-gray-600" />
+                  <h3 className="font-semibold text-gray-900">Content Strategy</h3>
+                </div>
+                <ul className="space-y-2">
+                  {submission.seo_strategy.content_strategy.map((item, index) => (
+                    <li key={index} className="flex items-start">
+                      <span className="text-blue-500 mr-2 mt-0.5">•</span>
+                      <span className="text-sm text-gray-700">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              
+              {/* Link Building */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Link2 className="h-5 w-5 text-gray-600" />
+                  <h3 className="font-semibold text-gray-900">Link Building</h3>
+                </div>
+                <ul className="space-y-2">
+                  {submission.seo_strategy.link_building.map((item, index) => (
+                    <li key={index} className="flex items-start">
+                      <span className="text-blue-500 mr-2 mt-0.5">•</span>
+                      <span className="text-sm text-gray-700">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+            
+            {/* GEO Optimization - Full Width */}
+            <div className="mt-6 pt-6 border-t space-y-3">
+              <div className="flex items-center gap-2">
+                <Brain className="h-5 w-5 text-purple-600" />
+                <h3 className="font-semibold text-gray-900">GEO (Generative Engine Optimization)</h3>
+              </div>
+              <div className="bg-purple-50 rounded-lg p-4">
+                <ul className="space-y-2">
+                  {submission.seo_strategy.geo_optimization.map((item, index) => (
+                    <li key={index} className="flex items-start">
+                      <span className="text-purple-600 mr-2 mt-0.5">•</span>
+                      <span className="text-sm text-gray-700">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+                
+                {submission.geo_optimization && (
+                  <div className="mt-4 pt-4 border-t border-purple-200">
+                    <h4 className="text-sm font-semibold text-gray-900 mb-2">AI-Optimized Summary</h4>
+                    <p className="text-sm text-gray-700 mb-3">{submission.geo_optimization.ai_summary}</p>
+                    <div className="flex gap-2">
+                      <CTAButton size="sm" variant="secondary" icon={<Copy className="h-3 w-3" />}>
+                        Copy GEO Data
+                      </CTAButton>
+                      <CTAButton size="sm" variant="secondary" icon={<Brain className="h-3 w-3" />}>
+                        Test with AI
+                      </CTAButton>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            <div className="mt-6 flex gap-3">
+              <CTAButton variant="secondary" icon={<Copy className="h-4 w-4" />}>
+                Copy Full Strategy
+              </CTAButton>
+              <CTAButton variant="secondary" icon={<Megaphone className="h-4 w-4" />}>
+                Generate Implementation Plan
+              </CTAButton>
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Keywords & Questions Section */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         <div
@@ -549,7 +684,7 @@ export default function SEOReviewDetail() {
               </div>
             )}
             
-            {/* H2 Tags */}
+            {/* H2 Tags - Reduced */}
             {submission.h2_tags && submission.h2_tags.length > 0 && (
               <div>
                 <h3 className="text-sm font-semibold text-gray-900 mb-3">H2 Tags ({submission.h2_tags.length})</h3>
@@ -567,7 +702,7 @@ export default function SEOReviewDetail() {
               </div>
             )}
             
-            {/* H3 Tags */}
+            {/* H3 Tags - Reduced */}
             {submission.h3_tags && submission.h3_tags.length > 0 && (
               <div>
                 <h3 className="text-sm font-semibold text-gray-900 mb-3">H3 Tags ({submission.h3_tags.length})</h3>
@@ -604,137 +739,6 @@ export default function SEOReviewDetail() {
                 </div>
               </div>
             )}
-          </div>
-        )}
-      </div>
-
-      {/* SEO Strategy Section */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div
-          className="px-6 py-4 border-b border-gray-200 flex items-center justify-between cursor-pointer hover:bg-gray-50"
-          onClick={() => toggleSection('strategy')}
-        >
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <Lightbulb className="h-5 w-5 text-green-600" />
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900">SEO Strategy Recommendations</h2>
-              <p className="text-sm text-gray-500">Comprehensive strategy for content, technical SEO, and AI optimization</p>
-            </div>
-          </div>
-          {expandedSections.has('strategy') ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
-        </div>
-        
-        {expandedSections.has('strategy') && submission.seo_strategy && (
-          <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Content Architecture */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <FileText className="h-5 w-5 text-gray-600" />
-                  <h3 className="font-semibold text-gray-900">Content Architecture</h3>
-                </div>
-                <ul className="space-y-2">
-                  {submission.seo_strategy.content_architecture.map((item, index) => (
-                    <li key={index} className="flex items-start">
-                      <span className="text-blue-500 mr-2 mt-0.5">•</span>
-                      <span className="text-sm text-gray-700">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              
-              {/* Technical SEO */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <Globe className="h-5 w-5 text-gray-600" />
-                  <h3 className="font-semibold text-gray-900">Technical SEO</h3>
-                </div>
-                <ul className="space-y-2">
-                  {submission.seo_strategy.technical_seo.map((item, index) => (
-                    <li key={index} className="flex items-start">
-                      <span className="text-blue-500 mr-2 mt-0.5">•</span>
-                      <span className="text-sm text-gray-700">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              
-              {/* Content Strategy */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <BookOpen className="h-5 w-5 text-gray-600" />
-                  <h3 className="font-semibold text-gray-900">Content Strategy</h3>
-                </div>
-                <ul className="space-y-2">
-                  {submission.seo_strategy.content_strategy.map((item, index) => (
-                    <li key={index} className="flex items-start">
-                      <span className="text-blue-500 mr-2 mt-0.5">•</span>
-                      <span className="text-sm text-gray-700">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              
-              {/* Link Building */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <Link2 className="h-5 w-5 text-gray-600" />
-                  <h3 className="font-semibold text-gray-900">Link Building</h3>
-                </div>
-                <ul className="space-y-2">
-                  {submission.seo_strategy.link_building.map((item, index) => (
-                    <li key={index} className="flex items-start">
-                      <span className="text-blue-500 mr-2 mt-0.5">•</span>
-                      <span className="text-sm text-gray-700">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-            
-            {/* GEO Optimization - Full Width */}
-            <div className="mt-6 pt-6 border-t space-y-3">
-              <div className="flex items-center gap-2">
-                <Brain className="h-5 w-5 text-purple-600" />
-                <h3 className="font-semibold text-gray-900">GEO (Generative Engine Optimization)</h3>
-              </div>
-              <div className="bg-purple-50 rounded-lg p-4">
-                <ul className="space-y-2">
-                  {submission.seo_strategy.geo_optimization.map((item, index) => (
-                    <li key={index} className="flex items-start">
-                      <span className="text-purple-600 mr-2 mt-0.5">•</span>
-                      <span className="text-sm text-gray-700">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-                
-                {submission.geo_optimization && (
-                  <div className="mt-4 pt-4 border-t border-purple-200">
-                    <h4 className="text-sm font-semibold text-gray-900 mb-2">AI-Optimized Summary</h4>
-                    <p className="text-sm text-gray-700 mb-3">{submission.geo_optimization.ai_summary}</p>
-                    <div className="flex gap-2">
-                      <CTAButton size="sm" variant="secondary" icon={<Copy className="h-3 w-3" />}>
-                        Copy GEO Data
-                      </CTAButton>
-                      <CTAButton size="sm" variant="secondary" icon={<Brain className="h-3 w-3" />}>
-                        Test with AI
-                      </CTAButton>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-            
-            <div className="mt-6 flex gap-3">
-              <CTAButton variant="secondary" icon={<Copy className="h-4 w-4" />}>
-                Copy Full Strategy
-              </CTAButton>
-              <CTAButton variant="secondary" icon={<Megaphone className="h-4 w-4" />}>
-                Generate Implementation Plan
-              </CTAButton>
-            </div>
           </div>
         )}
       </div>
