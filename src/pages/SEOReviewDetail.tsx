@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
+import CTAButton from '@/components/CTAButton'
+import { mockSEOReviews } from '@/data/mockSEOReviews'
 import { 
   ArrowLeft,
   Download,
@@ -12,142 +14,143 @@ import {
   ChevronDown,
   ChevronUp,
   Sparkles,
-  Send,
-  Check,
-  X
+  Target,
+  Globe,
+  Link2,
+  FileText,
+  TrendingUp,
+  Lightbulb,
+  BookOpen,
+  Megaphone
 } from 'lucide-react'
 
-interface ReviewableItem {
+interface SEOStrategy {
+  content_architecture: string[]
+  technical_seo: string[]
+  content_strategy: string[]
+  link_building: string[]
+  local_seo: string[]
+}
+
+interface Submission {
   id: string
-  content: string
-  approved: boolean
-  sentToClient: boolean
-  comment: string
+  product_name: string
+  therapeutic_area: string
+  stage: string
+  workflow_stage: string
+  target_audience: string[]
+  created_at: string
+  submitter_name: string
+  submitter_email: string
+  priority_level: string
+  medical_indication?: string
+  langchain_status?: string
+  geography?: string[]
+  client_name?: string
+  mechanism_of_action?: string
+  key_differentiators?: string[]
+  seo_keywords?: string[]
+  long_tail_keywords?: string[]
+  consumer_questions?: string[]
+  h1_tag?: string
+  h1_recommendations?: string[]
+  h2_recommendations?: string[]
+  meta_title?: string
+  meta_description?: string
+  schema_markup?: any
+  geo_recommendations?: any
+  seo_strategy?: SEOStrategy
 }
 
 export default function SEOReviewDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const [useDemoData] = useState(true) // Always use demo data for now
   
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
-    new Set(['seo_keywords', 'long_tail_keywords', 'consumer_questions', 'tags', 'geo'])
+    new Set(['strategy']) // Strategy section expanded by default
   )
   const [showRejectModal, setShowRejectModal] = useState(false)
   const [rejectionReason, setRejectionReason] = useState('')
-  
-  // Track individual item approvals/comments
-  const [itemStates, setItemStates] = useState<Record<string, ReviewableItem>>({})
 
-  // Fetch content with all new fields
-  const { data: content, isLoading } = useQuery({
+  // Get submission from mock data or database
+  const { data: submission, isLoading } = useQuery({
     queryKey: ['seo-review-detail', id],
     queryFn: async () => {
+      if (useDemoData) {
+        // Find submission in mock data
+        const mockSubmission = mockSEOReviews.find(s => s.id === id)
+        if (!mockSubmission) throw new Error('Submission not found')
+        
+        // Add mock SEO strategy if not present
+        if (!mockSubmission.seo_strategy) {
+          mockSubmission.seo_strategy = {
+            content_architecture: [
+              'Create a main clinical trial hub page targeting primary keywords',
+              'Develop location-specific landing pages for each trial site',
+              'Build disease education content to capture top-of-funnel traffic',
+              'Implement FAQ schema for common patient questions'
+            ],
+            technical_seo: [
+              'Implement MedicalStudy schema markup',
+              'Ensure mobile-first design for patient accessibility',
+              'Optimize page speed for better user experience',
+              'Create XML sitemap for trial-related pages'
+            ],
+            content_strategy: [
+              'Publish weekly blog posts about clinical trial process',
+              'Create patient testimonial videos (with consent)',
+              'Develop downloadable resources (eligibility checklist, trial guide)',
+              'Regular updates on trial progress and milestones'
+            ],
+            link_building: [
+              'Partner with patient advocacy groups',
+              'Submit to clinical trial directories',
+              'Collaborate with medical institutions',
+              'Press releases for major trial milestones'
+            ],
+            local_seo: [
+              'Optimize Google My Business for trial locations',
+              'Create city-specific content for each site',
+              'Target "clinical trials near me" searches',
+              'Build local medical community relationships'
+            ]
+          }
+        }
+        
+        return mockSubmission
+      }
+      
+      // Real database query
       const { data, error } = await supabase
-        .from('content_pieces')
-        .select(`
-          *,
-          project:projects(
-            *,
-            client:clients(name)
-          ),
-          assigned_user:users!assigned_to(email, full_name)
-        `)
+        .from('submissions')
+        .select('*')
         .eq('id', id)
         .single()
       
       if (error) throw error
-      return data
-    }
+      return data as Submission
+    },
+    enabled: true
   })
 
-  // Initialize item states when content loads
-  useEffect(() => {
-    if (content) {
-      const initialStates: Record<string, ReviewableItem> = {}
-      
-      // Initialize states for all reviewable items
-      const addItems = (items: string[] | null, prefix: string) => {
-        if (items && Array.isArray(items)) {
-          items.forEach((item, index) => {
-            initialStates[`${prefix}_${index}`] = {
-              id: `${prefix}_${index}`,
-              content: item,
-              approved: false,
-              sentToClient: false,
-              comment: ''
-            }
-          })
-        }
-      }
-      
-      addItems(content.seo_keywords, 'seo_keyword')
-      addItems(content.long_tail_keywords, 'long_tail_keyword')
-      addItems(content.consumer_questions, 'consumer_question')
-      addItems(content.h2_tags, 'h2_tag')
-      addItems(content.h3_tags, 'h3_tag')
-      
-      // Add single items
-      if (content.h1_tag) {
-        initialStates['h1_tag'] = {
-          id: 'h1_tag',
-          content: content.h1_tag,
-          approved: false,
-          sentToClient: false,
-          comment: ''
-        }
-      }
-      
-      if (content.meta_title) {
-        initialStates['meta_title'] = {
-          id: 'meta_title',
-          content: content.meta_title,
-          approved: false,
-          sentToClient: false,
-          comment: ''
-        }
-      }
-      
-      if (content.meta_description) {
-        initialStates['meta_description'] = {
-          id: 'meta_description',
-          content: content.meta_description,
-          approved: false,
-          sentToClient: false,
-          comment: ''
-        }
-      }
-      
-      setItemStates(initialStates)
-    }
-  }, [content])
-
-  const updateContentStatus = useMutation({
-    mutationFn: async ({ status, reason }: { status: string; reason?: string }) => {
-      const updateData: any = { 
-        status,
-        seo_reviewed_at: new Date().toISOString(),
-        seo_reviewed_by: 'current-user-id' // TODO: Get from auth context
-      }
-      
+  const updateWorkflowStage = useMutation({
+    mutationFn: async ({ stage, reason }: { stage: string; reason?: string }) => {
+      const updateData: any = { workflow_stage: stage }
       if (reason) {
-        updateData.seo_internal_notes = reason
-      }
-      
-      // Save individual approvals
-      if (status === 'pending_client_review') {
-        updateData.seo_keyword_approvals = itemStates
+        updateData.rejection_reason = reason
+        updateData.rejected_at = new Date().toISOString()
       }
       
       const { error } = await supabase
-        .from('content_pieces')
+        .from('submissions')
         .update(updateData)
         .eq('id', id)
       
       if (error) throw error
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['seo-review-detail', id] })
       queryClient.invalidateQueries({ queryKey: ['seo-review-content'] })
       navigate('/seo-review')
     }
@@ -163,61 +166,21 @@ export default function SEOReviewDetail() {
     setExpandedSections(newExpanded)
   }
 
-  const toggleItemApproval = (itemId: string) => {
-    setItemStates(prev => ({
-      ...prev,
-      [itemId]: {
-        ...prev[itemId],
-        approved: !prev[itemId].approved
-      }
-    }))
-  }
-
-  const toggleSentToClient = (itemId: string) => {
-    setItemStates(prev => ({
-      ...prev,
-      [itemId]: {
-        ...prev[itemId],
-        sentToClient: !prev[itemId].sentToClient
-      }
-    }))
-  }
-
-  const updateComment = (itemId: string, comment: string) => {
-    setItemStates(prev => ({
-      ...prev,
-      [itemId]: {
-        ...prev[itemId],
-        comment
-      }
-    }))
-  }
-
-  const approveAll = () => {
-    setItemStates(prev => {
-      const newStates = { ...prev }
-      Object.keys(newStates).forEach(key => {
-        newStates[key].approved = true
-      })
-      return newStates
-    })
-  }
-
   const handleApprove = () => {
-    updateContentStatus.mutate({ status: 'pending_client_review' })
+    updateWorkflowStage.mutate({ stage: 'mlr_review' })
   }
 
   const handleReject = () => {
     if (rejectionReason.trim()) {
-      updateContentStatus.mutate({ status: 'requires_revision', reason: rejectionReason })
+      updateWorkflowStage.mutate({ stage: 'rejected', reason: rejectionReason })
     }
   }
 
   const handleRequestChanges = () => {
-    updateContentStatus.mutate({ status: 'requires_revision' })
+    updateWorkflowStage.mutate({ stage: 'revision_requested' })
   }
 
-  if (isLoading || !content) {
+  if (isLoading || !submission) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -225,360 +188,204 @@ export default function SEOReviewDetail() {
     )
   }
 
-  const renderReviewableItem = (item: ReviewableItem) => (
-    <div key={item.id} className="border border-gray-200 rounded-lg p-4 space-y-3">
-      <div className="flex items-start justify-between">
-        <p className="text-sm text-gray-900 flex-1 mr-4">{item.content}</p>
-        <button className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 whitespace-nowrap">
-          <Sparkles className="h-4 w-4" />
-          Ask AI
-        </button>
-      </div>
-      
-      {/* Controls Row */}
-      <div className="flex items-center gap-3">
-        <button
-          onClick={() => toggleItemApproval(item.id)}
-          className={`flex items-center gap-1 px-3 py-1 text-sm rounded-md transition-colors ${
-            item.approved 
-              ? 'bg-green-100 text-green-700 hover:bg-green-200' 
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-          }`}
-        >
-          {item.approved ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
-          {item.approved ? 'Approved' : 'Approve'}
-        </button>
-        
-        <button className="px-3 py-1 text-sm bg-yellow-100 text-yellow-700 rounded-md hover:bg-yellow-200">
-          Revise
-        </button>
-        
-        <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={item.sentToClient}
-            onChange={() => toggleSentToClient(item.id)}
-            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-          />
-          Send to client
-        </label>
-      </div>
-      
-      {/* Comment Field */}
-      <div className="relative">
-        <input
-          type="text"
-          value={item.comment}
-          onChange={(e) => updateComment(item.id, e.target.value)}
-          placeholder="Add a comment..."
-          className="w-full pr-10 pl-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        />
-        <Send className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-      </div>
-    </div>
-  )
+  const strategyIcons = {
+    content_architecture: <FileText className="h-5 w-5" />,
+    technical_seo: <Globe className="h-5 w-5" />,
+    content_strategy: <BookOpen className="h-5 w-5" />,
+    link_building: <Link2 className="h-5 w-5" />,
+    local_seo: <Target className="h-5 w-5" />
+  }
+
+  const strategyTitles = {
+    content_architecture: 'Content Architecture',
+    technical_seo: 'Technical SEO',
+    content_strategy: 'Content Strategy',
+    link_building: 'Link Building',
+    local_seo: 'Local SEO'
+  }
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => navigate('/seo-review')}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-          <div>
-            <h1 className="text-2xl font-semibold text-gray-900">{content.title}</h1>
-            <p className="text-sm text-gray-500 mt-1">
-              {content.project?.product_name} • {content.project?.therapeutic_area} • Priority: {content.priority_level || 'Medium'}
-            </p>
+      <div className="bg-white border-b border-gray-200">
+        <div className="px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => navigate('/seo-review')}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </button>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">{submission.product_name}</h1>
+                <p className="text-sm text-gray-600 mt-1">
+                  {submission.stage} • {submission.therapeutic_area} • {submission.target_audience?.join(', ')}
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <CTAButton variant="secondary" icon={<Download className="h-4 w-4" />}>
+                Export Report
+              </CTAButton>
+              <CTAButton 
+                variant="success" 
+                icon={<CheckCircle className="h-4 w-4" />}
+                onClick={handleApprove}
+                loading={updateWorkflowStage.isPending}
+              >
+                Approve & Send to Client
+              </CTAButton>
+            </div>
           </div>
-        </div>
-        
-        <div className="flex items-center gap-3">
-          <button className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
-            <Download className="h-4 w-4 mr-2 inline" />
-            Export
-          </button>
-          <button
-            onClick={approveAll}
-            className="px-4 py-2 text-sm font-medium text-green-700 bg-green-100 rounded-md hover:bg-green-200"
-          >
-            Approve All Items
-          </button>
-          <button
-            onClick={handleApprove}
-            disabled={updateContentStatus.isPending}
-            className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 disabled:opacity-50"
-          >
-            Complete Review
-          </button>
         </div>
       </div>
 
-      {/* SEO Keywords Section */}
-      <div className="bg-white rounded-lg shadow">
+      {/* SEO Strategy Section - FIRST */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         <div
-          className="px-6 py-4 border-b border-gray-200 flex items-center justify-between cursor-pointer"
-          onClick={() => toggleSection('seo_keywords')}
+          className="px-6 py-4 border-b border-gray-200 flex items-center justify-between cursor-pointer hover:bg-gray-50"
+          onClick={() => toggleSection('strategy')}
         >
-          <h2 className="text-lg font-medium text-gray-900">
-            SEO Keywords ({content.seo_keywords?.length || 0})
-          </h2>
-          {expandedSections.has('seo_keywords') ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <Lightbulb className="h-5 w-5 text-blue-600" />
+            </div>
+            <h2 className="text-lg font-semibold text-gray-900">SEO Strategy</h2>
+          </div>
+          {expandedSections.has('strategy') ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
         </div>
-        {expandedSections.has('seo_keywords') && content.seo_keywords && (
-          <div className="p-6 space-y-4">
-            {content.seo_keywords.map((keyword: string, index: number) => 
-              renderReviewableItem(itemStates[`seo_keyword_${index}`] || {
-                id: `seo_keyword_${index}`,
-                content: keyword,
-                approved: false,
-                sentToClient: false,
-                comment: ''
-              })
-            )}
+        {expandedSections.has('strategy') && submission.seo_strategy && (
+          <div className="p-6 space-y-6">
+            {Object.entries(submission.seo_strategy).map(([key, strategies]) => (
+              <div key={key} className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 bg-gray-100 rounded">
+                    {strategyIcons[key as keyof typeof strategyIcons]}
+                  </div>
+                  <h3 className="text-sm font-semibold text-gray-900">
+                    {strategyTitles[key as keyof typeof strategyTitles]}
+                  </h3>
+                </div>
+                <ul className="space-y-2 ml-9">
+                  {(strategies as string[]).map((strategy, index) => (
+                    <li key={index} className="flex items-start">
+                      <span className="text-blue-500 mr-2 mt-0.5">•</span>
+                      <span className="text-sm text-gray-700">{strategy}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+            <div className="pt-4 flex gap-3">
+              <CTAButton variant="secondary" size="sm" icon={<Copy className="h-4 w-4" />}>
+                Copy Strategy
+              </CTAButton>
+              <CTAButton variant="secondary" size="sm" icon={<Megaphone className="h-4 w-4" />}>
+                View Comprehensive Plan
+              </CTAButton>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* SEO Keywords Section */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div
+          className="px-6 py-4 border-b border-gray-200 flex items-center justify-between cursor-pointer hover:bg-gray-50"
+          onClick={() => toggleSection('keywords')}
+        >
+          <h2 className="text-lg font-semibold text-gray-900">SEO Keywords ({submission.seo_keywords?.length || 0})</h2>
+          {expandedSections.has('keywords') ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+        </div>
+        {expandedSections.has('keywords') && (
+          <div className="p-6 space-y-3">
+            {submission.seo_keywords?.map((keyword, index) => (
+              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <span className="text-sm font-medium text-gray-900">{keyword}</span>
+                <button className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700">
+                  <Sparkles className="h-4 w-4" />
+                  Ask AI
+                </button>
+              </div>
+            ))}
           </div>
         )}
       </div>
 
       {/* Long-tail Keywords Section */}
-      <div className="bg-white rounded-lg shadow">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         <div
-          className="px-6 py-4 border-b border-gray-200 flex items-center justify-between cursor-pointer"
-          onClick={() => toggleSection('long_tail_keywords')}
+          className="px-6 py-4 border-b border-gray-200 flex items-center justify-between cursor-pointer hover:bg-gray-50"
+          onClick={() => toggleSection('longtail')}
         >
-          <h2 className="text-lg font-medium text-gray-900">
-            Long-tail Keywords ({content.long_tail_keywords?.length || 0})
-          </h2>
-          {expandedSections.has('long_tail_keywords') ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+          <h2 className="text-lg font-semibold text-gray-900">Long-tail Keywords ({submission.long_tail_keywords?.length || 0})</h2>
+          {expandedSections.has('longtail') ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
         </div>
-        {expandedSections.has('long_tail_keywords') && content.long_tail_keywords && (
-          <div className="p-6 space-y-4">
-            {content.long_tail_keywords.map((keyword: string, index: number) => 
-              renderReviewableItem(itemStates[`long_tail_keyword_${index}`] || {
-                id: `long_tail_keyword_${index}`,
-                content: keyword,
-                approved: false,
-                sentToClient: false,
-                comment: ''
-              })
-            )}
+        {expandedSections.has('longtail') && (
+          <div className="p-6 space-y-3">
+            {submission.long_tail_keywords?.map((keyword, index) => (
+              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <span className="text-sm text-gray-900">{keyword}</span>
+                <button className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700">
+                  <Sparkles className="h-4 w-4" />
+                  Ask AI
+                </button>
+              </div>
+            ))}
           </div>
         )}
       </div>
 
       {/* Consumer Questions Section */}
-      <div className="bg-white rounded-lg shadow">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         <div
-          className="px-6 py-4 border-b border-gray-200 flex items-center justify-between cursor-pointer"
-          onClick={() => toggleSection('consumer_questions')}
+          className="px-6 py-4 border-b border-gray-200 flex items-center justify-between cursor-pointer hover:bg-gray-50"
+          onClick={() => toggleSection('questions')}
         >
-          <h2 className="text-lg font-medium text-gray-900">
-            Consumer Questions ({content.consumer_questions?.length || 0})
-          </h2>
-          {expandedSections.has('consumer_questions') ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+          <h2 className="text-lg font-semibold text-gray-900">Consumer Questions ({submission.consumer_questions?.length || 0})</h2>
+          {expandedSections.has('questions') ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
         </div>
-        {expandedSections.has('consumer_questions') && content.consumer_questions && (
-          <div className="p-6 space-y-4">
-            {content.consumer_questions.map((question: string, index: number) => 
-              renderReviewableItem(itemStates[`consumer_question_${index}`] || {
-                id: `consumer_question_${index}`,
-                content: question,
-                approved: false,
-                sentToClient: false,
-                comment: ''
-              })
-            )}
+        {expandedSections.has('questions') && (
+          <div className="p-6 space-y-3">
+            {submission.consumer_questions?.map((question, index) => (
+              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <span className="text-sm text-gray-900">{question}</span>
+                <button className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700">
+                  <Sparkles className="h-4 w-4" />
+                  Ask AI
+                </button>
+              </div>
+            ))}
           </div>
         )}
       </div>
-
-      {/* H1, H2, H3 Tags & Meta Information */}
-      <div className="bg-white rounded-lg shadow">
-        <div
-          className="px-6 py-4 border-b border-gray-200 flex items-center justify-between cursor-pointer"
-          onClick={() => toggleSection('tags')}
-        >
-          <h2 className="text-lg font-medium text-gray-900">Tags & Meta Information</h2>
-          {expandedSections.has('tags') ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
-        </div>
-        {expandedSections.has('tags') && (
-          <div className="p-6 space-y-6">
-            {/* H1 Tag */}
-            {content.h1_tag && (
-              <div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-3">H1 Tag</h3>
-                {renderReviewableItem(itemStates['h1_tag'] || {
-                  id: 'h1_tag',
-                  content: content.h1_tag,
-                  approved: false,
-                  sentToClient: false,
-                  comment: ''
-                })}
-              </div>
-            )}
-            
-            {/* H2 Tags */}
-            {content.h2_tags && content.h2_tags.length > 0 && (
-              <div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-3">H2 Tags</h3>
-                <div className="space-y-4">
-                  {content.h2_tags.map((tag: string, index: number) => 
-                    renderReviewableItem(itemStates[`h2_tag_${index}`] || {
-                      id: `h2_tag_${index}`,
-                      content: tag,
-                      approved: false,
-                      sentToClient: false,
-                      comment: ''
-                    })
-                  )}
-                </div>
-              </div>
-            )}
-            
-            {/* H3 Tags */}
-            {content.h3_tags && content.h3_tags.length > 0 && (
-              <div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-3">H3 Tags</h3>
-                <div className="space-y-4">
-                  {content.h3_tags.map((tag: string, index: number) => 
-                    renderReviewableItem(itemStates[`h3_tag_${index}`] || {
-                      id: `h3_tag_${index}`,
-                      content: tag,
-                      approved: false,
-                      sentToClient: false,
-                      comment: ''
-                    })
-                  )}
-                </div>
-              </div>
-            )}
-            
-            {/* Meta Title */}
-            {content.meta_title && (
-              <div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-3">Meta Title</h3>
-                {renderReviewableItem(itemStates['meta_title'] || {
-                  id: 'meta_title',
-                  content: content.meta_title,
-                  approved: false,
-                  sentToClient: false,
-                  comment: ''
-                })}
-              </div>
-            )}
-            
-            {/* Meta Description */}
-            {content.meta_description && (
-              <div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-3">Meta Description</h3>
-                {renderReviewableItem(itemStates['meta_description'] || {
-                  id: 'meta_description',
-                  content: content.meta_description,
-                  approved: false,
-                  sentToClient: false,
-                  comment: ''
-                })}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* GEO Optimization (AI Search) */}
-      <div className="bg-white rounded-lg shadow">
-        <div
-          className="px-6 py-4 border-b border-gray-200 flex items-center justify-between cursor-pointer"
-          onClick={() => toggleSection('geo')}
-        >
-          <h2 className="text-lg font-medium text-gray-900">GEO Optimization (AI Search)</h2>
-          {expandedSections.has('geo') ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
-        </div>
-        {expandedSections.has('geo') && content.geo_optimization && (
-          <div className="p-6 space-y-4">
-            <div>
-              <h3 className="text-sm font-semibold text-gray-900 mb-2">AI-Friendly Summary</h3>
-              <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded-lg">
-                {content.geo_optimization.ai_friendly_summary}
-              </p>
-            </div>
-            
-            {content.geo_optimization.structured_data && (
-              <div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-2">Structured Data</h3>
-                <pre className="bg-gray-50 p-3 rounded-lg overflow-x-auto text-xs">
-                  {JSON.stringify(content.geo_optimization.structured_data, null, 2)}
-                </pre>
-              </div>
-            )}
-            
-            {content.geo_optimization.key_facts && (
-              <div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-2">Key Facts for AI</h3>
-                <ul className="space-y-1">
-                  {content.geo_optimization.key_facts.map((fact: string, index: number) => (
-                    <li key={index} className="text-sm text-gray-700 flex items-start">
-                      <span className="text-green-500 mr-2">•</span>
-                      {fact}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            
-            <div className="flex gap-3">
-              <button className="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-md hover:bg-blue-100">
-                <Copy className="h-4 w-4 mr-2 inline" />
-                Copy GEO Data
-              </button>
-              <button className="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-md hover:bg-blue-100">
-                <CheckCircle className="h-4 w-4 mr-2 inline" />
-                Validate with AI
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Executive Summary */}
-      {content.executive_summary && (
-        <div className="bg-white rounded-lg shadow">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-medium text-gray-900">Executive Summary</h2>
-          </div>
-          <div className="p-6">
-            <p className="text-sm text-gray-700">{content.executive_summary}</p>
-          </div>
-        </div>
-      )}
 
       {/* Action Buttons */}
-      <div className="flex justify-center gap-4 py-6">
-        <button
+      <div className="flex justify-center gap-4 py-6 bg-gray-50 rounded-lg">
+        <CTAButton
+          variant="danger"
+          icon={<XCircle className="h-4 w-4" />}
           onClick={() => setShowRejectModal(true)}
-          className="px-6 py-3 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
         >
-          <XCircle className="h-4 w-4 mr-2 inline" />
           Reject All
-        </button>
-        <button
+        </CTAButton>
+        <CTAButton
+          variant="secondary"
+          icon={<MessageSquare className="h-4 w-4" />}
           onClick={handleRequestChanges}
-          className="px-6 py-3 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
         >
-          <MessageSquare className="h-4 w-4 mr-2 inline" />
           Request Changes
-        </button>
-        <button
+        </CTAButton>
+        <CTAButton
+          variant="success"
+          icon={<CheckCircle className="h-4 w-4" />}
           onClick={handleApprove}
-          disabled={updateContentStatus.isPending}
-          className="px-6 py-3 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 disabled:opacity-50"
+          loading={updateWorkflowStage.isPending}
         >
-          <CheckCircle className="h-4 w-4 mr-2 inline" />
           Approve & Send to Client
-        </button>
+        </CTAButton>
       </div>
 
       {/* Reject Modal */}
@@ -594,19 +401,19 @@ export default function SEOReviewDetail() {
               rows={4}
             />
             <div className="mt-4 flex justify-end gap-3">
-              <button
+              <CTAButton
+                variant="secondary"
                 onClick={() => setShowRejectModal(false)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
               >
                 Cancel
-              </button>
-              <button
+              </CTAButton>
+              <CTAButton
+                variant="danger"
                 onClick={handleReject}
                 disabled={!rejectionReason.trim()}
-                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50"
               >
                 Confirm Rejection
-              </button>
+              </CTAButton>
             </div>
           </div>
         </div>
