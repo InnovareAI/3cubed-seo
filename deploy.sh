@@ -1,43 +1,23 @@
 #!/bin/bash
 
-# Pharma SEO Dashboard - Quick Deploy Script
+# Build and deploy script
+echo "Building application..."
+npm run build
 
-echo "🚀 Pharma SEO Dashboard Deployment Guide"
-echo "======================================="
-echo ""
-echo "📋 Step 1: Install dependencies"
-echo "Run: npm install"
-echo ""
-echo "📋 Step 2: Set up environment variables"
-echo "Create a .env file with:"
-echo "VITE_SUPABASE_URL=https://ktchrfgkbpaixbiwbieg.supabase.co"
-echo "VITE_SUPABASE_ANON_KEY=your-anon-key-here"
-echo ""
-echo "📋 Step 3: Build the project"
-echo "Run: npm run build"
-echo ""
-echo "📋 Step 4: Deploy to Netlify"
-echo ""
-echo "Option A - Netlify CLI:"
-echo "1. Install: npm install -g netlify-cli"
-echo "2. Login: netlify login"
-echo "3. Deploy: netlify deploy --prod --dir=dist"
-echo ""
-echo "Option B - Drag & Drop:"
-echo "1. Go to https://app.netlify.com/drop"
-echo "2. Drag the 'dist' folder to the browser"
-echo ""
-echo "Option C - GitHub Integration:"
-echo "1. Push to GitHub"
-echo "2. Connect repo in Netlify dashboard"
-echo "3. Set build command: npm run build"
-echo "4. Set publish directory: dist"
-echo "5. Add environment variables"
-echo ""
-echo "📋 Step 5: Configure Supabase"
-echo "1. Go to your Supabase project settings"
-echo "2. Copy the anon (public) key"
-echo "3. Add to Netlify environment variables"
-echo ""
-echo "Ready to start? Press any key to continue..."
-read -n 1 -s
+# Check if build was successful
+if [ $? -eq 0 ]; then
+    echo "Build successful!"
+    
+    # Git commands
+    echo "Committing changes..."
+    git add -A
+    git commit -m "fix: add route for /admin/clients to display Client Management page"
+    
+    echo "Pushing to GitHub..."
+    git push origin main
+    
+    echo "Deployment initiated! Check Netlify for build status."
+else
+    echo "Build failed! Please fix errors before deploying."
+    exit 1
+fi

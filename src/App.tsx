@@ -87,6 +87,7 @@ function App() {
             <Route path="mlr-review" element={<MLRReview />} />
             <Route path="mlr-review/:id" element={<MLRReviewDetail />} />
             <Route path="client-management" element={<ClientManagement />} />
+            <Route path="admin/clients" element={<ClientManagement />} />
             <Route path="current-projects" element={<CurrentProjects />} />
             <Route path="content-hub" element={<ComingSoon title="SEO Content Hub" />} />
             <Route path="audit" element={<AuditTrail />} />
