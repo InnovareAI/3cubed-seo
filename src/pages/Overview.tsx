@@ -1,169 +1,148 @@
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
-import { FileText, CheckCircle, Clock, TrendingUp, AlertCircle, CheckSquare } from 'lucide-react'
+import { FileText, CheckCircle, Clock, TrendingUp, AlertCircle, CheckSquare, Search, Users, Shield } from 'lucide-react'
 import MetricCard from '@/components/MetricCard'
 import StatusDistributionChart from '@/components/StatusDistributionChart'
 import ProcessingQueue from '@/components/ProcessingQueue'
+import { useContentPieces } from '@/hooks/useContentPieces'
+import { ContentStatus } from '@/lib/supabase'
 
 export default function Overview() {
+  // Fetch content pieces
+  const { data: contentPieces, isLoading } = useContentPieces()
+  
   // Fetch overview statistics
-  const { data: stats, isLoading } = useQuery({
+  const { data: stats } = useQuery({
     queryKey: ['overview-stats'],
     queryFn: async () => {
-      // Get total submissions
-      const { count: totalSubmissions } = await supabase
-        .from('submissions')
-        .select('*', { count: 'exact', head: true })
+      if (!contentPieces) return null
       
-      // Get submissions by status
-      const { data: statusData } = await supabase
-        .from('submissions')
-        .select('langchain_status')
-      
-      const statusCounts = statusData?.reduce((acc, item) => {
-        acc[item.langchain_status] = (acc[item.langchain_status] || 0) + 1
+      // Group by status
+      const statusCounts = contentPieces.reduce((acc, piece) => {
+        acc[piece.status] = (acc[piece.status] || 0) + 1
         return acc
-      }, {} as Record<string, number>) || {}
+      }, {} as Record<ContentStatus, number>)
       
-      // Get pending reviews count
-      const pendingReviews = statusCounts['needs_review'] || 0
-      
-      // Calculate approval rate
-      const approved = statusCounts['approved'] || 0
-      const completed = statusCounts['complete'] || 0
-      const total = approved + completed + (statusCounts['rejected'] || 0)
-      const approvalRate = total > 0 ? Math.round(((approved + completed) / total) * 100) : 0
-      
-      // Get average processing time
-      const { data: processingData } = await supabase
-        .from('submissions')
-        .select('processing_time_seconds')
-        .not('processing_time_seconds', 'is', null)
-      
-      const avgProcessingTime = processingData?.length 
-        ? Math.round(processingData.reduce((sum, item) => sum + item.processing_time_seconds, 0) / processingData.length / 60)
-        : 0
+      // Calculate key metrics
+      const totalContent = contentPieces.length
+      const inReview = (statusCounts['pending_seo_review'] || 0) + 
+                      (statusCounts['pending_client_review'] || 0) + 
+                      (statusCounts['pending_mlr_review'] || 0)
+      const needsRevision = statusCounts['requires_revision'] || 0
+      const completed = (statusCounts['approved'] || 0) + (statusCounts['published'] || 0)
+      const completionRate = totalContent > 0 ? Math.round((completed / totalContent) * 100) : 0
       
       return {
-        totalSubmissions: totalSubmissions || 0,
-        approvalRate,
-        avgProcessingTime,
-        activeCampaigns: statusCounts['processing'] || 0,
-        pendingReviews,
+        totalContent,
+        inReview,
+        needsRevision,
+        completionRate,
         statusCounts
       }
     },
-    refetchInterval: 30000 // Refresh every 30 seconds
+    enabled: !!contentPieces
   })
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     )
   }
 
+  const workflowStages = [
+    { 
+      status: 'pending_seo_review' as ContentStatus, 
+      label: 'SEO Review', 
+      icon: Search,
+      color: 'text-blue-600 bg-blue-100'
+    },
+    { 
+      status: 'pending_client_review' as ContentStatus, 
+      label: 'Client Review', 
+      icon: Users,
+      color: 'text-yellow-600 bg-yellow-100'
+    },
+    { 
+      status: 'pending_mlr_review' as ContentStatus, 
+      label: 'MLR Review', 
+      icon: Shield,
+      color: 'text-purple-600 bg-purple-100'
+    }
+  ]
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-gray-900">Dashboard Overview</h1>
-        <p className="mt-1 text-sm text-gray-500">
-          Monitor your pharma SEO content production in real-time
-        </p>
+    <div className="p-6 max-w-7xl mx-auto">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">3cubed SEO Platform</h1>
+        <p className="text-gray-600 mt-2">Three-stage approval workflow for pharmaceutical content</p>
       </div>
-
-      {/* Metrics Grid */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-5">
+      
+      {/* Key Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <MetricCard
-          title="Total Submissions"
-          value={stats?.totalSubmissions || 0}
-          change="+12% from last month"
-          icon={<FileText className="h-5 w-5" />}
-          trend="up"
+          title="Total Content"
+          value={stats?.totalContent || 0}
+          icon={<FileText className="h-6 w-6" />}
+          iconColor="text-blue-600"
+          iconBgColor="bg-blue-100"
         />
-        
         <MetricCard
-          title="Approval Rate"
-          value={`${stats?.approvalRate || 0}%`}
-          change="+5% from last month"
-          icon={<CheckCircle className="h-5 w-5" />}
-          trend="up"
+          title="In Review"
+          value={stats?.inReview || 0}
+          icon={<Clock className="h-6 w-6" />}
+          iconColor="text-yellow-600"
+          iconBgColor="bg-yellow-100"
         />
-        
         <MetricCard
-          title="Avg. Processing"
-          value={`${stats?.avgProcessingTime || 0} min`}
-          change="-15% improvement"
-          icon={<Clock className="h-5 w-5" />}
-          trend="down"
+          title="Needs Revision"
+          value={stats?.needsRevision || 0}
+          icon={<AlertCircle className="h-6 w-6" />}
+          iconColor="text-red-600"
+          iconBgColor="bg-red-100"
         />
-        
         <MetricCard
-          title="In Progress"
-          value={stats?.activeCampaigns || 0}
-          icon={<TrendingUp className="h-5 w-5" />}
-          status={(stats?.activeCampaigns || 0) > 5 ? 'warning' : 'success'}
-        />
-        
-        <MetricCard
-          title="Pending Review"
-          value={stats?.pendingReviews || 0}
-          icon={<CheckSquare className="h-5 w-5" />}
-          status={(stats?.pendingReviews || 0) > 0 ? 'warning' : 'success'}
-          change={(stats?.pendingReviews || 0) > 0 ? 'Needs attention' : 'All clear'}
+          title="Completion Rate"
+          value={`${stats?.completionRate || 0}%`}
+          icon={<TrendingUp className="h-6 w-6" />}
+          iconColor="text-green-600"
+          iconBgColor="bg-green-100"
         />
       </div>
+      
+      {/* Three-Stage Workflow Progress */}
+      <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
+        <h2 className="text-xl font-semibold mb-6">Three-Stage Approval Workflow</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {workflowStages.map(({ status, label, icon: Icon, color }) => {
+            const count = stats?.statusCounts[status] || 0
+            return (
+              <div key={status} className="text-center">
+                <div className={`${color} rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-3`}>
+                  <Icon className="h-10 w-10" />
+                </div>
+                <h3 className="font-medium text-gray-900">{label}</h3>
+                <p className="text-3xl font-bold mt-2">{count}</p>
+                <p className="text-sm text-gray-500 mt-1">content pieces</p>
+              </div>
+            )
+          })}
+        </div>
+      </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Status Distribution */}
-        <div className="bg-white rounded-lg shadow">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-medium text-gray-900">Status Distribution</h2>
-          </div>
-          <StatusDistributionChart data={stats?.statusCounts} />
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <h2 className="text-xl font-semibold mb-4">Content Status Distribution</h2>
+          <StatusDistributionChart data={stats?.statusCounts || {}} />
         </div>
-
-        {/* Quick Actions */}
-        <div className="bg-white rounded-lg shadow">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-medium text-gray-900">Quick Actions</h2>
-          </div>
-          <div className="p-6 space-y-4">
-            <a 
-              href="/seo-requests" 
-              className="block w-full text-center px-4 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-            >
-              Submit New SEO Request
-            </a>
-            <div className="grid grid-cols-2 gap-4">
-              <a 
-                href="/content-requests" 
-                className="block text-center px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
-              >
-                View All Requests
-              </a>
-              <a 
-                href="/analytics" 
-                className="block text-center px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
-              >
-                View Analytics
-              </a>
-            </div>
-          </div>
+        
+        {/* Recent Activity */}
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <h2 className="text-xl font-semibold mb-4">Recent Content Activity</h2>
+          <ProcessingQueue />
         </div>
-      </div>
-
-      {/* Processing Queue */}
-      <div className="bg-white rounded-lg shadow">
-        <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-          <h2 className="text-lg font-medium text-gray-900">Processing Queue</h2>
-          <span className="flex items-center gap-2 text-sm text-gray-500">
-            <AlertCircle className="h-4 w-4" />
-            Updates every 30 seconds
-          </span>
-        </div>
-        <ProcessingQueue />
       </div>
     </div>
   )

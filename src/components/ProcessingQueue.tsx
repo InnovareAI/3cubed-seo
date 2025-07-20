@@ -1,151 +1,126 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { format } from 'date-fns'
-import { supabase, type Submission } from '@/lib/supabase'
-import { Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react'
+import { supabase, type ContentPiece, type ContentStatus } from '@/lib/supabase'
+import { Clock, CheckCircle, XCircle, AlertCircle, FileText, Search, Users, Shield } from 'lucide-react'
 
 export default function ProcessingQueue() {
-  const { data: submissions, isLoading } = useQuery({
+  const { data: contentPieces, isLoading } = useQuery({
     queryKey: ['processing-queue'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('submissions')
-        .select('*')
-        .neq('langchain_status', 'approved')
-        .neq('langchain_status', 'published')
-        .order('created_at', { ascending: false })
+        .from('content_pieces')
+        .select(`
+          *,
+          project:projects(name, client_name),
+          assigned_user:users!assigned_to(email)
+        `)
+        .order('updated_at', { ascending: false })
+        .limit(10)
       
       if (error) throw error
-      return data as Submission[]
+      return data as ContentPiece[]
     }
   })
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: ContentStatus) => {
     switch (status) {
-      case 'needs_processing': return 'text-gray-600'
-      case 'processing': return 'text-blue-600'
-      case 'needs_review': return 'text-yellow-600'
-      case 'seo_approved': return 'text-green-600'
-      case 'client_review': return 'text-purple-600'
-      case 'client_approved': return 'text-green-600'
-      case 'rejected': return 'text-red-600'
-      case 'revision_requested': return 'text-orange-600'
-      case 'mlr_review': return 'text-indigo-600'
-      case 'mlr_approved': return 'text-green-600'
-      default: return 'text-gray-600'
+      case 'draft': return 'text-gray-600 bg-gray-100'
+      case 'pending_seo_review': return 'text-blue-600 bg-blue-100'
+      case 'pending_client_review': return 'text-yellow-600 bg-yellow-100'
+      case 'pending_mlr_review': return 'text-purple-600 bg-purple-100'
+      case 'requires_revision': return 'text-red-600 bg-red-100'
+      case 'approved': return 'text-green-600 bg-green-100'
+      case 'published': return 'text-green-800 bg-green-200'
+      default: return 'text-gray-600 bg-gray-100'
     }
   }
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: ContentStatus) => {
     switch (status) {
-      case 'needs_processing':
-      case 'processing':
-        return <Clock className="w-4 h-4" />
-      case 'seo_approved':
-      case 'client_approved':
-      case 'mlr_approved':
-        return <CheckCircle className="w-4 h-4" />
-      case 'rejected':
-        return <XCircle className="w-4 h-4" />
-      case 'needs_review':
-      case 'client_review':
-      case 'mlr_review':
-      case 'revision_requested':
+      case 'draft':
+        return <FileText className="w-4 h-4" />
+      case 'pending_seo_review':
+        return <Search className="w-4 h-4" />
+      case 'pending_client_review':
+        return <Users className="w-4 h-4" />
+      case 'pending_mlr_review':
+        return <Shield className="w-4 h-4" />
+      case 'requires_revision':
         return <AlertCircle className="w-4 h-4" />
+      case 'approved':
+        return <CheckCircle className="w-4 h-4" />
+      case 'published':
+        return <CheckCircle className="w-4 h-4" />
       default:
-        return null
+        return <Clock className="w-4 h-4" />
     }
   }
 
-  const getWorkflowStageLabel = (stage: string) => {
-    switch (stage) {
-      case 'Form_Submitted': return 'Form Submitted'
-      case 'AI_Processing': return 'AI Processing'
-      case 'SEO_Review': return 'SEO Review'
-      case 'Client_Review': return 'Client Review'
-      case 'Revision_Requested': return 'Revision Requested'
-      case 'MLR_Review': return 'MLR Review'
-      case 'Published': return 'Published'
-      default: return stage
+  const getStatusLabel = (status: ContentStatus) => {
+    switch (status) {
+      case 'draft': return 'Draft'
+      case 'pending_seo_review': return 'SEO Review'
+      case 'pending_client_review': return 'Client Review'
+      case 'pending_mlr_review': return 'MLR Review'
+      case 'requires_revision': return 'Needs Revision'
+      case 'approved': return 'Approved'
+      case 'published': return 'Published'
+      default: return status
     }
   }
 
   if (isLoading) {
-    return <div className="animate-pulse">Loading queue...</div>
+    return (
+      <div className="animate-pulse space-y-4">
+        {[...Array(5)].map((_, i) => (
+          <div key={i} className="h-12 bg-gray-100 rounded"></div>
+        ))}
+      </div>
+    )
   }
 
-  if (!submissions || submissions.length === 0) {
+  if (!contentPieces || contentPieces.length === 0) {
     return (
       <div className="text-center py-8 text-gray-500">
-        No items in processing queue
+        No recent content activity
       </div>
     )
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
-          <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Product
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Therapeutic Area
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Stage
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Status
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Submitted By
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Submitted
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Actions
-            </th>
-          </tr>
-        </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
-          {submissions.map((submission) => (
-            <tr key={submission.id}>
-              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                {submission.product_name}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {submission.therapeutic_area}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {getWorkflowStageLabel(submission.workflow_stage)}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <span className={`inline-flex items-center gap-1 text-sm font-medium ${getStatusColor(submission.langchain_status)}`}>
-                  {getStatusIcon(submission.langchain_status)}
-                  {submission.langchain_status.replace(/_/g, ' ')}
+    <div className="space-y-3">
+      {contentPieces.map((content) => (
+        <div key={content.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <h4 className="font-medium text-gray-900 line-clamp-1">
+                {content.title}
+              </h4>
+              <div className="mt-1 flex items-center gap-4 text-sm text-gray-500">
+                <span>{content.project?.name}</span>
+                <span>•</span>
+                <span>{content.target_keyword}</span>
+              </div>
+              <div className="mt-2 flex items-center gap-2">
+                <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(content.status)}`}>
+                  {getStatusIcon(content.status)}
+                  {getStatusLabel(content.status)}
                 </span>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {submission.submitter_name}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {format(new Date(submission.created_at), 'MMM d, yyyy')}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                <Link
-                  to={`/submissions/${submission.id}`}
-                  className="text-indigo-600 hover:text-indigo-900"
-                >
-                  View Details
-                </Link>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+                <span className="text-xs text-gray-500">
+                  Updated {format(new Date(content.updated_at), 'MMM d, h:mm a')}
+                </span>
+              </div>
+            </div>
+            <Link
+              to={`/content/${content.id}`}
+              className="ml-4 text-sm font-medium text-indigo-600 hover:text-indigo-500"
+            >
+              View →
+            </Link>
+          </div>
+        </div>
+      ))}
     </div>
   )
 }
