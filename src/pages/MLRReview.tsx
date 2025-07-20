@@ -94,9 +94,6 @@ export default function MLRReview() {
     navigate(`/mlr-review/${submissionId}`)
   }
 
-  // Get unique therapeutic areas for filter
-  const therapeuticAreas = [...new Set(submissions?.map(s => s.therapeutic_area) || [])]
-
   const getPriorityColor = (priority: string) => {
     switch (priority.toLowerCase()) {
       case 'high':
