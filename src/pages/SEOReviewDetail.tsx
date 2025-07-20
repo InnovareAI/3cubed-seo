@@ -88,8 +88,7 @@ export default function SEOReviewDetail() {
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set(['strategy', 'keywords', 'technical'])
   )
-  const [showRejectModal, setShowRejectModal] = useState(false)
-  const [rejectionReason, setRejectionReason] = useState('')
+
   const [itemStates, setItemStates] = useState<Record<string, ReviewableItem>>({})
 
   // Get submission data
@@ -398,14 +397,6 @@ export default function SEOReviewDetail() {
               </div>
               <CTAButton variant="secondary" icon={<Download className="h-4 w-4" />}>
                 Export Report
-              </CTAButton>
-              <CTAButton 
-                variant="success" 
-                icon={<CheckCircle className="h-4 w-4" />}
-                onClick={() => updateWorkflowStage.mutate({ stage: 'Client_Review' })}
-                loading={updateWorkflowStage.isPending}
-              >
-                Complete Review
               </CTAButton>
             </div>
           </div>
@@ -752,62 +743,49 @@ export default function SEOReviewDetail() {
       {/* Action Buttons */}
       <div className="flex justify-center gap-4 py-6 bg-gray-50 rounded-lg">
         <CTAButton
-          variant="danger"
-          icon={<XCircle className="h-4 w-4" />}
-          onClick={() => setShowRejectModal(true)}
+          variant="secondary"
+          icon={<Download className="h-4 w-4" />}
+          onClick={() => {
+            // Save current review state
+            console.log('Saving review progress...', itemStates)
+          }}
         >
-          Reject Submission
+          Save Progress
         </CTAButton>
         <CTAButton
-          variant="secondary"
+          variant="warning"
           icon={<MessageSquare className="h-4 w-4" />}
-          onClick={() => updateWorkflowStage.mutate({ stage: 'revision_requested' })}
+          onClick={() => {
+            const rejectedItems = Object.values(itemStates).filter(item => item.rejected)
+            if (rejectedItems.length > 0) {
+              updateWorkflowStage.mutate({ stage: 'revision_requested' })
+            } else {
+              alert('Please reject at least one item before requesting changes')
+            }
+          }}
+          disabled={Object.values(itemStates).filter(item => item.rejected).length === 0}
         >
-          Request Changes
+          Request Changes ({rejectedCount} items)
         </CTAButton>
         <CTAButton
           variant="success"
           icon={<CheckCircle className="h-4 w-4" />}
-          onClick={() => updateWorkflowStage.mutate({ stage: 'Client_Review' })}
+          onClick={() => {
+            const unreviewed = Object.values(itemStates).filter(item => !item.approved && !item.rejected)
+            if (unreviewed.length > 0) {
+              alert(`Please review all items. ${unreviewed.length} items remaining.`)
+            } else {
+              updateWorkflowStage.mutate({ stage: 'Client_Review' })
+            }
+          }}
           loading={updateWorkflowStage.isPending}
+          disabled={Object.values(itemStates).some(item => !item.approved && !item.rejected)}
         >
-          Approve & Send to Client
+          Complete Review & Send to Client
         </CTAButton>
       </div>
 
-      {/* Reject Modal */}
-      {showRejectModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Reject Submission</h3>
-            <textarea
-              value={rejectionReason}
-              onChange={(e) => setRejectionReason(e.target.value)}
-              placeholder="Please provide a reason for rejection..."
-              className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-              rows={4}
-            />
-            <div className="mt-4 flex justify-end gap-3">
-              <CTAButton
-                variant="secondary"
-                onClick={() => setShowRejectModal(false)}
-              >
-                Cancel
-              </CTAButton>
-              <CTAButton
-                variant="danger"
-                onClick={() => {
-                  updateWorkflowStage.mutate({ stage: 'rejected', reason: rejectionReason })
-                  setShowRejectModal(false)
-                }}
-                disabled={!rejectionReason.trim()}
-              >
-                Confirm Rejection
-              </CTAButton>
-            </div>
-          </div>
-        </div>
-      )}
+
     </div>
   )
 }
