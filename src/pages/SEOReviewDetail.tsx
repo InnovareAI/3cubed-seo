@@ -290,7 +290,8 @@ export default function SEOReviewDetail() {
         content: keyword,
         approved: false,
         rejected: false,
-        comment: ''
+        comment: '',
+        complianceFlag: false
       }
     })
     
@@ -300,7 +301,8 @@ export default function SEOReviewDetail() {
         content: question,
         approved: false,
         rejected: false,
-        comment: ''
+        comment: '',
+        complianceFlag: false
       }
     })
     
@@ -344,7 +346,8 @@ export default function SEOReviewDetail() {
         content: tag,
         approved: false,
         rejected: false,
-        comment: ''
+        comment: '',
+        complianceFlag: false
       }
     })
     
@@ -354,7 +357,8 @@ export default function SEOReviewDetail() {
         content: tag,
         approved: false,
         rejected: false,
-        comment: ''
+        comment: '',
+        complianceFlag: false
       }
     })
     
@@ -592,7 +596,7 @@ export default function SEOReviewDetail() {
                     approved: false,
                     rejected: false,
                     comment: ''
-                  })
+                  }, true)
                 )}
               </div>
             </div>
@@ -611,7 +615,7 @@ export default function SEOReviewDetail() {
                     approved: false,
                     rejected: false,
                     comment: ''
-                  })
+                  }, true)
                 )}
               </div>
             </div>
@@ -695,8 +699,9 @@ export default function SEOReviewDetail() {
                       content: tag,
                       approved: false,
                       rejected: false,
-                      comment: ''
-                    })
+                      comment: '',
+                      complianceFlag: false
+                    }, true)
                   )}
                 </div>
               </div>
@@ -713,8 +718,9 @@ export default function SEOReviewDetail() {
                       content: tag,
                       approved: false,
                       rejected: false,
-                      comment: ''
-                    })
+                      comment: '',
+                      complianceFlag: false
+                    }, true)
                   )}
                 </div>
               </div>
