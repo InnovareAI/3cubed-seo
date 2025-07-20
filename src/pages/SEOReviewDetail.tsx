@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
@@ -14,8 +14,7 @@ import {
   Sparkles,
   Send,
   Check,
-  X,
-  AlertCircle
+  X
 } from 'lucide-react'
 
 interface ReviewableItem {
@@ -63,7 +62,7 @@ export default function SEOReviewDetail() {
   })
 
   // Initialize item states when content loads
-  React.useEffect(() => {
+  useEffect(() => {
     if (content) {
       const initialStates: Record<string, ReviewableItem> = {}
       

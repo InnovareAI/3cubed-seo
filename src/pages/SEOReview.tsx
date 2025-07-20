@@ -4,18 +4,13 @@ import { useQuery } from '@tanstack/react-query'
 import { supabase, ContentPiece } from '@/lib/supabase'
 import ReviewCard from '../components/ReviewCard'
 import ReviewPageHeader from '../components/ReviewPageHeader'
-import FilterBar from '../components/FilterBar'
 import EmptyState from '../components/EmptyState'
 import RoleInfoBanner from '../components/RoleInfoBanner'
 import { 
   Search,
   FileText,
-  TrendingUp,
   Target,
   BarChart3,
-  Filter,
-  Calendar,
-  Tag,
   AlertCircle
 } from 'lucide-react'
 
