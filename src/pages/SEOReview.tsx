@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import SEOReviewModal from '../components/SEOReviewModal'
 import FilterBar from '../components/FilterBar'
 import EmptyState from '../components/EmptyState'
 import { mockSEOReviews } from '../data/mockSEOReviews'
@@ -45,11 +45,10 @@ interface Submission {
 }
 
 export default function SEOReview() {
+  const navigate = useNavigate()
   const [searchTerm, setSearchTerm] = useState('')
   const [priorityFilter, setPriorityFilter] = useState<string>('all')
   const [therapeuticAreaFilter, setTherapeuticAreaFilter] = useState<string>('all')
-  const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null)
-  const [isModalOpen, setIsModalOpen] = useState(false)
   const [useDummyData, setUseDummyData] = useState(true)
 
   const { data: dbSubmissions, isLoading } = useQuery({
@@ -88,14 +87,8 @@ export default function SEOReview() {
     return true
   }) || []
 
-  const handleCardClick = (submission: Submission) => {
-    setSelectedSubmission(submission)
-    setIsModalOpen(true)
-  }
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false)
-    setSelectedSubmission(null)
+  const handleCardClick = (submissionId: string) => {
+    navigate(`/seo-review/${submissionId}`)
   }
 
   // Get unique therapeutic areas for filter
@@ -185,7 +178,8 @@ export default function SEOReview() {
           filteredSubmissions.map((submission) => (
             <div 
               key={submission.id} 
-              className="bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all"
+              onClick={() => handleCardClick(submission.id)}
+              className="bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all cursor-pointer"
             >
               <div className="p-6">
                 <div className="flex items-start justify-between gap-4">
@@ -254,15 +248,9 @@ export default function SEOReview() {
                     </div>
                   </div>
 
-                  {/* Right Section - Action */}
+                  {/* Right Section - Arrow */}
                   <div className="flex items-center">
-                    <button
-                      onClick={() => handleCardClick(submission)}
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                    >
-                      Review
-                      <ChevronRight className="h-4 w-4" />
-                    </button>
+                    <ChevronRight className="h-5 w-5 text-gray-400" />
                   </div>
                 </div>
               </div>
@@ -270,15 +258,6 @@ export default function SEOReview() {
           ))
         )}
       </div>
-
-      {/* SEO Review Modal - Using content prop instead of submission */}
-      {selectedSubmission && (
-        <SEOReviewModal
-          isOpen={isModalOpen}
-          onClose={handleCloseModal}
-          content={selectedSubmission as any}
-        />
-      )}
     </div>
   )
 }
