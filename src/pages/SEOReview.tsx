@@ -2,9 +2,9 @@ import { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import FilterBar from '../components/FilterBar'
 import EmptyState from '../components/EmptyState'
 import { mockSEOReviews } from '../data/mockSEOReviews'
+import CTAButton from '../components/CTAButton'
 import { 
   Search,
   FileText,
@@ -15,7 +15,11 @@ import {
   Building2,
   Target,
   AlertCircle,
-  ChevronRight
+  ChevronRight,
+  Clock,
+  CheckCircle,
+  Edit3,
+  Filter
 } from 'lucide-react'
 import { format } from 'date-fns'
 
@@ -107,6 +111,18 @@ export default function SEOReview() {
     }
   }
 
+  // Calculate stats for the cards
+  const stats = {
+    total: filteredSubmissions?.length || 0,
+    highPriority: filteredSubmissions?.filter(s => s.priority_level?.toLowerCase() === 'high').length || 0,
+    hasKeywords: filteredSubmissions?.filter(s => s.seo_keywords && s.seo_keywords.length > 0).length || 0,
+    todaySubmissions: filteredSubmissions?.filter(s => {
+      const today = new Date()
+      const submissionDate = new Date(s.created_at)
+      return submissionDate.toDateString() === today.toDateString()
+    }).length || 0
+  }
+
   if (!useDummyData && isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -118,51 +134,130 @@ export default function SEOReview() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="px-6 py-4">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">SEO Review</h1>
+          <p className="text-sm text-gray-600 mt-1">Review and optimize AI-generated content for search performance</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setUseDummyData(!useDummyData)}
+            className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+              useDummyData 
+                ? 'bg-amber-100 text-amber-700' 
+                : 'bg-green-100 text-green-700'
+            }`}
+          >
+            {useDummyData ? 'Demo Data' : 'Live Data'}
+          </button>
+          <CTAButton variant="primary" icon={<FileText className="h-4 w-4" />}>
+            Export Report
+          </CTAButton>
+        </div>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Search className="h-6 w-6 text-blue-600" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">SEO Review Queue</h1>
-                <p className="text-sm text-gray-600 mt-0.5">Review and optimize AI-generated content for search performance</p>
-              </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Total for Review</p>
+              <p className="text-2xl font-semibold text-gray-900 mt-1">{stats.total}</p>
             </div>
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500">Mode:</span>
-                <button
-                  onClick={() => setUseDummyData(!useDummyData)}
-                  className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
-                    useDummyData 
-                      ? 'bg-amber-100 text-amber-700' 
-                      : 'bg-green-100 text-green-700'
-                  }`}
-                >
-                  {useDummyData ? 'Demo Data' : 'Live Data'}
-                </button>
-              </div>
-              <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-lg">
-                <AlertCircle className="h-4 w-4 text-blue-600" />
-                <span className="text-sm font-medium text-blue-900">{filteredSubmissions.length} items awaiting review</span>
-              </div>
+            <div className="p-3 bg-blue-100 rounded-lg">
+              <FileText className="h-6 w-6 text-blue-600" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">High Priority</p>
+              <p className="text-2xl font-semibold text-red-600 mt-1">{stats.highPriority}</p>
+            </div>
+            <div className="p-3 bg-red-100 rounded-lg">
+              <AlertCircle className="h-6 w-6 text-red-600" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Has Keywords</p>
+              <p className="text-2xl font-semibold text-green-600 mt-1">{stats.hasKeywords}</p>
+            </div>
+            <div className="p-3 bg-green-100 rounded-lg">
+              <Hash className="h-6 w-6 text-green-600" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Today's Submissions</p>
+              <p className="text-2xl font-semibold text-gray-900 mt-1">{stats.todaySubmissions}</p>
+            </div>
+            <div className="p-3 bg-gray-100 rounded-lg">
+              <Clock className="h-6 w-6 text-gray-600" />
             </div>
           </div>
         </div>
       </div>
 
-      {/* Filter Bar */}
-      <FilterBar
-        searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
-        priorityFilter={priorityFilter}
-        onPriorityChange={setPriorityFilter}
-        therapeuticAreaFilter={therapeuticAreaFilter}
-        onTherapeuticAreaChange={setTherapeuticAreaFilter}
-        therapeuticAreas={therapeuticAreas}
-      />
+      {/* Filters */}
+      <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search content..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <select
+            value={priorityFilter}
+            onChange={(e) => setPriorityFilter(e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="all">All Priorities</option>
+            <option value="high">High Priority</option>
+            <option value="medium">Medium Priority</option>
+            <option value="low">Low Priority</option>
+          </select>
+
+          <select
+            value={therapeuticAreaFilter}
+            onChange={(e) => setTherapeuticAreaFilter(e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="all">All Therapeutic Areas</option>
+            {therapeuticAreas.map(area => (
+              <option key={area} value={area}>{area}</option>
+            ))}
+          </select>
+
+          <select
+            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            defaultValue="all"
+          >
+            <option value="all">All Stages</option>
+            <option value="pre-launch">Pre-Launch</option>
+            <option value="launch">Launch</option>
+            <option value="post-launch">Post-Launch</option>
+          </select>
+
+          <CTAButton variant="secondary" icon={<Filter className="h-4 w-4" />}>
+            More Filters
+          </CTAButton>
+        </div>
+      </div>
 
       {/* Review Queue */}
       <div className="space-y-4">
