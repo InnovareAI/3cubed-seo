@@ -57,7 +57,7 @@ export default function SEOReview() {
       const { data, error } = await supabase
         .from('submissions')
         .select('*')
-        .eq('workflow_stage', 'SEO_Review')
+        .eq('workflow_stage', 'seo_review')
         .order('created_at', { ascending: true })
       
       if (error) throw error
