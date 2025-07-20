@@ -8,6 +8,17 @@ export type ContentStatus =
   | 'approved' 
   | 'published'
 
+export interface Project {
+  id: string
+  name: string
+  client_name: string
+  therapeutic_area: string
+  target_audience: string
+  status: 'active' | 'completed' | 'on_hold'
+  created_at: string
+  updated_at: string
+}
+
 export interface ContentPiece {
   id: string
   project_id: string
