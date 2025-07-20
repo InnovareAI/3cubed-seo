@@ -13,7 +13,6 @@ import {
   FileText,
   Hash,
   TrendingUp,
-  MessageSquare,
   Tag,
   Bot,
   BarChart3

@@ -7,23 +7,12 @@ import { mockSEOReviews } from '@/data/mockSEOReviews'
 import { 
   ArrowLeft,
   Download,
-  CheckCircle,
   MessageSquare,
   ThumbsUp,
-  ThumbsDown,
-  Clock,
   FileText,
   Eye,
-  Send,
   Edit3,
   Hash,
-  Tag,
-  HelpCircle,
-  Code,
-  Brain,
-  Globe,
-  Link2,
-  BookOpen,
   Target,
   ChevronDown,
   ChevronUp,
@@ -253,7 +242,7 @@ export default function ClientReviewDetail() {
           </div>
           {hasComments && (
             <span className="text-sm font-medium text-blue-900">
-              {submission.client_comments.filter(c => c.status === 'pending').length} pending comments
+              {submission.client_comments?.filter(c => c.status === 'pending').length || 0} pending comments
             </span>
           )}
         </div>

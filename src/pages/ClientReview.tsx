@@ -9,16 +9,13 @@ import {
   Filter, 
   Clock, 
   CheckCircle, 
-  AlertCircle,
   ArrowRight,
   Building,
   Calendar,
-  TrendingUp,
   MessageSquare,
   FileText,
   Users,
   ThumbsUp,
-  ThumbsDown,
   Edit3,
   Eye
 } from 'lucide-react'
