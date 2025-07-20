@@ -29,8 +29,7 @@ import {
   Shield,
   Send,
   Check,
-  X,
-  AlertCircle
+  X
 } from 'lucide-react'
 
 interface ReviewableItem {
