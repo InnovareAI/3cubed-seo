@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
+import { THERAPEUTIC_AREAS } from '../constants/therapeuticAreas'
 import { 
   Plus, 
   Building2, 
@@ -176,10 +177,7 @@ export default function ClientManagement() {
     setExpandedClient(expandedClient === clientId ? null : clientId)
   }
 
-  const therapeuticAreaOptions = [
-    'Oncology', 'Cardiology', 'Neurology', 'Rheumatology', 'Immunology',
-    'Endocrinology', 'Psychiatry', 'Dermatology', 'Pulmonology', 'Gastroenterology'
-  ]
+  const therapeuticAreaOptions = THERAPEUTIC_AREAS
 
   if (!useDemoData && isLoading) {
     return (
