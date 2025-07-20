@@ -15,7 +15,8 @@ import {
   TrendingUp,
   MessageSquare,
   Tag,
-  Bot
+  Bot,
+  BarChart3
 } from 'lucide-react'
 
 interface Submission {
@@ -112,7 +113,7 @@ export default function SEOReview() {
     <div>
       <ReviewPageHeader
         title="SEO Review Queue"
-        description="Review and approve AI-generated SEO content for optimal search performance"
+        description="Review and optimize AI-generated content for maximum search visibility"
         icon={<Search className="h-6 w-6 text-blue-600" />}
         queueCount={filteredSubmissions.length}
         showDemoToggle={true}
@@ -160,7 +161,7 @@ export default function SEOReview() {
             <EmptyState
               icon={<FileText className="h-12 w-12" />}
               title="No submissions pending SEO review"
-              description="New submissions will appear here when they're ready for review."
+              description="New submissions will appear here when they're ready for optimization."
               showDemoButton={!useDummyData}
               onShowDemo={() => setUseDummyData(true)}
             />
@@ -187,25 +188,25 @@ export default function SEOReview() {
               }
               metrics={[
                 {
-                  label: 'SEO Keywords',
+                  label: 'Keywords',
                   value: submission.seo_keywords?.length || 0,
                   icon: <Hash className="h-3 w-3 text-gray-400" />
                 },
                 {
-                  label: 'Long-tail',
-                  value: submission.long_tail_keywords?.length || 0,
+                  label: 'Search Vol',
+                  value: '45K',
                   icon: <TrendingUp className="h-3 w-3 text-gray-400" />
                 },
                 {
-                  label: 'Questions',
-                  value: submission.consumer_questions?.length || 0,
-                  icon: <MessageSquare className="h-3 w-3 text-gray-400" />
+                  label: 'Difficulty',
+                  value: 'Med',
+                  icon: <BarChart3 className="h-3 w-3 text-gray-400" />
                 }
               ]}
               roleSpecificContent={
                 <div className="mb-4 p-3 bg-blue-50 rounded-lg">
                   <p className="text-sm text-gray-700">
-                    <span className="font-semibold">SEO Focus:</span> Review keyword strategy, content optimization, and search intent alignment for maximum organic visibility.
+                    <span className="font-semibold">SEO Focus:</span> Optimize for search visibility, user intent, and competitive advantage in organic search results.
                   </p>
                 </div>
               }

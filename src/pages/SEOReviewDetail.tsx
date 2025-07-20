@@ -11,7 +11,16 @@ import {
   Copy,
   ChevronDown,
   ChevronUp,
-  Sparkles
+  Sparkles,
+  Flag,
+  Search,
+  Target,
+  TrendingUp,
+  Globe,
+  FileText,
+  BookOpen,
+  AlertCircle,
+  Save
 } from 'lucide-react'
 
 interface SEOContent {
@@ -38,12 +47,22 @@ interface Submission {
   submitter_email: string
 }
 
+interface ItemApproval {
+  [key: string]: {
+    approved: boolean
+    flagged: boolean
+    comment: string
+  }
+}
+
 export default function SEOReviewDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['keywords', 'questions', 'recommendations']))
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['strategy']))
   const [showRejectModal, setShowRejectModal] = useState(false)
   const [rejectionReason, setRejectionReason] = useState('')
+  const [itemApprovals, setItemApprovals] = useState<ItemApproval>({})
+  const [isDirty, setIsDirty] = useState(false)
 
   const { data: submission, isLoading } = useQuery({
     queryKey: ['seo-review-detail', id],
@@ -61,7 +80,10 @@ export default function SEOReviewDetail() {
 
   const updateWorkflowStage = useMutation({
     mutationFn: async ({ stage, reason }: { stage: string; reason?: string }) => {
-      const updateData: any = { workflow_stage: stage }
+      const updateData: any = { 
+        workflow_stage: stage,
+        seo_keyword_approvals: itemApprovals
+      }
       if (reason) {
         updateData.rejection_reason = reason
         updateData.rejected_at = new Date().toISOString()
@@ -89,18 +111,35 @@ export default function SEOReviewDetail() {
     setExpandedSections(newExpanded)
   }
 
-  const handleApprove = () => {
-    updateWorkflowStage.mutate({ stage: 'mlr_review' })
+  const handleItemAction = (itemKey: string, action: 'approve' | 'flag' | 'comment', value?: any) => {
+    setItemApprovals(prev => ({
+      ...prev,
+      [itemKey]: {
+        ...prev[itemKey],
+        approved: action === 'approve' ? !prev[itemKey]?.approved : prev[itemKey]?.approved || false,
+        flagged: action === 'flag' ? !prev[itemKey]?.flagged : prev[itemKey]?.flagged || false,
+        comment: action === 'comment' ? value : prev[itemKey]?.comment || ''
+      }
+    }))
+    setIsDirty(true)
   }
 
-  const handleReject = () => {
-    if (rejectionReason.trim()) {
-      updateWorkflowStage.mutate({ stage: 'rejected', reason: rejectionReason })
-    }
+  const handleSaveProgress = () => {
+    // Save current progress without changing workflow stage
+    updateWorkflowStage.mutate({ stage: submission?.workflow_stage || 'SEO_Review' })
+  }
+
+  const handleComplete = () => {
+    updateWorkflowStage.mutate({ stage: 'Client_Review' })
   }
 
   const handleRequestChanges = () => {
-    updateWorkflowStage.mutate({ stage: 'revision_requested' })
+    updateWorkflowStage.mutate({ stage: 'Revision_Requested' })
+  }
+
+  const handleExport = () => {
+    // Export functionality
+    console.log('Exporting SEO review...')
   }
 
   if (isLoading || !submission) {
@@ -227,6 +266,20 @@ export default function SEOReviewDetail() {
     }
   }
 
+  const allItemsApproved = () => {
+    const totalItems = seoContent.seo_keywords.length + 
+                      seoContent.longtail_keywords.length + 
+                      seoContent.consumer_questions.length +
+                      seoContent.h1_recommendations.length +
+                      seoContent.h2_recommendations.length
+    const approvedItems = Object.values(itemApprovals).filter(item => item.approved).length
+    return approvedItems === totalItems
+  }
+
+  const hasFlaggedItems = () => {
+    return Object.values(itemApprovals).some(item => item.flagged)
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -247,18 +300,53 @@ export default function SEOReviewDetail() {
         </div>
         
         <div className="flex items-center gap-3">
-          <button className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+          {isDirty && (
+            <span className="text-sm text-orange-600 font-medium">
+              <AlertCircle className="h-4 w-4 inline mr-1" />
+              Unsaved changes
+            </span>
+          )}
+          <button 
+            onClick={handleExport}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+          >
             <Download className="h-4 w-4 mr-2 inline" />
             Export
           </button>
-          <button
-            onClick={handleApprove}
-            disabled={updateWorkflowStage.isPending}
-            className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 disabled:opacity-50"
-          >
-            Approve All
-          </button>
         </div>
+      </div>
+
+      {/* SEO Strategy Recommendations - Top Section */}
+      <div className="bg-white rounded-lg shadow">
+        <div
+          className="px-6 py-4 border-b border-gray-200 flex items-center justify-between cursor-pointer bg-blue-50"
+          onClick={() => toggleSection('strategy')}
+        >
+          <div className="flex items-center gap-3">
+            <Target className="h-5 w-5 text-blue-600" />
+            <h2 className="text-lg font-medium text-gray-900">SEO Strategy Recommendations</h2>
+          </div>
+          {expandedSections.has('strategy') ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+        </div>
+        {expandedSections.has('strategy') && (
+          <div className="p-6 space-y-6">
+            {Object.entries(seoContent.seo_strategy).map(([key, strategies]) => (
+              <div key={key}>
+                <h3 className="text-sm font-semibold text-gray-900 mb-3">
+                  {key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                </h3>
+                <ul className="space-y-2">
+                  {(strategies as string[]).map((strategy, index) => (
+                    <li key={index} className="flex items-start">
+                      <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
+                      <span className="text-sm text-gray-700">{strategy}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* SEO Keywords Section */}
@@ -267,20 +355,53 @@ export default function SEOReviewDetail() {
           className="px-6 py-4 border-b border-gray-200 flex items-center justify-between cursor-pointer"
           onClick={() => toggleSection('keywords')}
         >
-          <h2 className="text-lg font-medium text-gray-900">SEO Keywords ({seoContent.seo_keywords.length})</h2>
+          <div className="flex items-center gap-3">
+            <Search className="h-5 w-5 text-gray-600" />
+            <h2 className="text-lg font-medium text-gray-900">SEO Keywords ({seoContent.seo_keywords.length})</h2>
+          </div>
           {expandedSections.has('keywords') ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
         </div>
         {expandedSections.has('keywords') && (
           <div className="p-6 space-y-3">
-            {seoContent.seo_keywords.map((keyword, index) => (
-              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <span className="text-sm font-medium text-gray-900">{keyword}</span>
-                <button className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700">
-                  <Sparkles className="h-4 w-4" />
-                  Ask AI
-                </button>
-              </div>
-            ))}
+            {seoContent.seo_keywords.map((keyword, index) => {
+              const itemKey = `keyword-${index}`
+              const approval = itemApprovals[itemKey]
+              return (
+                <div key={index} className={`flex items-center justify-between p-3 rounded-lg border ${
+                  approval?.flagged ? 'border-red-200 bg-red-50' : 
+                  approval?.approved ? 'border-green-200 bg-green-50' : 
+                  'border-gray-200 bg-gray-50'
+                }`}>
+                  <span className="text-sm font-medium text-gray-900">{keyword}</span>
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={() => handleItemAction(itemKey, 'approve')}
+                      className={`p-1.5 rounded ${approval?.approved ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
+                      title="Approve"
+                    >
+                      <CheckCircle className="h-4 w-4" />
+                    </button>
+                    <button 
+                      onClick={() => handleItemAction(itemKey, 'flag')}
+                      className={`p-1.5 rounded ${approval?.flagged ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
+                      title="Flag for compliance"
+                    >
+                      <Flag className="h-4 w-4" />
+                    </button>
+                    <button 
+                      className="p-1.5 rounded bg-gray-200 text-gray-600 hover:bg-gray-300"
+                      title="Add comment"
+                    >
+                      <MessageSquare className="h-4 w-4" />
+                    </button>
+                    <button className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700">
+                      <Sparkles className="h-4 w-4" />
+                      Ask AI
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
           </div>
         )}
       </div>
@@ -291,20 +412,53 @@ export default function SEOReviewDetail() {
           className="px-6 py-4 border-b border-gray-200 flex items-center justify-between cursor-pointer"
           onClick={() => toggleSection('longtail')}
         >
-          <h2 className="text-lg font-medium text-gray-900">Longtail Keywords ({seoContent.longtail_keywords.length})</h2>
+          <div className="flex items-center gap-3">
+            <TrendingUp className="h-5 w-5 text-gray-600" />
+            <h2 className="text-lg font-medium text-gray-900">Longtail Keywords ({seoContent.longtail_keywords.length})</h2>
+          </div>
           {expandedSections.has('longtail') ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
         </div>
         {expandedSections.has('longtail') && (
           <div className="p-6 space-y-3">
-            {seoContent.longtail_keywords.map((keyword, index) => (
-              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <span className="text-sm text-gray-900">{keyword}</span>
-                <button className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700">
-                  <Sparkles className="h-4 w-4" />
-                  Ask AI
-                </button>
-              </div>
-            ))}
+            {seoContent.longtail_keywords.map((keyword, index) => {
+              const itemKey = `longtail-${index}`
+              const approval = itemApprovals[itemKey]
+              return (
+                <div key={index} className={`flex items-center justify-between p-3 rounded-lg border ${
+                  approval?.flagged ? 'border-red-200 bg-red-50' : 
+                  approval?.approved ? 'border-green-200 bg-green-50' : 
+                  'border-gray-200 bg-gray-50'
+                }`}>
+                  <span className="text-sm text-gray-900">{keyword}</span>
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={() => handleItemAction(itemKey, 'approve')}
+                      className={`p-1.5 rounded ${approval?.approved ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
+                      title="Approve"
+                    >
+                      <CheckCircle className="h-4 w-4" />
+                    </button>
+                    <button 
+                      onClick={() => handleItemAction(itemKey, 'flag')}
+                      className={`p-1.5 rounded ${approval?.flagged ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
+                      title="Flag for compliance"
+                    >
+                      <Flag className="h-4 w-4" />
+                    </button>
+                    <button 
+                      className="p-1.5 rounded bg-gray-200 text-gray-600 hover:bg-gray-300"
+                      title="Add comment"
+                    >
+                      <MessageSquare className="h-4 w-4" />
+                    </button>
+                    <button className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700">
+                      <Sparkles className="h-4 w-4" />
+                      Ask AI
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
           </div>
         )}
       </div>
@@ -315,20 +469,53 @@ export default function SEOReviewDetail() {
           className="px-6 py-4 border-b border-gray-200 flex items-center justify-between cursor-pointer"
           onClick={() => toggleSection('questions')}
         >
-          <h2 className="text-lg font-medium text-gray-900">Consumer Questions ({seoContent.consumer_questions.length})</h2>
+          <div className="flex items-center gap-3">
+            <MessageSquare className="h-5 w-5 text-gray-600" />
+            <h2 className="text-lg font-medium text-gray-900">Consumer Questions ({seoContent.consumer_questions.length})</h2>
+          </div>
           {expandedSections.has('questions') ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
         </div>
         {expandedSections.has('questions') && (
           <div className="p-6 space-y-3">
-            {seoContent.consumer_questions.map((question, index) => (
-              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <span className="text-sm text-gray-900">{question}</span>
-                <button className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700">
-                  <Sparkles className="h-4 w-4" />
-                  Ask AI
-                </button>
-              </div>
-            ))}
+            {seoContent.consumer_questions.map((question, index) => {
+              const itemKey = `question-${index}`
+              const approval = itemApprovals[itemKey]
+              return (
+                <div key={index} className={`flex items-center justify-between p-3 rounded-lg border ${
+                  approval?.flagged ? 'border-red-200 bg-red-50' : 
+                  approval?.approved ? 'border-green-200 bg-green-50' : 
+                  'border-gray-200 bg-gray-50'
+                }`}>
+                  <span className="text-sm text-gray-900">{question}</span>
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={() => handleItemAction(itemKey, 'approve')}
+                      className={`p-1.5 rounded ${approval?.approved ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
+                      title="Approve"
+                    >
+                      <CheckCircle className="h-4 w-4" />
+                    </button>
+                    <button 
+                      onClick={() => handleItemAction(itemKey, 'flag')}
+                      className={`p-1.5 rounded ${approval?.flagged ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
+                      title="Flag for compliance"
+                    >
+                      <Flag className="h-4 w-4" />
+                    </button>
+                    <button 
+                      className="p-1.5 rounded bg-gray-200 text-gray-600 hover:bg-gray-300"
+                      title="Add comment"
+                    >
+                      <MessageSquare className="h-4 w-4" />
+                    </button>
+                    <button className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700">
+                      <Sparkles className="h-4 w-4" />
+                      Ask AI
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
           </div>
         )}
       </div>
@@ -339,7 +526,10 @@ export default function SEOReviewDetail() {
           className="px-6 py-4 border-b border-gray-200 flex items-center justify-between cursor-pointer"
           onClick={() => toggleSection('recommendations')}
         >
-          <h2 className="text-lg font-medium text-gray-900">H1 & H2 Recommendations</h2>
+          <div className="flex items-center gap-3">
+            <BookOpen className="h-5 w-5 text-gray-600" />
+            <h2 className="text-lg font-medium text-gray-900">H1 & H2 Recommendations</h2>
+          </div>
           {expandedSections.has('recommendations') ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
         </div>
         {expandedSections.has('recommendations') && (
@@ -347,29 +537,89 @@ export default function SEOReviewDetail() {
             <div>
               <h3 className="text-sm font-semibold text-gray-900 mb-3">H1 Recommendations:</h3>
               <div className="space-y-3">
-                {seoContent.h1_recommendations.map((h1, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <span className="text-sm text-gray-900">{h1}</span>
-                    <button className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700">
-                      <Sparkles className="h-4 w-4" />
-                      Ask AI
-                    </button>
-                  </div>
-                ))}
+                {seoContent.h1_recommendations.map((h1, index) => {
+                  const itemKey = `h1-${index}`
+                  const approval = itemApprovals[itemKey]
+                  return (
+                    <div key={index} className={`flex items-center justify-between p-3 rounded-lg border ${
+                      approval?.flagged ? 'border-red-200 bg-red-50' : 
+                      approval?.approved ? 'border-green-200 bg-green-50' : 
+                      'border-gray-200 bg-gray-50'
+                    }`}>
+                      <span className="text-sm text-gray-900">{h1}</span>
+                      <div className="flex items-center gap-2">
+                        <button 
+                          onClick={() => handleItemAction(itemKey, 'approve')}
+                          className={`p-1.5 rounded ${approval?.approved ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
+                          title="Approve"
+                        >
+                          <CheckCircle className="h-4 w-4" />
+                        </button>
+                        <button 
+                          onClick={() => handleItemAction(itemKey, 'flag')}
+                          className={`p-1.5 rounded ${approval?.flagged ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
+                          title="Flag for compliance"
+                        >
+                          <Flag className="h-4 w-4" />
+                        </button>
+                        <button 
+                          className="p-1.5 rounded bg-gray-200 text-gray-600 hover:bg-gray-300"
+                          title="Add comment"
+                        >
+                          <MessageSquare className="h-4 w-4" />
+                        </button>
+                        <button className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700">
+                          <Sparkles className="h-4 w-4" />
+                          Ask AI
+                        </button>
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
             </div>
             <div>
               <h3 className="text-sm font-semibold text-gray-900 mb-3">H2 Recommendations:</h3>
               <div className="space-y-3">
-                {seoContent.h2_recommendations.map((h2, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <span className="text-sm text-gray-900">{h2}</span>
-                    <button className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700">
-                      <Sparkles className="h-4 w-4" />
-                      Ask AI
-                    </button>
-                  </div>
-                ))}
+                {seoContent.h2_recommendations.map((h2, index) => {
+                  const itemKey = `h2-${index}`
+                  const approval = itemApprovals[itemKey]
+                  return (
+                    <div key={index} className={`flex items-center justify-between p-3 rounded-lg border ${
+                      approval?.flagged ? 'border-red-200 bg-red-50' : 
+                      approval?.approved ? 'border-green-200 bg-green-50' : 
+                      'border-gray-200 bg-gray-50'
+                    }`}>
+                      <span className="text-sm text-gray-900">{h2}</span>
+                      <div className="flex items-center gap-2">
+                        <button 
+                          onClick={() => handleItemAction(itemKey, 'approve')}
+                          className={`p-1.5 rounded ${approval?.approved ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
+                          title="Approve"
+                        >
+                          <CheckCircle className="h-4 w-4" />
+                        </button>
+                        <button 
+                          onClick={() => handleItemAction(itemKey, 'flag')}
+                          className={`p-1.5 rounded ${approval?.flagged ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
+                          title="Flag for compliance"
+                        >
+                          <Flag className="h-4 w-4" />
+                        </button>
+                        <button 
+                          className="p-1.5 rounded bg-gray-200 text-gray-600 hover:bg-gray-300"
+                          title="Add comment"
+                        >
+                          <MessageSquare className="h-4 w-4" />
+                        </button>
+                        <button className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700">
+                          <Sparkles className="h-4 w-4" />
+                          Ask AI
+                        </button>
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
             </div>
           </div>
@@ -378,8 +628,27 @@ export default function SEOReviewDetail() {
 
       {/* Schema Markup */}
       <div className="bg-white rounded-lg shadow">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-medium text-gray-900">Schema Markup</h2>
+        <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <FileText className="h-5 w-5 text-gray-600" />
+            <h2 className="text-lg font-medium text-gray-900">Schema Markup</h2>
+          </div>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => handleItemAction('schema', 'approve')}
+              className={`p-1.5 rounded ${itemApprovals['schema']?.approved ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
+              title="Approve"
+            >
+              <CheckCircle className="h-4 w-4" />
+            </button>
+            <button 
+              onClick={() => handleItemAction('schema', 'flag')}
+              className={`p-1.5 rounded ${itemApprovals['schema']?.flagged ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
+              title="Flag for compliance"
+            >
+              <Flag className="h-4 w-4" />
+            </button>
+          </div>
         </div>
         <div className="p-6">
           <pre className="bg-gray-50 p-4 rounded-lg overflow-x-auto text-sm">
@@ -400,8 +669,27 @@ export default function SEOReviewDetail() {
 
       {/* GEO Recommendations */}
       <div className="bg-white rounded-lg shadow">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-medium text-gray-900">GEO Recommendations (AI Search)</h2>
+        <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Globe className="h-5 w-5 text-gray-600" />
+            <h2 className="text-lg font-medium text-gray-900">GEO Recommendations (AI Search)</h2>
+          </div>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => handleItemAction('geo', 'approve')}
+              className={`p-1.5 rounded ${itemApprovals['geo']?.approved ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
+              title="Approve"
+            >
+              <CheckCircle className="h-4 w-4" />
+            </button>
+            <button 
+              onClick={() => handleItemAction('geo', 'flag')}
+              className={`p-1.5 rounded ${itemApprovals['geo']?.flagged ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
+              title="Flag for compliance"
+            >
+              <Flag className="h-4 w-4" />
+            </button>
+          </div>
         </div>
         <div className="p-6 space-y-4">
           <div>
@@ -427,72 +715,56 @@ export default function SEOReviewDetail() {
         </div>
       </div>
 
-      {/* SEO Strategy */}
-      <div className="bg-white rounded-lg shadow">
-        <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-          <h2 className="text-lg font-medium text-gray-900">SEO Strategy</h2>
-          <button className="text-sm text-blue-600 hover:text-blue-700 font-medium">
-            View Comprehensive Strategy
-          </button>
+      {/* Bottom Action Buttons - Fixed Position */}
+      <div className="sticky bottom-0 bg-white border-t border-gray-200 px-6 py-4">
+        <div className="flex justify-between items-center max-w-7xl mx-auto">
+          <div className="flex items-center gap-4">
+            {hasFlaggedItems() && (
+              <span className="text-sm text-red-600 font-medium">
+                <Flag className="h-4 w-4 inline mr-1" />
+                {Object.values(itemApprovals).filter(item => item.flagged).length} items flagged for compliance
+              </span>
+            )}
+          </div>
+          
+          <div className="flex gap-3">
+            <button
+              onClick={handleSaveProgress}
+              disabled={!isDirty}
+              className="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
+            >
+              <Save className="h-4 w-4 mr-2 inline" />
+              Save Progress
+            </button>
+            <button
+              onClick={handleRequestChanges}
+              className="px-6 py-2.5 text-sm font-medium text-orange-700 bg-orange-50 border border-orange-300 rounded-md hover:bg-orange-100"
+            >
+              <MessageSquare className="h-4 w-4 mr-2 inline" />
+              Request Changes
+            </button>
+            <button
+              onClick={handleComplete}
+              disabled={!allItemsApproved() || hasFlaggedItems()}
+              className="px-6 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <CheckCircle className="h-4 w-4 mr-2 inline" />
+              Complete Review
+            </button>
+          </div>
         </div>
-        <div className="p-6 space-y-6">
-          {Object.entries(seoContent.seo_strategy).map(([key, strategies]) => (
-            <div key={key}>
-              <h3 className="text-sm font-semibold text-gray-900 mb-3">
-                {key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
-              </h3>
-              <ul className="space-y-2">
-                {(strategies as string[]).map((strategy, index) => (
-                  <li key={index} className="flex items-start">
-                    <span className="text-sm text-gray-700">• {strategy}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-          <button className="w-full px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200">
-            <Copy className="h-4 w-4 mr-2 inline" />
-            Copy Strategy
-          </button>
-        </div>
-      </div>
-
-      {/* Action Buttons */}
-      <div className="flex justify-center gap-4 py-6">
-        <button
-          onClick={() => setShowRejectModal(true)}
-          className="px-6 py-3 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
-        >
-          <XCircle className="h-4 w-4 mr-2 inline" />
-          Reject All
-        </button>
-        <button
-          onClick={handleRequestChanges}
-          className="px-6 py-3 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
-        >
-          <MessageSquare className="h-4 w-4 mr-2 inline" />
-          Request Changes
-        </button>
-        <button
-          onClick={handleApprove}
-          disabled={updateWorkflowStage.isPending}
-          className="px-6 py-3 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 disabled:opacity-50"
-        >
-          <CheckCircle className="h-4 w-4 mr-2 inline" />
-          Approve & Publish
-        </button>
       </div>
 
       {/* Reject Modal */}
       {showRejectModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Reject Submission</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Request Changes</h3>
             <textarea
               value={rejectionReason}
               onChange={(e) => setRejectionReason(e.target.value)}
-              placeholder="Please provide a reason for rejection..."
-              className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+              placeholder="Please provide specific feedback for changes needed..."
+              className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
               rows={4}
             />
             <div className="mt-4 flex justify-end gap-3">
@@ -503,11 +775,13 @@ export default function SEOReviewDetail() {
                 Cancel
               </button>
               <button
-                onClick={handleReject}
+                onClick={() => {
+                  updateWorkflowStage.mutate({ stage: 'Revision_Requested', reason: rejectionReason })
+                }}
                 disabled={!rejectionReason.trim()}
-                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50"
+                className="px-4 py-2 text-sm font-medium text-white bg-orange-600 rounded-md hover:bg-orange-700 disabled:opacity-50"
               >
-                Confirm Rejection
+                Send Feedback
               </button>
             </div>
           </div>
