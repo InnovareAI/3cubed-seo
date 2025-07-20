@@ -37,7 +37,7 @@ export default function ClientReview() {
         // Transform SEO Review mock data into Client Review data
         return mockSEOReviews.slice(0, 6).map(s => ({
           ...s,
-          workflow_stage: 'Client_Review',
+          workflow_stage: 'client_review',
           client_review_status: Math.random() > 0.5 ? 'pending' : Math.random() > 0.5 ? 'approved' : 'revision_requested',
           client_approval_date: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
           client_feedback: Math.random() > 0.5 ? 'Please revise the H2 tags to be more specific' : null,
@@ -48,7 +48,7 @@ export default function ClientReview() {
       const { data, error } = await supabase
         .from('submissions')
         .select('*')
-        .eq('workflow_stage', 'Client_Review')
+        .eq('workflow_stage', 'client_review')
         .order('created_at', { ascending: false })
 
       if (error) throw error
@@ -76,7 +76,7 @@ export default function ClientReview() {
   }
 
   const getPriorityColor = (priority: string) => {
-    switch (priority) {
+    switch (priority.toLowerCase()) {
       case 'high': return 'bg-red-100 text-red-800'
       case 'medium': return 'bg-yellow-100 text-yellow-800'
       case 'low': return 'bg-green-100 text-green-800'
@@ -245,7 +245,7 @@ export default function ClientReview() {
                 <p className="text-sm text-gray-600 mt-1">{submission.therapeutic_area}</p>
               </div>
               <span className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(submission.priority_level || 'medium')}`}>
-                {submission.priority_level || 'Medium'} Priority
+                {(submission.priority_level || 'medium').charAt(0).toUpperCase() + (submission.priority_level || 'medium').slice(1)} Priority
               </span>
             </div>
 
