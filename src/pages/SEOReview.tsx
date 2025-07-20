@@ -271,12 +271,12 @@ export default function SEOReview() {
         )}
       </div>
 
-      {/* SEO Review Modal */}
+      {/* SEO Review Modal - Using content prop instead of submission */}
       {selectedSubmission && (
         <SEOReviewModal
           isOpen={isModalOpen}
           onClose={handleCloseModal}
-          submission={selectedSubmission}
+          content={selectedSubmission as any}
         />
       )}
     </div>
