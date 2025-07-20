@@ -2,13 +2,13 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { ContentPiece } from '@/lib/supabase-new-schema'
-import { Search, CheckCircle, XCircle, AlertCircle, FileText, ExternalLink } from 'lucide-react'
+import { Search, CheckCircle, XCircle, AlertCircle, FileText } from 'lucide-react'
 import { format } from 'date-fns'
-import { toast } from 'sonner'
 
 export default function SEOReview() {
   const [selectedContent, setSelectedContent] = useState<ContentPiece | null>(null)
   const [revisionNotes, setRevisionNotes] = useState('')
+  const [showRevisionModal, setShowRevisionModal] = useState(false)
   const queryClient = useQueryClient()
 
   // Fetch content pending SEO review
@@ -57,10 +57,12 @@ export default function SEOReview() {
       queryClient.invalidateQueries({ queryKey: ['processing-queue'] })
       setSelectedContent(null)
       setRevisionNotes('')
-      toast.success('Content status updated successfully')
+      setShowRevisionModal(false)
+      // Simple success feedback
+      alert('Content status updated successfully')
     },
     onError: (error) => {
-      toast.error('Failed to update status: ' + error.message)
+      alert('Failed to update status: ' + error.message)
     }
   })
 
@@ -73,7 +75,7 @@ export default function SEOReview() {
 
   const handleRequestRevision = () => {
     if (!selectedContent || !revisionNotes.trim()) {
-      toast.error('Please provide revision notes')
+      alert('Please provide revision notes')
       return
     }
 
@@ -214,10 +216,9 @@ export default function SEOReview() {
                     Approve for Client Review
                   </button>
                   <button
-                    onClick={() => setSelectedContent(selectedContent)}
+                    onClick={() => setShowRevisionModal(true)}
                     disabled={updateStatus.isPending}
                     className="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                    data-revision-trigger
                   >
                     <XCircle className="h-5 w-5" />
                     Request Revision
@@ -235,7 +236,7 @@ export default function SEOReview() {
       </div>
 
       {/* Revision Modal */}
-      {selectedContent && document.querySelector('[data-revision-trigger]') && (
+      {showRevisionModal && selectedContent && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg max-w-md w-full p-6">
             <h3 className="text-lg font-semibold mb-4">Request Revision</h3>
@@ -255,7 +256,7 @@ export default function SEOReview() {
               </button>
               <button
                 onClick={() => {
-                  setSelectedContent(null)
+                  setShowRevisionModal(false)
                   setRevisionNotes('')
                 }}
                 className="flex-1 bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300"
