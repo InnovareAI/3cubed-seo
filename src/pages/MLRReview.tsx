@@ -59,7 +59,7 @@ export default function MLRReview() {
       const { data, error } = await supabase
         .from('submissions')
         .select('*')
-        .eq('workflow_stage', 'MLR_Review')
+        .eq('workflow_stage', 'mlr_review')
         .order('created_at', { ascending: true })
       
       if (error) throw error
