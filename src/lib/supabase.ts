@@ -122,6 +122,25 @@ export type ContentStatus =
   | 'approved' 
   | 'published'
 
+// GEO Optimization structure
+export interface GeoOptimization {
+  ai_friendly_summary: string
+  structured_data: {
+    drug_name?: string
+    brand_name?: string
+    drug_class?: string
+    indication?: string
+    mechanism?: string
+    condition?: string
+    treatment?: string
+    severity_grades?: string
+    common_organs?: string
+    [key: string]: any
+  }
+  key_facts: string[]
+  ai_citations?: string
+}
+
 export interface ContentPiece {
   id: string
   project_id: string
@@ -147,6 +166,33 @@ export interface ContentPiece {
   published_url?: string
   created_at: string
   updated_at: string
+  
+  // New SEO/Langchain fields
+  priority_level?: 'High' | 'Medium' | 'Low'
+  seo_keywords?: string[]
+  long_tail_keywords?: string[]
+  consumer_questions?: string[]
+  h1_tag?: string
+  h2_tags?: string[]
+  h3_tags?: string[]
+  meta_title?: string
+  meta_description?: string
+  geo_optimization?: GeoOptimization
+  executive_summary?: string
+  full_seo_report?: any
+  ai_output?: any
+  
+  // Geography and targeting
+  geography?: string[]
+  target_audience?: string[]
+  
+  // SEO review tracking
+  seo_keyword_approvals?: Record<string, any>
+  seo_internal_notes?: string
+  seo_client_feedback?: string
+  seo_reviewed_at?: string
+  seo_reviewed_by?: string
+  
   // Relations
   project?: Project
   seo_reviewer?: User
