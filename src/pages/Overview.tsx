@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { supabase } from '@/lib/supabase'
-import { FileText, CheckCircle, Clock, TrendingUp, AlertCircle, CheckSquare, Search, Users, Shield } from 'lucide-react'
+import { FileText, Clock, TrendingUp, AlertCircle, Search, Users, Shield } from 'lucide-react'
 import MetricCard from '@/components/MetricCard'
 import StatusDistributionChart from '@/components/StatusDistributionChart'
 import ProcessingQueue from '@/components/ProcessingQueue'
