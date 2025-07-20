@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { THERAPEUTIC_AREAS } from '../constants/therapeuticAreas';
 
 interface SubmissionFormProps {
   onSuccess?: () => void;
@@ -416,9 +417,9 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Select Therapeutic Area</option>
-              <option value="Oncology">Oncology</option>
-              <option value="Rare Disease">Rare Disease</option>
-              <option value="Other">Other</option>
+              {THERAPEUTIC_AREAS.map(area => (
+                <option key={area} value={area}>{area}</option>
+              ))}
             </select>
           </div>
         </div>
