@@ -18,7 +18,10 @@ export default function SEOReview() {
         .from('content_pieces')
         .select(`
           *,
-          project:projects(name, client_name, therapeutic_area),
+          project:projects(
+            *,
+            client:clients(name)
+          ),
           assigned_user:users!assigned_to(email, full_name)
         `)
         .eq('status', 'pending_seo_review')
@@ -153,7 +156,7 @@ export default function SEOReview() {
                   </div>
                   <div>
                     <span className="text-gray-500">Client:</span>
-                    <p className="font-medium">{selectedContent.project?.client_name}</p>
+                    <p className="font-medium">{selectedContent.project?.client?.name}</p>
                   </div>
                   <div>
                     <span className="text-gray-500">Therapeutic Area:</span>
