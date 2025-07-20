@@ -18,7 +18,12 @@ import {
   ChevronUp,
   Calendar,
   User,
-  Building
+  Building,
+  CheckCircle,
+  TrendingUp,
+  DollarSign,
+  Megaphone,
+  Shield
 } from 'lucide-react'
 
 interface ClientComment {
@@ -68,6 +73,29 @@ export default function ClientReviewDetail() {
   const [clientFeedback, setClientFeedback] = useState('')
   const [sectionComments, setSectionComments] = useState<Record<string, string>>({})
   const [showFeedbackModal, setShowFeedbackModal] = useState(false)
+  
+  // Business guardrails state
+  const [businessChecks, setBusinessChecks] = useState({
+    // Commercial Alignment
+    marketPositioning: false,
+    budgetAlignment: false,
+    roiProjection: false,
+    competitiveDifferentiation: false,
+    
+    // Brand Consistency
+    brandVoice: false,
+    visualGuidelines: false,
+    messagingApproved: false,
+    
+    // Execution Readiness
+    channelStrategy: false,
+    launchTimeline: false,
+    localizationReady: false,
+    
+    // Quick Compliance Verify (agent handled the heavy lifting)
+    safetyInfoPresent: false,
+    fairBalanceConfirmed: false
+  })
 
   // Get submission data
   const { data: submission, isLoading } = useQuery({
@@ -152,6 +180,23 @@ export default function ClientReviewDetail() {
   }
 
   const handleApprove = () => {
+    // Check critical business requirements
+    const criticalChecks = [
+      businessChecks.marketPositioning,
+      businessChecks.budgetAlignment,
+      businessChecks.brandVoice,
+      businessChecks.messagingApproved,
+      businessChecks.safetyInfoPresent,
+      businessChecks.fairBalanceConfirmed
+    ]
+    
+    const allCriticalChecksPassed = criticalChecks.every(check => check === true)
+    
+    if (!allCriticalChecksPassed) {
+      alert('Please complete all critical business checks before approving:\n\n- Market Positioning\n- Budget Alignment\n- Brand Voice\n- Messaging Approved\n- Safety Info Present\n- Fair Balance Confirmed')
+      return
+    }
+    
     updateWorkflowStage.mutate({ status: 'approved' })
   }
 
@@ -430,6 +475,241 @@ export default function ClientReviewDetail() {
             </div>
           </div>
         )}
+      </div>
+
+      {/* Business Guardrails Section */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-emerald-100 rounded-lg">
+              <Shield className="h-5 w-5 text-emerald-600" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">Business Review Checklist</h2>
+              <p className="text-sm text-gray-500">Confirm business readiness before approval</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="p-6 space-y-6">
+          {/* Commercial Alignment */}
+          <div>
+            <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+              <DollarSign className="h-4 w-4 text-gray-600" />
+              Commercial Alignment
+            </h3>
+            <div className="space-y-3">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={businessChecks.marketPositioning}
+                  onChange={(e) => setBusinessChecks(prev => ({ ...prev, marketPositioning: e.target.checked }))}
+                  className="mt-0.5 h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                />
+                <div className="flex-1">
+                  <span className="text-sm font-medium text-gray-700">Market Positioning Aligned</span>
+                  <span className="text-red-500 text-xs ml-1">*</span>
+                  <p className="text-xs text-gray-500 mt-0.5">Content supports our competitive positioning and differentiation strategy</p>
+                </div>
+              </label>
+              
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={businessChecks.budgetAlignment}
+                  onChange={(e) => setBusinessChecks(prev => ({ ...prev, budgetAlignment: e.target.checked }))}
+                  className="mt-0.5 h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                />
+                <div className="flex-1">
+                  <span className="text-sm font-medium text-gray-700">Budget & Scope Approved</span>
+                  <span className="text-red-500 text-xs ml-1">*</span>
+                  <p className="text-xs text-gray-500 mt-0.5">Content scope aligns with allocated budget and resources</p>
+                </div>
+              </label>
+              
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={businessChecks.roiProjection}
+                  onChange={(e) => setBusinessChecks(prev => ({ ...prev, roiProjection: e.target.checked }))}
+                  className="mt-0.5 h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                />
+                <div className="flex-1">
+                  <span className="text-sm font-medium text-gray-700">ROI Projection Met</span>
+                  <p className="text-xs text-gray-500 mt-0.5">Expected outcomes justify the investment</p>
+                </div>
+              </label>
+              
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={businessChecks.competitiveDifferentiation}
+                  onChange={(e) => setBusinessChecks(prev => ({ ...prev, competitiveDifferentiation: e.target.checked }))}
+                  className="mt-0.5 h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                />
+                <div className="flex-1">
+                  <span className="text-sm font-medium text-gray-700">Competitive Differentiation Clear</span>
+                  <p className="text-xs text-gray-500 mt-0.5">USPs are clearly communicated vs competitors</p>
+                </div>
+              </label>
+            </div>
+          </div>
+          
+          {/* Brand Consistency */}
+          <div>
+            <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+              <Megaphone className="h-4 w-4 text-gray-600" />
+              Brand Consistency
+            </h3>
+            <div className="space-y-3">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={businessChecks.brandVoice}
+                  onChange={(e) => setBusinessChecks(prev => ({ ...prev, brandVoice: e.target.checked }))}
+                  className="mt-0.5 h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                />
+                <div className="flex-1">
+                  <span className="text-sm font-medium text-gray-700">Brand Voice & Tone Correct</span>
+                  <span className="text-red-500 text-xs ml-1">*</span>
+                  <p className="text-xs text-gray-500 mt-0.5">Content sounds like our brand and resonates with our audience</p>
+                </div>
+              </label>
+              
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={businessChecks.visualGuidelines}
+                  onChange={(e) => setBusinessChecks(prev => ({ ...prev, visualGuidelines: e.target.checked }))}
+                  className="mt-0.5 h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                />
+                <div className="flex-1">
+                  <span className="text-sm font-medium text-gray-700">Visual Guidelines Followed</span>
+                  <p className="text-xs text-gray-500 mt-0.5">Design concepts align with brand standards</p>
+                </div>
+              </label>
+              
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={businessChecks.messagingApproved}
+                  onChange={(e) => setBusinessChecks(prev => ({ ...prev, messagingApproved: e.target.checked }))}
+                  className="mt-0.5 h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                />
+                <div className="flex-1">
+                  <span className="text-sm font-medium text-gray-700">Key Messages Approved</span>
+                  <span className="text-red-500 text-xs ml-1">*</span>
+                  <p className="text-xs text-gray-500 mt-0.5">All claims and messages align with approved messaging framework</p>
+                </div>
+              </label>
+            </div>
+          </div>
+          
+          {/* Execution Readiness */}
+          <div>
+            <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 text-gray-600" />
+              Execution Readiness
+            </h3>
+            <div className="space-y-3">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={businessChecks.channelStrategy}
+                  onChange={(e) => setBusinessChecks(prev => ({ ...prev, channelStrategy: e.target.checked }))}
+                  className="mt-0.5 h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                />
+                <div className="flex-1">
+                  <span className="text-sm font-medium text-gray-700">Channel Strategy Fit</span>
+                  <p className="text-xs text-gray-500 mt-0.5">Content works across all planned distribution channels</p>
+                </div>
+              </label>
+              
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={businessChecks.launchTimeline}
+                  onChange={(e) => setBusinessChecks(prev => ({ ...prev, launchTimeline: e.target.checked }))}
+                  className="mt-0.5 h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                />
+                <div className="flex-1">
+                  <span className="text-sm font-medium text-gray-700">Launch Timeline Aligned</span>
+                  <p className="text-xs text-gray-500 mt-0.5">Content delivery fits our go-to-market schedule</p>
+                </div>
+              </label>
+              
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={businessChecks.localizationReady}
+                  onChange={(e) => setBusinessChecks(prev => ({ ...prev, localizationReady: e.target.checked }))}
+                  className="mt-0.5 h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                />
+                <div className="flex-1">
+                  <span className="text-sm font-medium text-gray-700">Localization Considered</span>
+                  <p className="text-xs text-gray-500 mt-0.5">Content can be adapted for all target markets</p>
+                </div>
+              </label>
+            </div>
+          </div>
+          
+          {/* Quick Compliance Verify */}
+          <div className="pt-4 border-t border-gray-200">
+            <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+              <CheckCircle className="h-4 w-4 text-gray-600" />
+              Quick Compliance Verify
+              <span className="text-xs font-normal text-gray-500 ml-2">(AI agent pre-validated)</span>
+            </h3>
+            <div className="space-y-3">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={businessChecks.safetyInfoPresent}
+                  onChange={(e) => setBusinessChecks(prev => ({ ...prev, safetyInfoPresent: e.target.checked }))}
+                  className="mt-0.5 h-4 w-4 text-green-600 rounded border-gray-300 focus:ring-green-500"
+                />
+                <div className="flex-1">
+                  <span className="text-sm font-medium text-gray-700">Safety Information Present</span>
+                  <span className="text-red-500 text-xs ml-1">*</span>
+                  <p className="text-xs text-gray-500 mt-0.5">Confirm ISI and boxed warnings are visible</p>
+                </div>
+              </label>
+              
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={businessChecks.fairBalanceConfirmed}
+                  onChange={(e) => setBusinessChecks(prev => ({ ...prev, fairBalanceConfirmed: e.target.checked }))}
+                  className="mt-0.5 h-4 w-4 text-green-600 rounded border-gray-300 focus:ring-green-500"
+                />
+                <div className="flex-1">
+                  <span className="text-sm font-medium text-gray-700">Fair Balance Maintained</span>
+                  <span className="text-red-500 text-xs ml-1">*</span>
+                  <p className="text-xs text-gray-500 mt-0.5">Benefits and risks are appropriately balanced</p>
+                </div>
+              </label>
+            </div>
+          </div>
+          
+          {/* Progress Indicator */}
+          <div className="pt-4 border-t border-gray-200">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-gray-600">Checklist Progress</span>
+              <span className="font-medium text-gray-900">
+                {Object.values(businessChecks).filter(Boolean).length} / {Object.keys(businessChecks).length} completed
+              </span>
+            </div>
+            <div className="mt-2 w-full bg-gray-200 rounded-full h-2">
+              <div 
+                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${(Object.values(businessChecks).filter(Boolean).length / Object.keys(businessChecks).length) * 100}%` }}
+              />
+            </div>
+            <p className="text-xs text-red-600 mt-3">
+              * Required fields for approval
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* General Feedback Section */}
