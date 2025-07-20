@@ -12,8 +12,7 @@ import {
   FileText,
   TrendingUp,
   Target,
-  BarChart3,
-  Globe
+  BarChart3
 } from 'lucide-react'
 
 export default function SEOReview() {
@@ -154,7 +153,7 @@ export default function SEOReview() {
               key={content.id}
               submission={{
                 id: content.id,
-                product_name: content.project?.product_name || 'N/A',
+                product_name: content.project?.product_name || content.title,
                 therapeutic_area: content.project?.therapeutic_area || 'N/A',
                 stage: content.project?.status || 'active',
                 workflow_stage: 'SEO_Review',
@@ -204,7 +203,6 @@ export default function SEOReview() {
                   </p>
                 </div>
               }
-              customTitle={content.title}
             />
           ))
         )}
