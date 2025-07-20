@@ -2,21 +2,22 @@ import { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import ReviewCard from '../components/ReviewCard'
-import ReviewPageHeader from '../components/ReviewPageHeader'
 import FilterBar from '../components/FilterBar'
 import EmptyState from '../components/EmptyState'
-import RoleInfoBanner from '../components/RoleInfoBanner'
 import { mockSEOReviews } from '../data/mockSEOReviews'
 import { 
   Search,
   FileText,
   Hash,
   TrendingUp,
-  Tag,
-  Bot,
-  BarChart3
+  MessageSquare,
+  Calendar,
+  Building2,
+  Target,
+  AlertCircle,
+  ChevronRight
 } from 'lucide-react'
+import { format } from 'date-fns'
 
 interface Submission {
   id: string
@@ -86,12 +87,25 @@ export default function SEOReview() {
     return true
   }) || []
 
-  const handleCardClick = (submission: Submission) => {
-    navigate(`/seo-review/${submission.id}`)
+  const handleCardClick = (submissionId: string) => {
+    navigate(`/seo-review/${submissionId}`)
   }
 
   // Get unique therapeutic areas for filter
   const therapeuticAreas = [...new Set(submissions?.map(s => s.therapeutic_area) || [])]
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority.toLowerCase()) {
+      case 'high':
+        return 'text-red-700 bg-red-50 ring-red-600/20'
+      case 'medium':
+        return 'text-amber-700 bg-amber-50 ring-amber-600/20'
+      case 'low':
+        return 'text-green-700 bg-green-50 ring-green-600/20'
+      default:
+        return 'text-gray-700 bg-gray-50 ring-gray-600/20'
+    }
+  }
 
   if (!useDummyData && isLoading) {
     return (
@@ -102,34 +116,44 @@ export default function SEOReview() {
   }
 
   return (
-    <div>
-      <ReviewPageHeader
-        title="SEO Review Queue"
-        description="Review and optimize AI-generated content for maximum search visibility"
-        icon={<Search className="h-6 w-6 text-blue-600" />}
-        queueCount={filteredSubmissions.length}
-        showDemoToggle={true}
-        isDemoMode={useDummyData}
-        onDemoToggle={() => setUseDummyData(!useDummyData)}
-        statusIndicators={[
-          { color: 'bg-yellow-500', label: 'AI Generated' },
-          { color: 'bg-blue-500', label: 'Awaiting SEO Review' },
-          { color: 'bg-green-500', label: 'Next: Client Review' }
-        ]}
-      />
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <Search className="h-6 w-6 text-blue-600" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">SEO Review Queue</h1>
+                <p className="text-sm text-gray-600 mt-0.5">Review and optimize AI-generated content for search performance</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-500">Mode:</span>
+                <button
+                  onClick={() => setUseDummyData(!useDummyData)}
+                  className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                    useDummyData 
+                      ? 'bg-amber-100 text-amber-700' 
+                      : 'bg-green-100 text-green-700'
+                  }`}
+                >
+                  {useDummyData ? 'Demo Data' : 'Live Data'}
+                </button>
+              </div>
+              <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-lg">
+                <AlertCircle className="h-4 w-4 text-blue-600" />
+                <span className="text-sm font-medium text-blue-900">{filteredSubmissions.length} items awaiting review</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-      <RoleInfoBanner
-        title="SEO Review"
-        description="Search performance optimization"
-        bulletPoints={[
-          'Validate keyword strategy and search intent alignment',
-          'Review meta descriptions and title tags for click-through optimization',
-          'Ensure content structure supports featured snippets and rich results',
-          'Verify technical SEO elements (GEO optimization, schema markup readiness)'
-        ]}
-        variant="blue"
-      />
-
+      {/* Filter Bar */}
       <FilterBar
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
@@ -138,71 +162,99 @@ export default function SEOReview() {
         therapeuticAreaFilter={therapeuticAreaFilter}
         onTherapeuticAreaChange={setTherapeuticAreaFilter}
         therapeuticAreas={therapeuticAreas}
-        additionalFilters={
-          <div className="flex items-center justify-end text-sm text-gray-500">
-            <Bot className="h-4 w-4 mr-1" />
-            AI Generated Content
-          </div>
-        }
       />
 
       {/* Review Queue */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="space-y-4">
         {filteredSubmissions.length === 0 ? (
-          <div className="md:col-span-2 lg:col-span-3">
-            <EmptyState
-              icon={<FileText className="h-12 w-12" />}
-              title="No submissions pending SEO review"
-              description="New submissions will appear here when they're ready for optimization."
-              showDemoButton={!useDummyData}
-              onShowDemo={() => setUseDummyData(true)}
-            />
-          </div>
+          <EmptyState
+            icon={<FileText className="h-12 w-12" />}
+            title="No submissions pending SEO review"
+            description="New submissions will appear here when they're ready for review."
+            showDemoButton={!useDummyData}
+            onShowDemo={() => setUseDummyData(true)}
+          />
         ) : (
           filteredSubmissions.map((submission) => (
-            <ReviewCard
-              key={submission.id}
-              submission={submission}
-              onClick={() => handleCardClick(submission)}
-              statusBadge={
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                  SEO Review
-                </span>
-              }
-              priorityLevel={submission.priority_level as 'High' | 'Medium' | 'Low'}
-              highlights={
-                submission.key_differentiators ? [{
-                  label: 'Key Differentiators',
-                  items: submission.key_differentiators,
-                  icon: <Tag className="h-3 w-3" />,
-                  colorClass: 'bg-purple-100 text-purple-800'
-                }] : undefined
-              }
-              metrics={[
-                {
-                  label: 'Keywords',
-                  value: submission.seo_keywords?.length || 0,
-                  icon: <Hash className="h-3 w-3 text-gray-400" />
-                },
-                {
-                  label: 'Search Vol',
-                  value: '45K',
-                  icon: <TrendingUp className="h-3 w-3 text-gray-400" />
-                },
-                {
-                  label: 'Difficulty',
-                  value: 'Med',
-                  icon: <BarChart3 className="h-3 w-3 text-gray-400" />
-                }
-              ]}
-              roleSpecificContent={
-                <div className="mb-4 p-3 bg-blue-50 rounded-lg">
-                  <p className="text-sm text-gray-700">
-                    <span className="font-semibold">SEO Focus:</span> Optimize for search visibility, user intent, and competitive advantage in organic search results.
-                  </p>
+            <div 
+              key={submission.id} 
+              onClick={() => handleCardClick(submission.id)}
+              className="bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all cursor-pointer"
+            >
+              <div className="p-6">
+                <div className="flex items-start justify-between gap-4">
+                  {/* Left Section - Main Content */}
+                  <div className="flex-1">
+                    {/* Header Row */}
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                          {submission.product_name}
+                        </h3>
+                        <div className="flex items-center gap-4 text-sm text-gray-600">
+                          <span className="font-medium">{submission.therapeutic_area}</span>
+                          <span>•</span>
+                          <span>{submission.stage}</span>
+                          <span>•</span>
+                          <span className="flex items-center gap-1">
+                            <Target className="h-3 w-3" />
+                            {submission.target_audience?.join(', ') || 'Not specified'}
+                          </span>
+                        </div>
+                      </div>
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ring-1 ring-inset ${getPriorityColor(submission.priority_level)}`}>
+                        {submission.priority_level} Priority
+                      </span>
+                    </div>
+
+                    {/* Medical Indication */}
+                    {submission.medical_indication && (
+                      <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-100">
+                        <p className="text-sm text-blue-900">
+                          <span className="font-semibold">Medical Indication:</span> {submission.medical_indication}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* SEO Metrics Bar */}
+                    <div className="flex items-center gap-6 mb-4">
+                      <div className="flex items-center gap-2">
+                        <Hash className="h-4 w-4 text-gray-400" />
+                        <span className="text-sm text-gray-600">Keywords:</span>
+                        <span className="text-sm font-semibold text-gray-900">{submission.seo_keywords?.length || 0}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <TrendingUp className="h-4 w-4 text-gray-400" />
+                        <span className="text-sm text-gray-600">Long-tail:</span>
+                        <span className="text-sm font-semibold text-gray-900">{submission.long_tail_keywords?.length || 0}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <MessageSquare className="h-4 w-4 text-gray-400" />
+                        <span className="text-sm text-gray-600">Questions:</span>
+                        <span className="text-sm font-semibold text-gray-900">{submission.consumer_questions?.length || 0}</span>
+                      </div>
+                    </div>
+
+                    {/* Footer Info */}
+                    <div className="flex items-center gap-6 text-sm text-gray-500">
+                      <div className="flex items-center gap-1">
+                        <Calendar className="h-3.5 w-3.5" />
+                        <span>{format(new Date(submission.created_at), 'MMM d, yyyy h:mm a')}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Building2 className="h-3.5 w-3.5" />
+                        <span>{submission.submitter_name}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right Section - Arrow */}
+                  <div className="flex items-center">
+                    <ChevronRight className="h-5 w-5 text-gray-400" />
+                  </div>
                 </div>
-              }
-            />
+              </div>
+            </div>
           ))
         )}
       </div>
