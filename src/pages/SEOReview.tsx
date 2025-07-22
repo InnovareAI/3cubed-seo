@@ -325,13 +325,9 @@ export default function SEOReview() {
             </div>
 
             <div className="mt-4 flex items-center justify-between">
-              <CTAButton
-                size="sm"
-                variant="secondary"
-                icon={<Eye className="h-3 w-3" />}
-              >
-                View Details
-              </CTAButton>
+              <span className="text-sm text-gray-600">
+                Click to review
+              </span>
               <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-blue-600 transition-colors" />
             </div>
           </div>

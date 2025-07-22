@@ -597,11 +597,13 @@ export default function ClientManagement() {
               disabled={!newClient.name || !newClient.company_domain || !newClient.contact_name || !newClient.contact_email}
               className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Create Client
+              {editingClient ? 'Update Client' : 'Create Client'}
             </button>
           </div>
         </div>
-      )}
+      </div>
+    </div>
+  )}
 
       {/* Client List */}
       <div className="bg-white shadow overflow-hidden sm:rounded-md">
