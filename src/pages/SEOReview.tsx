@@ -68,7 +68,7 @@ export default function SEOReview() {
     localStorage.setItem('seoReviewDataMode', useDummyData ? 'demo' : 'live')
   }, [useDummyData])
 
-  const { isLoading } = useQuery({
+  const { data: liveData, isLoading } = useQuery({
     queryKey: ['seo-review-queue'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -87,9 +87,8 @@ export default function SEOReview() {
   // Use dummy data or live data based on toggle
   const submissions = useMemo(() => {
     if (useDummyData) return mockSEOReviews
-    // Return empty array for live data mode to show no data
-    return []
-  }, [useDummyData])
+    return liveData || []
+  }, [useDummyData, liveData])
 
   const filteredSubmissions = submissions?.filter(submission => {
     if (searchTerm && !submission.product_name.toLowerCase().includes(searchTerm.toLowerCase()) &&

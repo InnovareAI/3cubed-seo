@@ -56,11 +56,9 @@ export default function ClientReview() {
       }
 
       const { data, error } = await supabase
-        .from('pharma_seo_submissions')
+        .from('submissions')
         .select('*')
-        .eq('workflow_stage', 'seo_review')
-        .eq('langchain_status', 'completed')
-        .not('ai_generated_content', 'is', null)
+        .eq('workflow_stage', 'client_review')
         .order('created_at', { ascending: false })
 
       if (error) throw error
