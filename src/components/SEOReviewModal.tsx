@@ -238,7 +238,6 @@ export default function SEOReviewModal({ isOpen, onClose, content }: SEOReviewMo
 
                   {activeTab === 'seo' && (
                     <div className="space-y-6">
-<<<<<<< HEAD
                       {/* SEO Title Tag Section */}
                       <div>
                         <h4 className="text-sm font-medium text-gray-500 mb-2">
@@ -248,16 +247,18 @@ export default function SEOReviewModal({ isOpen, onClose, content }: SEOReviewMo
                           </span>
                         </h4>
                         <div className="bg-white border rounded-lg p-4">
-                          <p className="text-base font-medium text-gray-900">
-                            {content.meta_title || 'No title tag set'}
+                          <p className="text-sm font-medium text-gray-900">
+                            {content.seo_title || content.meta_title || 'No SEO title set'}
                           </p>
                           <div className="mt-2 flex items-center justify-between">
                             <span className={`text-xs ${
-                              content.meta_title && content.meta_title.length >= 50 && content.meta_title.length <= 60
+                              (content.seo_title || content.meta_title) && 
+                              (content.seo_title || content.meta_title || '').length >= 50 && 
+                              (content.seo_title || content.meta_title || '').length <= 60
                                 ? 'text-green-600'
-                                : 'text-red-600'
+                                : 'text-amber-600'
                             }`}>
-                              Character count: {content.meta_title?.length || 0}/60
+                              Character count: {(content.seo_title || content.meta_title || '').length}/60
                             </span>
                             <label className="flex items-center">
                               <input
@@ -269,51 +270,6 @@ export default function SEOReviewModal({ isOpen, onClose, content }: SEOReviewMo
                               <span className="text-sm">Approved</span>
                             </label>
                           </div>
-=======
-                      {/* AI-Generated SEO Title */}
-                      {content.seo_title && (
-                        <div>
-                          <h4 className="text-sm font-medium text-gray-500 mb-2">SEO Title Tag</h4>
-                          <div className="bg-green-50 rounded-lg p-4">
-                            <p className="text-sm text-gray-700 font-medium">{content.seo_title}</p>
-                            <p className="text-xs text-gray-500 mt-1">Length: {content.seo_title.length}/60 characters</p>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* AI-Generated GEO Event Tags */}
-                      {content.geo_event_tags && content.geo_event_tags.length > 0 && (
-                        <div>
-                          <h4 className="text-sm font-medium text-gray-500 mb-2">GEO Event Tags</h4>
-                          <div className="flex flex-wrap gap-2">
-                            {content.geo_event_tags.map((tag, idx) => (
-                              <span key={idx} className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                                {tag}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* AI-Generated H2 Tags */}
-                      {content.h2_tags && content.h2_tags.length > 0 && (
-                        <div>
-                          <h4 className="text-sm font-medium text-gray-500 mb-2">H2 Tags ({content.h2_tags.length})</h4>
-                          <div className="space-y-2">
-                            {content.h2_tags.map((h2, idx) => (
-                              <div key={idx} className="bg-gray-50 rounded p-2">
-                                <p className="text-sm text-gray-700">{h2}</p>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      <div>
-                        <h4 className="text-sm font-medium text-gray-500 mb-2">SEO Strategy</h4>
-                        <div className="bg-green-50 rounded-lg p-4">
-                          <p className="text-sm text-gray-700">{content.seo_strategy_outline || content.content.seo_analysis.strategy}</p>
->>>>>>> c0e20da16981d84f9aab084defe125b40052692e
                         </div>
                       </div>
 

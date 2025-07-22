@@ -99,12 +99,6 @@ export interface Submission {
   seo_keyword_approvals?: Record<string, boolean>
   seo_internal_notes?: string
   seo_client_feedback?: string
-<<<<<<< HEAD
-  // GEO fields
-  geo_event_tags?: string[]
-  geo_optimization?: GeoOptimization
-  sponsor_name?: string
-=======
   // AI-generated SEO fields
   seo_title?: string // AI-generated SEO title (50-60 chars)
   geo_event_tags?: string[] // AI-generated GEO event tags
@@ -119,7 +113,7 @@ export interface Submission {
   geo_optimization_score?: number
   geo_readability_score?: number
   geo_featured_snippet_potential?: boolean
->>>>>>> c0e20da16981d84f9aab084defe125b40052692e
+  sponsor_name?: string
 }
 
 export interface AuditLog {
@@ -128,144 +122,49 @@ export interface AuditLog {
   entity_id: string
   action: string
   changes: any
-  user_id?: string
-  user_email?: string
-  created_at: string
-}
-
-// New database schema types for the three-stage workflow
-export type ContentStatus = 
-  | 'draft' 
-  | 'pending_seo_review' 
-  | 'pending_client_review' 
-  | 'pending_mlr_review' 
-  | 'requires_revision' 
-  | 'approved' 
-  | 'published'
-
-// GEO Optimization structure
-export interface GeoOptimization {
-  ai_friendly_summary: string
-  structured_data: {
-    drug_name?: string
-    brand_name?: string
-    drug_class?: string
-    indication?: string
-    mechanism?: string
-    condition?: string
-    treatment?: string
-    severity_grades?: string
-    common_organs?: string
-    [key: string]: any
-  }
-  key_facts: string[]
-  ai_citations?: string
+  performed_by: string
+  performed_at: string
 }
 
 export interface ContentPiece {
   id: string
-  project_id: string
+  submission_id: string
+  content_type: string
   title: string
-  content: {
-    seo_analysis: {
-      strategy: string
-      keywords: string[]
-      content_recommendations: string
-    }
-    compliance_report: {
-      status: string
-      flags: string[]
-      review_notes: string
-    }
-  }
-  target_keyword: string
-  status: ContentStatus
-  seo_reviewer_id?: string
-  client_reviewer_id?: string
-  mlr_reviewer_id?: string
-  assigned_to: string
-  published_url?: string
+  body_content: string
+  seo_content?: string
+  status: 'draft' | 'in_review' | 'approved' | 'published'
+  version_number: number
   created_at: string
   updated_at: string
-  
-  // New SEO/Langchain fields
-  priority_level?: 'High' | 'Medium' | 'Low'
-  seo_keywords?: string[]
-  long_tail_keywords?: string[]
-  consumer_questions?: string[]
-  h1_tag?: string
-  h2_tags?: string[]
-  h3_tags?: string[]
-  meta_title?: string
-  meta_description?: string
+  // SEO fields
+  seo_title?: string
+  geo_event_tags?: string[]
   geo_optimization?: GeoOptimization
-  executive_summary?: string
-  full_seo_report?: any
-  ai_output?: any
-  
-  // Geography and targeting
-  geography?: string[]
-  target_audience?: string[]
-  
-  // SEO review tracking
-  seo_keyword_approvals?: Record<string, any>
-  seo_internal_notes?: string
-  seo_client_feedback?: string
-  seo_reviewed_at?: string
-  seo_reviewed_by?: string
-  
-  // Relations
-  project?: Project
-  seo_reviewer?: User
-  client_reviewer?: User
-  mlr_reviewer?: User
-  assigned_user?: User
+  seo_strategy_outline?: string
+  h2_tags?: string[]
 }
 
-export interface User {
-  id: string
-  email: string
-  full_name?: string
-  role: 'admin' | 'seo_specialist' | 'client' | 'mlr_specialist'
-  department?: string
-  phone_number?: string
-  status: 'active' | 'inactive'
-  two_factor_enabled: boolean
-  last_login?: string
-  created_at: string
-  updated_at: string
+export interface GeoOptimization {
+  ai_friendly_summary?: string
+  structured_data?: Record<string, any>
+  key_facts?: string[]
+  featured_snippet_potential?: boolean
+  readability_score?: number
 }
 
-export interface Keyword {
+export interface SEOReview {
   id: string
-  project_id: string
-  keyword: string
-  search_volume: number
-  difficulty: number
-  notes?: string
-  status: 'active' | 'inactive' | 'archived'
+  submission_id: string
+  reviewer_name: string
+  reviewer_email: string
+  review_date: string
+  status: 'approved' | 'revision_requested' | 'rejected'
+  keyword_approvals?: Record<string, boolean>
+  internal_notes?: string
+  client_feedback?: string
+  seo_title_approved?: boolean
+  meta_description_approved?: boolean
+  content_approved?: boolean
   created_at: string
-  updated_at: string
-}
-
-export interface Revision {
-  id: string
-  content_piece_id: string
-  requested_by: string
-  notes: string
-  status_at_request: ContentStatus
-  created_at: string
-  resolved_at?: string
-}
-
-export interface VisualAsset {
-  id: string
-  content_piece_id: string
-  placid_template_id?: string
-  image_url?: string
-  thumbnail_url?: string
-  generation_status: 'pending' | 'processing' | 'completed' | 'failed'
-  error_message?: string
-  created_at: string
-  updated_at: string
 }
