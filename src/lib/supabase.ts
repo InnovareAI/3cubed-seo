@@ -133,7 +133,7 @@ export interface ContentPiece {
   title: string
   body_content: string
   seo_content?: string
-  status: 'draft' | 'in_review' | 'approved' | 'published'
+  status: ContentStatus
   version_number: number
   created_at: string
   updated_at: string
@@ -144,11 +144,16 @@ export interface ContentPiece {
   seo_strategy_outline?: string
   h2_tags?: string[]
   // Additional fields
-  project?: string
+  project?: {
+    name: string
+    client_name?: string
+    therapeutic_area?: string
+  }
   target_keyword?: string
+  assigned_to?: string
 }
 
-export type ContentStatus = 'draft' | 'in_review' | 'approved' | 'published'
+export type ContentStatus = 'draft' | 'pending_seo_review' | 'pending_client_review' | 'pending_mlr_review' | 'requires_revision' | 'approved' | 'published'
 
 export interface GeoOptimization {
   ai_friendly_summary?: string

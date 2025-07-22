@@ -212,7 +212,7 @@ export default function ClientManagement() {
     setExpandedClient(expandedClient === clientId ? null : clientId)
   }
 
-  const _handleEditClient = (client: ExtendedClient) => {
+  const handleEditClient = (client: ExtendedClient) => {
     setEditingClient(client)
     setNewClient({
       name: client.name,
@@ -233,7 +233,7 @@ export default function ClientManagement() {
     setIsAddingClient(true)
   }
 
-  const _handleUpdateClient = async () => {
+  const handleUpdateClient = async () => {
     if (!editingClient) return
     
     if (!newClient.name || !newClient.company_domain || !newClient.contact_name || !newClient.contact_email) {
@@ -260,7 +260,7 @@ export default function ClientManagement() {
     }
   }
 
-  const _handleDeleteClient = async (_clientId: string) => {
+  const handleDeleteClient = async (clientId: string) => {
     // if (useDemoData) {
     //   setLocalClients(localClients.filter(client => client.id !== clientId))
     //   setShowDeleteConfirm(null)

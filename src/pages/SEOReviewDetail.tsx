@@ -421,7 +421,7 @@ export default function SEOReviewDetail() {
                 </label>
               </div>
               <div className="space-y-2">
-                {submission.h2_tags?.map((tag, idx) => (
+                {submission.h2_tags?.map((tag: string, idx: number) => (
                   <div key={idx} className="bg-gray-50 rounded p-3">
                     <p className="text-sm text-gray-700">{tag}</p>
                   </div>
