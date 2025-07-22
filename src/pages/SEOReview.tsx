@@ -87,8 +87,9 @@ export default function SEOReview() {
   // Use dummy data or live data based on toggle
   const submissions = useMemo(() => {
     if (useDummyData) return mockSEOReviews
-    return dbSubmissions || []
-  }, [useDummyData, dbSubmissions])
+    // Return empty array for live data mode to show no data
+    return []
+  }, [useDummyData])
 
   const filteredSubmissions = submissions?.filter(submission => {
     if (searchTerm && !submission.product_name.toLowerCase().includes(searchTerm.toLowerCase()) &&
