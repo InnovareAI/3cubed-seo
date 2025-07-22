@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { mockMLRReviews } from '../data/mockMLRReviews'
 import CTAButton from '../components/CTAButton'
+import { THERAPEUTIC_AREAS } from '../constants/therapeuticAreas'
 import { 
   Search,
   FileText,
@@ -59,7 +60,7 @@ export default function MLRReview() {
       const { data, error } = await supabase
         .from('submissions')
         .select('*')
-        .eq('workflow_stage', 'MLR_Review')
+        .eq('workflow_stage', 'mlr_review')
         .order('created_at', { ascending: true })
       
       if (error) throw error
@@ -92,9 +93,6 @@ export default function MLRReview() {
   const handleCardClick = (submissionId: string) => {
     navigate(`/mlr-review/${submissionId}`)
   }
-
-  // Get unique therapeutic areas for filter
-  const therapeuticAreas = [...new Set(submissions?.map(s => s.therapeutic_area) || [])]
 
   const getPriorityColor = (priority: string) => {
     switch (priority.toLowerCase()) {
@@ -236,7 +234,7 @@ export default function MLRReview() {
             className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
           >
             <option value="all">All Therapeutic Areas</option>
-            {therapeuticAreas.map(area => (
+            {THERAPEUTIC_AREAS.map(area => (
               <option key={area} value={area}>{area}</option>
             ))}
           </select>

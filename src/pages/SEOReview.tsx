@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { mockSEOReviews } from '../data/mockSEOReviews'
 import CTAButton from '../components/CTAButton'
+import { THERAPEUTIC_AREAS } from '../constants/therapeuticAreas'
 import { 
   Search,
   FileText,
@@ -63,7 +64,7 @@ export default function SEOReview() {
       const { data, error } = await supabase
         .from('submissions')
         .select('*')
-        .eq('workflow_stage', 'SEO_Review')
+        .eq('workflow_stage', 'seo_review')
         .order('created_at', { ascending: true })
       
       if (error) throw error
@@ -96,9 +97,6 @@ export default function SEOReview() {
   const handleCardClick = (submissionId: string) => {
     navigate(`/seo-review/${submissionId}`)
   }
-
-  // Get unique therapeutic areas for filter
-  const therapeuticAreas = [...new Set(submissions?.map(s => s.therapeutic_area) || [])]
 
   const getPriorityColor = (priority: string) => {
     switch (priority.toLowerCase()) {
@@ -240,7 +238,7 @@ export default function SEOReview() {
             className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="all">All Therapeutic Areas</option>
-            {therapeuticAreas.map(area => (
+            {THERAPEUTIC_AREAS.map(area => (
               <option key={area} value={area}>{area}</option>
             ))}
           </select>
