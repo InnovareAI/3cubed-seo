@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
@@ -65,7 +65,23 @@ export default function ClientReviewDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const [useDemoData] = useState(true)
+  
+  // Get the data mode from localStorage (set by the Client Review list page)
+  const [useDemoData, setUseDemoData] = useState(() => {
+    const stored = localStorage.getItem('clientReviewDataMode')
+    return stored === 'demo'
+  })
+  
+  // Update when localStorage changes
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const stored = localStorage.getItem('clientReviewDataMode')
+      setUseDemoData(stored === 'demo')
+    }
+    
+    window.addEventListener('storage', handleStorageChange)
+    return () => window.removeEventListener('storage', handleStorageChange)
+  }, [])
   
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set(['overview', 'strategy', 'keywords'])
@@ -99,7 +115,7 @@ export default function ClientReviewDetail() {
 
   // Get submission data
   const { data: submission, isLoading } = useQuery({
-    queryKey: ['client-review-detail', id],
+    queryKey: ['client-review-detail', id, useDemoData],
     queryFn: async () => {
       if (useDemoData) {
         const mockSubmission = mockSEOReviews.find(s => s.id === id)
@@ -143,6 +159,11 @@ export default function ClientReviewDetail() {
 
   const updateWorkflowStage = useMutation({
     mutationFn: async ({ status, feedback }: { status: string; feedback?: string }) => {
+      if (useDemoData) {
+        // Simulate success for demo mode
+        return { ...submission, workflow_stage: status }
+      }
+      
       const updateData: any = { 
         client_review_status: status,
         client_reviewed_at: new Date().toISOString(),
@@ -257,6 +278,11 @@ export default function ClientReviewDetail() {
             </div>
             
             <div className="flex items-center gap-3">
+              {useDemoData && (
+                <span className="px-3 py-1 text-sm font-medium rounded-md bg-amber-100 text-amber-700">
+                  Demo Data
+                </span>
+              )}
               <CTAButton variant="secondary" icon={<Download className="h-4 w-4" />}>
                 Download PDF
               </CTAButton>
