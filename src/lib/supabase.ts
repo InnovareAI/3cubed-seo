@@ -99,10 +99,27 @@ export interface Submission {
   seo_keyword_approvals?: Record<string, boolean>
   seo_internal_notes?: string
   seo_client_feedback?: string
+<<<<<<< HEAD
   // GEO fields
   geo_event_tags?: string[]
   geo_optimization?: GeoOptimization
   sponsor_name?: string
+=======
+  // AI-generated SEO fields
+  seo_title?: string // AI-generated SEO title (50-60 chars)
+  geo_event_tags?: string[] // AI-generated GEO event tags
+  geo_optimization?: GeoOptimization // AI-generated GEO optimization
+  seo_strategy_outline?: string // AI-generated SEO strategy
+  h2_tags?: string[] // AI-generated H2 tags from content
+  // Review tracking fields
+  reviewer_emails?: any // JSONB array of reviewer emails
+  competitive_analysis?: any // JSONB competitive analysis data
+  seo_enhancements?: any // JSONB SEO enhancement data
+  // GEO optimization fields
+  geo_optimization_score?: number
+  geo_readability_score?: number
+  geo_featured_snippet_potential?: boolean
+>>>>>>> c0e20da16981d84f9aab084defe125b40052692e
 }
 
 export interface AuditLog {

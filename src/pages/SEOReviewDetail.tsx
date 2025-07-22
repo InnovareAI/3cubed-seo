@@ -6,47 +6,27 @@ import CTAButton from '@/components/CTAButton'
 import { mockSEOReviews } from '@/data/mockSEOReviews'
 import { 
   ArrowLeft,
-  Download,
   CheckCircle,
+  AlertCircle,
   MessageSquare,
-  Copy,
   ChevronDown,
   ChevronUp,
-  Sparkles,
-  Globe,
-  Link2,
-  FileText,
-  Lightbulb,
-  BookOpen,
-  Megaphone,
-  Hash,
-  HelpCircle,
-  Tag,
-  Code,
   Search,
+  Hash,
+  FileText,
   Brain,
-  Shield,
-  Send,
-  Check,
-  X
+  Code,
+  Target,
+  Globe,
+  Calendar,
+  Building,
+  Users,
+  Pill,
+  XCircle,
+  Copy,
+  Shield
 } from 'lucide-react'
-
-interface ReviewableItem {
-  id: string
-  content: string
-  approved: boolean
-  rejected: boolean
-  comment: string
-  complianceFlag?: boolean
-}
-
-interface SEOStrategy {
-  content_architecture: string[]
-  technical_seo: string[]
-  content_strategy: string[]
-  link_building: string[]
-  geo_optimization: string[]
-}
+import { format } from 'date-fns'
 
 interface Submission {
   id: string
@@ -70,12 +50,12 @@ interface Submission {
   consumer_questions?: string[]
   h1_tag?: string
   h2_tags?: string[]
-  h3_tags?: string[]
   meta_title?: string
   meta_description?: string
-  schema_markup?: any
+  seo_title?: string
+  geo_event_tags?: string[]
   geo_optimization?: any
-  seo_strategy?: SEOStrategy
+  seo_strategy_outline?: string
 }
 
 export default function SEOReviewDetail() {
@@ -84,13 +64,23 @@ export default function SEOReviewDetail() {
   const queryClient = useQueryClient()
   const [useDemoData] = useState(true)
   
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(
-    new Set(['strategy', 'keywords', 'technical'])
-  )
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
+    'overview': true,
+    'seo-analysis': true,
+    'geo-optimization': false,
+    'seo-strategy': false,
+    'compliance': false
+  })
+  
+  const [revisionNotes, setRevisionNotes] = useState('')
+  const [approvals, setApprovals] = useState({
+    seoTitle: false,
+    metaDescription: false,
+    geoTags: false,
+    keywords: false,
+    h2Tags: false
+  })
 
-  const [itemStates, setItemStates] = useState<Record<string, ReviewableItem>>({})
-
-  // Get submission data
   const { data: submission, isLoading } = useQuery({
     queryKey: ['seo-review-detail', id],
     queryFn: async () => {
@@ -98,36 +88,41 @@ export default function SEOReviewDetail() {
         const mockSubmission = mockSEOReviews.find(s => s.id === id)
         if (!mockSubmission) throw new Error('Submission not found')
         
-        // Add missing technical fields for demo with reduced tags
+        // Add demo data for new fields
         return {
           ...mockSubmission,
-          h2_tags: [
-            'Understanding PCSK9 Inhibition',
-            'Clinical Trial Results',
-            'Safety and Administration'
+          seo_title: mockSubmission.seo_title || `${mockSubmission.product_name}: Revolutionary Treatment for ${mockSubmission.therapeutic_area}`,
+          h2_tags: mockSubmission.h2_tags || [
+            'Understanding the Mechanism of Action',
+            'Clinical Trial Results and Efficacy',
+            'Safety Profile and Administration',
+            'Patient Support Programs'
           ],
-          h3_tags: [
-            'What is PCSK9?',
-            'Insurance Coverage',
-            'Patient Support'
+          geo_event_tags: mockSubmission.geo_event_tags || [
+            'FDA approval announcement',
+            'Phase 3 trial results',
+            'New indication launch'
           ],
-          schema_markup: {
-            "@context": "https://schema.org",
-            "@type": "Drug",
-            "name": "Xeltoris (evolocumab)",
-            "activeIngredient": "evolocumab",
-            "administrationRoute": "subcutaneous injection",
-            "dosageForm": "injection"
-          },
-          geo_optimization: {
-            ai_summary: "Xeltoris™ (evolocumab) is a PCSK9 inhibitor that reduces LDL cholesterol by up to 60% through monthly subcutaneous injections.",
+          geo_optimization: mockSubmission.geo_optimization || {
+            ai_friendly_summary: `${mockSubmission.product_name} is a breakthrough therapy for ${mockSubmission.therapeutic_area}, offering superior efficacy with convenient dosing.`,
+            structured_data: {
+              "@context": "https://schema.org",
+              "@type": "Drug",
+              "name": mockSubmission.product_name
+            },
             key_facts: [
-              "FDA-approved for cardiovascular risk reduction",
-              "60% average LDL cholesterol reduction",
-              "Once-monthly dosing schedule",
-              "Monoclonal antibody therapy"
-            ]
-          }
+              'First-in-class therapy',
+              'Once-daily oral dosing',
+              'Proven efficacy in clinical trials'
+            ],
+            event_tags: {
+              perplexity: ['medical breakthrough', 'FDA approval'],
+              claude: ['innovative therapy', 'clinical efficacy'],
+              chatgpt: ['treatment option', 'patient outcomes'],
+              gemini: ['pharmaceutical innovation', 'therapeutic advancement']
+            }
+          },
+          seo_strategy_outline: 'Focus on long-tail keywords targeting specific patient populations. Build authority through clinical trial content and KOL partnerships.'
         }
       }
       
@@ -142,470 +137,430 @@ export default function SEOReviewDetail() {
     }
   })
 
-  const updateWorkflowStage = useMutation({
-    mutationFn: async ({ stage, reason }: { stage: string; reason?: string }) => {
-      const updateData: any = { workflow_stage: stage }
-      if (reason) {
-        updateData.rejection_reason = reason
-        updateData.rejected_at = new Date().toISOString()
+  const updateStatus = useMutation({
+    mutationFn: async ({ 
+      newStatus, 
+      notes 
+    }: { 
+      newStatus: 'pending_client_review' | 'requires_revision'
+      notes?: string 
+    }) => {
+      const updateData: any = {
+        workflow_stage: newStatus === 'pending_client_review' ? 'Client_Review' : 'Revision_Requested',
+        seo_reviewed_at: new Date().toISOString(),
+        seo_reviewed_by: 'SEO Team', // Would come from auth
+        seo_keyword_approvals: approvals
       }
       
-      const { error } = await supabase
-        .from('submissions')
-        .update(updateData)
-        .eq('id', id)
+      if (notes) {
+        updateData.seo_internal_notes = notes
+        updateData.rejection_reason = notes
+        updateData.rejected_at = new Date().toISOString()
+      }
+
+      if (!useDemoData) {
+        const { error } = await supabase
+          .from('submissions')
+          .update(updateData)
+          .eq('id', id)
+        
+        if (error) throw error
+      }
       
-      if (error) throw error
-    },
-    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['seo-review-content'] })
       navigate('/seo-review')
     }
   })
 
-  const toggleSection = (section: string) => {
-    const newExpanded = new Set(expandedSections)
-    if (newExpanded.has(section)) {
-      newExpanded.delete(section)
-    } else {
-      newExpanded.add(section)
-    }
-    setExpandedSections(newExpanded)
-  }
-
-  const updateItemState = (itemId: string, field: keyof ReviewableItem, value: any) => {
-    setItemStates(prev => ({
+  const toggleSection = (sectionId: string) => {
+    setExpandedSections(prev => ({
       ...prev,
-      [itemId]: {
-        ...prev[itemId],
-        [field]: value,
-        // Reset opposite state
-        ...(field === 'approved' && value ? { rejected: false } : {}),
-        ...(field === 'rejected' && value ? { approved: false } : {})
-      }
+      [sectionId]: !prev[sectionId]
     }))
   }
 
-  const renderReviewableItem = (item: ReviewableItem, showCompliance = false) => (
-    <div key={item.id} className="bg-gray-50 rounded-lg p-4 space-y-3">
-      <div className="flex items-start justify-between gap-4">
-        <p className="text-sm text-gray-900 flex-1">{item.content}</p>
-      </div>
-      
-      {/* Action Buttons Row */}
-      <div className="flex items-center gap-2">
-        <CTAButton
-          size="sm"
-          variant={item.approved ? "success" : "secondary"}
-          icon={<Check className="h-3 w-3" />}
-          onClick={() => updateItemState(item.id, 'approved', !item.approved)}
-          className={item.approved ? "bg-green-600 hover:bg-green-700 text-white" : ""}
-        >
-          Approve
-        </CTAButton>
-        
-        <CTAButton
-          size="sm"
-          variant={item.rejected ? "danger" : "secondary"}
-          icon={<X className="h-3 w-3" />}
-          onClick={() => updateItemState(item.id, 'rejected', !item.rejected)}
-          className={item.rejected ? "bg-red-600 hover:bg-red-700 text-white" : ""}
-        >
-          Reject
-        </CTAButton>
-        
-        {showCompliance && (
-          <CTAButton
-            size="sm"
-            variant="secondary"
-            icon={<Shield className="h-3 w-3" />}
-            onClick={() => updateItemState(item.id, 'complianceFlag', !item.complianceFlag)}
-            className={item.complianceFlag ? "bg-yellow-500 hover:bg-yellow-600 text-white" : "bg-yellow-100 text-yellow-700 hover:bg-yellow-200"}
-          >
-            Compliance Check
-          </CTAButton>
-        )}
-        
-        <CTAButton
-          size="sm"
-          variant="primary"
-          icon={<Sparkles className="h-3 w-3" />}
-          className="bg-blue-600 hover:bg-blue-700 text-white"
-        >
-          Ask AI
-        </CTAButton>
-      </div>
-      
-      {/* Comment Field */}
-      <div className="relative">
-        <input
-          type="text"
-          value={item.comment}
-          onChange={(e) => updateItemState(item.id, 'comment', e.target.value)}
-          placeholder="Add a comment..."
-          className="w-full pr-10 pl-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        />
-        <Send className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-      </div>
-      
-      {/* Status Indicators */}
-      {(item.approved || item.rejected || item.complianceFlag) && (
-        <div className="flex gap-2 text-xs">
-          {item.approved && <span className="text-green-600 font-medium">✓ Approved</span>}
-          {item.rejected && <span className="text-red-600 font-medium">✗ Rejected</span>}
-          {item.complianceFlag && <span className="text-yellow-600 font-medium">⚠ Compliance Review Required</span>}
-        </div>
-      )}
-    </div>
-  )
+  const handleApprove = () => {
+    const allApproved = Object.values(approvals).every(v => v === true)
+    if (!allApproved) {
+      alert('Please approve all required items before sending to client review')
+      return
+    }
+    updateStatus.mutate({ newStatus: 'pending_client_review' })
+  }
+
+  const handleRequestRevision = () => {
+    if (!revisionNotes.trim()) {
+      alert('Please provide revision notes')
+      return
+    }
+    updateStatus.mutate({
+      newStatus: 'requires_revision',
+      notes: revisionNotes
+    })
+  }
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority.toLowerCase()) {
+      case 'high':
+        return 'bg-red-100 text-red-800 border-red-200'
+      case 'medium':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200'
+      case 'low':
+        return 'bg-green-100 text-green-800 border-green-200'
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200'
+    }
+  }
 
   if (isLoading || !submission) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
       </div>
     )
   }
 
-  // Initialize item states
-  if (Object.keys(itemStates).length === 0 && submission) {
-    const initialStates: Record<string, ReviewableItem> = {}
-    
-    // Initialize keywords
-    submission.seo_keywords?.forEach((keyword, index) => {
-      initialStates[`seo_keyword_${index}`] = {
-        id: `seo_keyword_${index}`,
-        content: keyword,
-        approved: false,
-        rejected: false,
-        comment: ''
-      }
-    })
-    
-    submission.long_tail_keywords?.forEach((keyword, index) => {
-      initialStates[`long_tail_${index}`] = {
-        id: `long_tail_${index}`,
-        content: keyword,
-        approved: false,
-        rejected: false,
-        comment: '',
-        complianceFlag: false
-      }
-    })
-    
-    submission.consumer_questions?.forEach((question, index) => {
-      initialStates[`question_${index}`] = {
-        id: `question_${index}`,
-        content: question,
-        approved: false,
-        rejected: false,
-        comment: '',
-        complianceFlag: false
-      }
-    })
-    
-    // Initialize technical items
-    if (submission.h1_tag) {
-      initialStates['h1_tag'] = {
-        id: 'h1_tag',
-        content: submission.h1_tag,
-        approved: false,
-        rejected: false,
-        comment: '',
-        complianceFlag: false
-      }
-    }
-    
-    if (submission.meta_title) {
-      initialStates['meta_title'] = {
-        id: 'meta_title',
-        content: submission.meta_title,
-        approved: false,
-        rejected: false,
-        comment: '',
-        complianceFlag: false
-      }
-    }
-    
-    if (submission.meta_description) {
-      initialStates['meta_description'] = {
-        id: 'meta_description',
-        content: submission.meta_description,
-        approved: false,
-        rejected: false,
-        comment: '',
-        complianceFlag: false
-      }
-    }
-    
-    submission.h2_tags?.forEach((tag, index) => {
-      initialStates[`h2_tag_${index}`] = {
-        id: `h2_tag_${index}`,
-        content: tag,
-        approved: false,
-        rejected: false,
-        comment: '',
-        complianceFlag: false
-      }
-    })
-    
-    submission.h3_tags?.forEach((tag, index) => {
-      initialStates[`h3_tag_${index}`] = {
-        id: `h3_tag_${index}`,
-        content: tag,
-        approved: false,
-        rejected: false,
-        comment: '',
-        complianceFlag: false
-      }
-    })
-    
-    setItemStates(initialStates)
-  }
-
-  const approvedCount = Object.values(itemStates).filter(item => item.approved).length
-  const rejectedCount = Object.values(itemStates).filter(item => item.rejected).length
-  const totalItems = Object.keys(itemStates).length
+  const approvedCount = Object.values(approvals).filter(v => v === true).length
+  const totalApprovals = Object.keys(approvals).length
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => navigate('/seo-review')}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </button>
+      <div className="mb-6">
+        <button
+          onClick={() => navigate('/seo-review')}
+          className="flex items-center text-sm text-gray-600 hover:text-gray-900 mb-4"
+        >
+          <ArrowLeft className="h-4 w-4 mr-1" />
+          Back to SEO Review
+        </button>
+        
+        <div className="flex items-start justify-between">
+          <div>
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-green-100 rounded-lg">
+                <Search className="h-6 w-6 text-green-600" />
+              </div>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">{submission.product_name}</h1>
-                <p className="text-sm text-gray-600 mt-1">
-                  {submission.stage} • {submission.therapeutic_area} • {submission.target_audience?.join(', ')}
+                <p className="text-sm text-gray-600 mt-1">SEO Content Review</p>
+              </div>
+            </div>
+          </div>
+          <span className={`inline-flex items-center px-3 py-1.5 border rounded-full text-sm font-medium ${getPriorityColor(submission.priority_level || 'medium')}`}>
+            {submission.priority_level || 'Medium'} Priority
+          </span>
+        </div>
+      </div>
+
+      {/* Progress Bar */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm text-gray-600">SEO Review Progress</span>
+          <span className="text-sm font-medium text-gray-900">{approvedCount} of {totalApprovals} items approved</span>
+        </div>
+        <div className="w-full bg-gray-200 rounded-full h-2">
+          <div 
+            className="bg-green-600 h-2 rounded-full transition-all"
+            style={{ width: `${(approvedCount / totalApprovals) * 100}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Overview Section */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+        <div 
+          className="p-6 cursor-pointer"
+          onClick={() => toggleSection('overview')}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <FileText className="h-5 w-5 text-gray-600" />
+              <h2 className="text-lg font-semibold text-gray-900">Overview</h2>
+            </div>
+            {expandedSections['overview'] ? 
+              <ChevronUp className="h-5 w-5 text-gray-400" /> : 
+              <ChevronDown className="h-5 w-5 text-gray-400" />
+            }
+          </div>
+        </div>
+        
+        {expandedSections['overview'] && (
+          <div className="px-6 pb-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div>
+                <p className="text-sm text-gray-600 flex items-center gap-1">
+                  <Pill className="h-4 w-4" />
+                  Therapeutic Area
+                </p>
+                <p className="mt-1 font-medium text-gray-900">{submission.therapeutic_area}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600 flex items-center gap-1">
+                  <Users className="h-4 w-4" />
+                  Target Audience
+                </p>
+                <p className="mt-1 font-medium text-gray-900">{submission.target_audience?.join(', ')}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600 flex items-center gap-1">
+                  <Building className="h-4 w-4" />
+                  Client
+                </p>
+                <p className="mt-1 font-medium text-gray-900">{submission.client_name || 'Pharma Corp'}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600 flex items-center gap-1">
+                  <Calendar className="h-4 w-4" />
+                  Submitted
+                </p>
+                <p className="mt-1 font-medium text-gray-900">{format(new Date(submission.created_at), 'MMM d, yyyy')}</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* SEO Analysis Section */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+        <div 
+          className="p-6 cursor-pointer"
+          onClick={() => toggleSection('seo-analysis')}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Target className="h-5 w-5 text-gray-600" />
+              <h2 className="text-lg font-semibold text-gray-900">SEO Analysis</h2>
+            </div>
+            {expandedSections['seo-analysis'] ? 
+              <ChevronUp className="h-5 w-5 text-gray-400" /> : 
+              <ChevronDown className="h-5 w-5 text-gray-400" />
+            }
+          </div>
+        </div>
+        
+        {expandedSections['seo-analysis'] && (
+          <div className="px-6 pb-6 space-y-6">
+            {/* SEO Title */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-gray-900">
+                  SEO Title Tag
+                  <span className="ml-2 text-xs font-normal text-gray-500">(50-60 characters)</span>
+                </h3>
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={approvals.seoTitle}
+                    onChange={(e) => setApprovals({...approvals, seoTitle: e.target.checked})}
+                    className="mr-2 rounded text-green-600 focus:ring-green-500"
+                  />
+                  <span className="text-sm">Approved</span>
+                </label>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-4">
+                <p className="text-base font-medium text-gray-900">{submission.seo_title}</p>
+                <div className="mt-2 flex items-center justify-between">
+                  <span className={`text-xs ${
+                    submission.seo_title && submission.seo_title.length >= 50 && submission.seo_title.length <= 60
+                      ? 'text-green-600'
+                      : 'text-amber-600'
+                  }`}>
+                    Character count: {submission.seo_title?.length || 0}/60
+                  </span>
+                  {submission.seo_title && submission.seo_title.length >= 50 && submission.seo_title.length <= 60 && (
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Meta Description */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-gray-900">
+                  Meta Description
+                  <span className="ml-2 text-xs font-normal text-gray-500">(140-155 characters)</span>
+                </h3>
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={approvals.metaDescription}
+                    onChange={(e) => setApprovals({...approvals, metaDescription: e.target.checked})}
+                    className="mr-2 rounded text-green-600 focus:ring-green-500"
+                  />
+                  <span className="text-sm">Approved</span>
+                </label>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-4">
+                <p className="text-sm text-gray-700">{submission.meta_description}</p>
+                <div className="mt-2">
+                  <span className={`text-xs ${
+                    submission.meta_description && submission.meta_description.length >= 140 && submission.meta_description.length <= 155
+                      ? 'text-green-600'
+                      : 'text-amber-600'
+                  }`}>
+                    Character count: {submission.meta_description?.length || 0}/155
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* H2 Tags */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-gray-900">
+                  H2 Subheadings ({submission.h2_tags?.length || 0})
+                </h3>
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={approvals.h2Tags}
+                    onChange={(e) => setApprovals({...approvals, h2Tags: e.target.checked})}
+                    className="mr-2 rounded text-green-600 focus:ring-green-500"
+                  />
+                  <span className="text-sm">Approved</span>
+                </label>
+              </div>
+              <div className="space-y-2">
+                {submission.h2_tags?.map((tag, idx) => (
+                  <div key={idx} className="bg-gray-50 rounded p-3">
+                    <p className="text-sm text-gray-700">{tag}</p>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-gray-500 mt-2">
+                {submission.h2_tags && submission.h2_tags.length >= 3 && submission.h2_tags.length <= 5 
+                  ? <span className="text-green-600">✓ Optimal number of H2 tags</span>
+                  : <span className="text-amber-600">⚠ Should have 3-5 H2 tags</span>
+                }
+              </p>
+            </div>
+
+            {/* Keywords */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-gray-900">
+                  Target Keywords
+                </h3>
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={approvals.keywords}
+                    onChange={(e) => setApprovals({...approvals, keywords: e.target.checked})}
+                    className="mr-2 rounded text-green-600 focus:ring-green-500"
+                  />
+                  <span className="text-sm">Approved</span>
+                </label>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {submission.seo_keywords?.map((keyword, idx) => (
+                  <span key={idx} className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                    <Hash className="h-3 w-3 mr-1" />
+                    {keyword}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* GEO Optimization Section */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+        <div 
+          className="p-6 cursor-pointer"
+          onClick={() => toggleSection('geo-optimization')}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Brain className="h-5 w-5 text-purple-600" />
+              <h2 className="text-lg font-semibold text-gray-900">GEO Optimization</h2>
+            </div>
+            {expandedSections['geo-optimization'] ? 
+              <ChevronUp className="h-5 w-5 text-gray-400" /> : 
+              <ChevronDown className="h-5 w-5 text-gray-400" />
+            }
+          </div>
+        </div>
+        
+        {expandedSections['geo-optimization'] && submission.geo_optimization && (
+          <div className="px-6 pb-6 space-y-6">
+            {/* Event Tags */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-gray-900">GEO Event Tags</h3>
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={approvals.geoTags}
+                    onChange={(e) => setApprovals({...approvals, geoTags: e.target.checked})}
+                    className="mr-2 rounded text-green-600 focus:ring-green-500"
+                  />
+                  <span className="text-sm">Approved</span>
+                </label>
+              </div>
+              <div className="bg-purple-50 rounded-lg p-4">
+                {submission.geo_event_tags && submission.geo_event_tags.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {submission.geo_event_tags.map((tag, idx) => (
+                      <span key={idx} className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500 italic">No event tags defined</p>
+                )}
+              </div>
+            </div>
+
+            {/* AI-Friendly Summary */}
+            <div>
+              <h3 className="text-sm font-semibold text-gray-900 mb-3">AI-Friendly Summary</h3>
+              <div className="bg-purple-50 rounded-lg p-4">
+                <p className="text-sm text-gray-700">
+                  {submission.geo_optimization.ai_friendly_summary}
                 </p>
               </div>
             </div>
-            
-            <div className="flex items-center gap-3">
-              <div className="text-sm text-gray-600">
-                <span className="text-green-600 font-medium">{approvedCount}</span> approved, 
-                <span className="text-red-600 font-medium ml-1">{rejectedCount}</span> rejected 
-                of <span className="font-medium">{totalItems}</span> items
-              </div>
-              <CTAButton variant="secondary" icon={<Download className="h-4 w-4" />}>
-                Export Report
-              </CTAButton>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      {/* SEO Strategy Section - MOVED TO TOP */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div
-          className="px-6 py-4 border-b border-gray-200 flex items-center justify-between cursor-pointer hover:bg-gray-50"
-          onClick={() => toggleSection('strategy')}
-        >
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <Lightbulb className="h-5 w-5 text-green-600" />
-            </div>
+            {/* Platform-Specific Tags */}
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">SEO Strategy Recommendations</h2>
-              <p className="text-sm text-gray-500">Comprehensive strategy for content, technical SEO, and AI optimization</p>
-            </div>
-          </div>
-          {expandedSections.has('strategy') ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
-        </div>
-        
-        {expandedSections.has('strategy') && submission.seo_strategy && (
-          <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Content Architecture */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <FileText className="h-5 w-5 text-gray-600" />
-                  <h3 className="font-semibold text-gray-900">Content Architecture</h3>
-                </div>
-                <ul className="space-y-2">
-                  {submission.seo_strategy.content_architecture.map((item, index) => (
-                    <li key={index} className="flex items-start">
-                      <span className="text-blue-500 mr-2 mt-0.5">•</span>
-                      <span className="text-sm text-gray-700">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              
-              {/* Technical SEO */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <Globe className="h-5 w-5 text-gray-600" />
-                  <h3 className="font-semibold text-gray-900">Technical SEO</h3>
-                </div>
-                <ul className="space-y-2">
-                  {submission.seo_strategy.technical_seo.map((item, index) => (
-                    <li key={index} className="flex items-start">
-                      <span className="text-blue-500 mr-2 mt-0.5">•</span>
-                      <span className="text-sm text-gray-700">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              
-              {/* Content Strategy */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <BookOpen className="h-5 w-5 text-gray-600" />
-                  <h3 className="font-semibold text-gray-900">Content Strategy</h3>
-                </div>
-                <ul className="space-y-2">
-                  {submission.seo_strategy.content_strategy.map((item, index) => (
-                    <li key={index} className="flex items-start">
-                      <span className="text-blue-500 mr-2 mt-0.5">•</span>
-                      <span className="text-sm text-gray-700">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              
-              {/* Link Building */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <Link2 className="h-5 w-5 text-gray-600" />
-                  <h3 className="font-semibold text-gray-900">Link Building</h3>
-                </div>
-                <ul className="space-y-2">
-                  {submission.seo_strategy.link_building.map((item, index) => (
-                    <li key={index} className="flex items-start">
-                      <span className="text-blue-500 mr-2 mt-0.5">•</span>
-                      <span className="text-sm text-gray-700">{item}</span>
-                    </li>
-                  ))}
-                </ul>
+              <h3 className="text-sm font-semibold text-gray-900 mb-3">Platform-Specific Event Tags</h3>
+              <div className="grid grid-cols-2 gap-4">
+                {['perplexity', 'claude', 'chatgpt', 'gemini'].map((platform) => (
+                  <div key={platform} className="bg-white border rounded-lg p-3">
+                    <h5 className="text-xs font-medium text-gray-600 uppercase mb-2">{platform}</h5>
+                    {submission.geo_optimization.event_tags?.[platform]?.length > 0 ? (
+                      <div className="space-y-1">
+                        {submission.geo_optimization.event_tags[platform].map((tag: string, idx: number) => (
+                          <div key={idx} className="text-xs text-gray-700">• {tag}</div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-gray-400 italic">No tags</p>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
-            
-            {/* GEO Optimization - Full Width */}
-            <div className="mt-6 pt-6 border-t space-y-3">
-              <div className="flex items-center gap-2">
-                <Brain className="h-5 w-5 text-purple-600" />
-                <h3 className="font-semibold text-gray-900">GEO (Generative Engine Optimization)</h3>
-              </div>
+
+            {/* Key Facts */}
+            <div>
+              <h3 className="text-sm font-semibold text-gray-900 mb-3">Key Facts for AI</h3>
               <div className="bg-purple-50 rounded-lg p-4">
-                <ul className="space-y-2">
-                  {submission.seo_strategy.geo_optimization.map((item, index) => (
-                    <li key={index} className="flex items-start">
-                      <span className="text-purple-600 mr-2 mt-0.5">•</span>
-                      <span className="text-sm text-gray-700">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-                
-                {submission.geo_optimization && (
-                  <div className="mt-4 pt-4 border-t border-purple-200">
-                    <h4 className="text-sm font-semibold text-gray-900 mb-2">AI-Optimized Summary</h4>
-                    <p className="text-sm text-gray-700 mb-3">{submission.geo_optimization.ai_summary}</p>
-                    <div className="flex gap-2">
-                      <CTAButton size="sm" variant="secondary" icon={<Copy className="h-3 w-3" />}>
-                        Copy GEO Data
-                      </CTAButton>
-                      <CTAButton size="sm" variant="secondary" icon={<Brain className="h-3 w-3" />}>
-                        Test with AI
-                      </CTAButton>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-            
-            <div className="mt-6 flex gap-3">
-              <CTAButton variant="secondary" icon={<Copy className="h-4 w-4" />}>
-                Copy Full Strategy
-              </CTAButton>
-              <CTAButton variant="secondary" icon={<Megaphone className="h-4 w-4" />}>
-                Generate Implementation Plan
-              </CTAButton>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Keywords & Questions Section */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div
-          className="px-6 py-4 border-b border-gray-200 flex items-center justify-between cursor-pointer hover:bg-gray-50"
-          onClick={() => toggleSection('keywords')}
-        >
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <Search className="h-5 w-5 text-blue-600" />
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900">Keywords & Search Queries</h2>
-              <p className="text-sm text-gray-500">SEO keywords, long-tail variations, and consumer questions</p>
-            </div>
-          </div>
-          {expandedSections.has('keywords') ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
-        </div>
-        
-        {expandedSections.has('keywords') && (
-          <div className="p-6 space-y-6">
-            {/* SEO Keywords */}
-            <div>
-              <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                <Hash className="h-4 w-4" />
-                Primary SEO Keywords ({submission.seo_keywords?.length || 0})
-              </h3>
-              <div className="space-y-3">
-                {submission.seo_keywords?.map((keyword, index) => 
-                  renderReviewableItem(itemStates[`seo_keyword_${index}`] || {
-                    id: `seo_keyword_${index}`,
-                    content: keyword,
-                    approved: false,
-                    rejected: false,
-                    comment: ''
-                  }, true)
-                )}
-              </div>
-            </div>
-            
-            {/* Long-tail Keywords */}
-            <div>
-              <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                <Tag className="h-4 w-4" />
-                Long-tail Keywords ({submission.long_tail_keywords?.length || 0})
-              </h3>
-              <div className="space-y-3">
-                {submission.long_tail_keywords?.map((keyword, index) => 
-                  renderReviewableItem(itemStates[`long_tail_${index}`] || {
-                    id: `long_tail_${index}`,
-                    content: keyword,
-                    approved: false,
-                    rejected: false,
-                    comment: ''
-                  }, true)
-                )}
-              </div>
-            </div>
-            
-            {/* Consumer Questions */}
-            <div>
-              <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                <HelpCircle className="h-4 w-4" />
-                Consumer Questions ({submission.consumer_questions?.length || 0})
-              </h3>
-              <div className="space-y-3">
-                {submission.consumer_questions?.map((question, index) => 
-                  renderReviewableItem(itemStates[`question_${index}`] || {
-                    id: `question_${index}`,
-                    content: question,
-                    approved: false,
-                    rejected: false,
-                    comment: ''
-                  }, true)
+                {submission.geo_optimization.key_facts && submission.geo_optimization.key_facts.length > 0 ? (
+                  <ul className="space-y-2">
+                    {submission.geo_optimization.key_facts.map((fact: string, idx: number) => (
+                      <li key={idx} className="flex items-start">
+                        <span className="text-purple-600 mr-2">•</span>
+                        <span className="text-sm text-gray-700">{fact}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-gray-500 italic">No key facts defined</p>
                 )}
               </div>
             </div>
@@ -613,178 +568,124 @@ export default function SEOReviewDetail() {
         )}
       </div>
 
-      {/* Technical SEO Section */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div
-          className="px-6 py-4 border-b border-gray-200 flex items-center justify-between cursor-pointer hover:bg-gray-50"
-          onClick={() => toggleSection('technical')}
+      {/* SEO Strategy Section */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+        <div 
+          className="p-6 cursor-pointer"
+          onClick={() => toggleSection('seo-strategy')}
         >
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <Code className="h-5 w-5 text-purple-600" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Globe className="h-5 w-5 text-gray-600" />
+              <h2 className="text-lg font-semibold text-gray-900">SEO Strategy</h2>
             </div>
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900">Technical SEO Elements</h2>
-              <p className="text-sm text-gray-500">H1, H2, H3 tags, meta information, and schema markup</p>
-            </div>
+            {expandedSections['seo-strategy'] ? 
+              <ChevronUp className="h-5 w-5 text-gray-400" /> : 
+              <ChevronDown className="h-5 w-5 text-gray-400" />
+            }
           </div>
-          {expandedSections.has('technical') ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
         </div>
         
-        {expandedSections.has('technical') && (
-          <div className="p-6 space-y-6">
-            {/* H1 Tag */}
-            {submission.h1_tag && (
-              <div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-3">H1 Tag</h3>
-                {renderReviewableItem(itemStates['h1_tag'] || {
-                  id: 'h1_tag',
-                  content: submission.h1_tag,
-                  approved: false,
-                  rejected: false,
-                  comment: '',
-                  complianceFlag: false
-                }, true)}
-              </div>
-            )}
-            
-            {/* Meta Title */}
-            {submission.meta_title && (
-              <div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-3">Meta Title</h3>
-                {renderReviewableItem(itemStates['meta_title'] || {
-                  id: 'meta_title',
-                  content: submission.meta_title,
-                  approved: false,
-                  rejected: false,
-                  comment: '',
-                  complianceFlag: false
-                }, true)}
-              </div>
-            )}
-            
-            {/* Meta Description */}
-            {submission.meta_description && (
-              <div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-3">Meta Description</h3>
-                {renderReviewableItem(itemStates['meta_description'] || {
-                  id: 'meta_description',
-                  content: submission.meta_description,
-                  approved: false,
-                  rejected: false,
-                  comment: '',
-                  complianceFlag: false
-                }, true)}
-              </div>
-            )}
-            
-            {/* H2 Tags - Reduced */}
-            {submission.h2_tags && submission.h2_tags.length > 0 && (
-              <div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-3">H2 Tags ({submission.h2_tags.length})</h3>
-                <div className="space-y-3">
-                  {submission.h2_tags.map((tag, index) => 
-                    renderReviewableItem(itemStates[`h2_tag_${index}`] || {
-                      id: `h2_tag_${index}`,
-                      content: tag,
-                      approved: false,
-                      rejected: false,
-                      comment: '',
-                      complianceFlag: false
-                    }, true)
-                  )}
-                </div>
-              </div>
-            )}
-            
-            {/* H3 Tags - Reduced */}
-            {submission.h3_tags && submission.h3_tags.length > 0 && (
-              <div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-3">H3 Tags ({submission.h3_tags.length})</h3>
-                <div className="space-y-3">
-                  {submission.h3_tags.map((tag, index) => 
-                    renderReviewableItem(itemStates[`h3_tag_${index}`] || {
-                      id: `h3_tag_${index}`,
-                      content: tag,
-                      approved: false,
-                      rejected: false,
-                      comment: '',
-                      complianceFlag: false
-                    }, true)
-                  )}
-                </div>
-              </div>
-            )}
-            
-            {/* Schema Markup */}
-            {submission.schema_markup && (
-              <div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-3">Schema Markup</h3>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <pre className="text-xs overflow-x-auto">
-                    {JSON.stringify(submission.schema_markup, null, 2)}
-                  </pre>
-                  <div className="mt-3 flex gap-2">
-                    <CTAButton size="sm" variant="secondary" icon={<Copy className="h-3 w-3" />}>
-                      Copy Schema
-                    </CTAButton>
-                    <CTAButton size="sm" variant="secondary" icon={<CheckCircle className="h-3 w-3" />}>
-                      Validate
-                    </CTAButton>
-                  </div>
-                </div>
-              </div>
-            )}
+        {expandedSections['seo-strategy'] && (
+          <div className="px-6 pb-6">
+            <div className="bg-gray-50 rounded-lg p-4">
+              <p className="text-sm text-gray-700 whitespace-pre-wrap">
+                {submission.seo_strategy_outline}
+              </p>
+            </div>
           </div>
         )}
+      </div>
+
+      {/* Compliance Status Section */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+        <div 
+          className="p-6 cursor-pointer"
+          onClick={() => toggleSection('compliance')}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Shield className="h-5 w-5 text-gray-600" />
+              <h2 className="text-lg font-semibold text-gray-900">Compliance Status</h2>
+            </div>
+            {expandedSections['compliance'] ? 
+              <ChevronUp className="h-5 w-5 text-gray-400" /> : 
+              <ChevronDown className="h-5 w-5 text-gray-400" />
+            }
+          </div>
+        </div>
+        
+        {expandedSections['compliance'] && (
+          <div className="px-6 pb-6">
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="h-5 w-5 text-green-600" />
+                <span className="font-medium text-green-900">AI Compliance Check Passed</span>
+              </div>
+              <p className="text-sm text-green-800 mt-2">
+                Content has been reviewed for basic compliance requirements. Final MLR review pending.
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Revision Notes */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+        <div className="p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <MessageSquare className="h-5 w-5 text-gray-600" />
+            <h2 className="text-lg font-semibold text-gray-900">Review Notes</h2>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Notes (Optional for approval, required for revision)
+            </label>
+            <textarea
+              value={revisionNotes}
+              onChange={(e) => setRevisionNotes(e.target.value)}
+              rows={4}
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm"
+              placeholder="Add any feedback or revision requirements..."
+            />
+          </div>
+        </div>
       </div>
 
       {/* Action Buttons */}
-      <div className="flex justify-center gap-4 py-6 bg-gray-50 rounded-lg">
-        <CTAButton
-          variant="secondary"
-          icon={<Download className="h-4 w-4" />}
-          onClick={() => {
-            // Save current review state
-            console.log('Saving review progress...', itemStates)
-          }}
-        >
-          Save Progress
-        </CTAButton>
-        <CTAButton
-          variant="warning"
-          icon={<MessageSquare className="h-4 w-4" />}
-          onClick={() => {
-            const rejectedItems = Object.values(itemStates).filter(item => item.rejected)
-            if (rejectedItems.length > 0) {
-              updateWorkflowStage.mutate({ stage: 'revision_requested' })
-            } else {
-              alert('Please reject at least one item before requesting changes')
-            }
-          }}
-          disabled={Object.values(itemStates).filter(item => item.rejected).length === 0}
-        >
-          Request Changes ({rejectedCount} items)
-        </CTAButton>
-        <CTAButton
-          variant="success"
-          icon={<CheckCircle className="h-4 w-4" />}
-          onClick={() => {
-            const unreviewed = Object.values(itemStates).filter(item => !item.approved && !item.rejected)
-            if (unreviewed.length > 0) {
-              alert(`Please review all items. ${unreviewed.length} items remaining.`)
-            } else {
-              updateWorkflowStage.mutate({ stage: 'Client_Review' })
-            }
-          }}
-          loading={updateWorkflowStage.isPending}
-          disabled={Object.values(itemStates).some(item => !item.approved && !item.rejected)}
-        >
-          Complete Review & Send to Client
-        </CTAButton>
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-gray-600">
+            {Object.values(approvals).filter(v => v).length < Object.keys(approvals).length && (
+              <div className="flex items-center gap-2 text-amber-700">
+                <AlertCircle className="h-4 w-4" />
+                <span>Approve all required items before sending to client</span>
+              </div>
+            )}
+          </div>
+          
+          <div className="flex gap-3">
+            <CTAButton
+              variant="secondary"
+              icon={<XCircle className="h-4 w-4" />}
+              onClick={handleRequestRevision}
+              disabled={updateStatus.isPending || !revisionNotes.trim()}
+            >
+              Request Revision
+            </CTAButton>
+            <CTAButton
+              variant="primary"
+              icon={<CheckCircle className="h-4 w-4" />}
+              onClick={handleApprove}
+              disabled={updateStatus.isPending || !Object.values(approvals).every(v => v)}
+              loading={updateStatus.isPending}
+            >
+              Approve & Send to Client
+            </CTAButton>
+          </div>
+        </div>
       </div>
-
-
     </div>
   )
 }
