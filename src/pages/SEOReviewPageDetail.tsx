@@ -72,6 +72,10 @@ export default function SEOReviewPageDetail() {
   const queryClient = useQueryClient()
   const [useDummyData] = useState(true)
   
+  // Add debug logging
+  console.log('SEOReviewPageDetail - ID from params:', id)
+  console.log('Mock SEO Reviews:', mockSEOReviews)
+  
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     'overview': true,
     'seo-analysis': true,
@@ -89,12 +93,18 @@ export default function SEOReviewPageDetail() {
   })
   const [seoNotes, setSeoNotes] = useState('')
 
-  const { data: submission, isLoading } = useQuery({
+  const { data: submission, isLoading, error } = useQuery({
     queryKey: ['seo-review-detail', id],
     queryFn: async () => {
+      console.log('Fetching submission for ID:', id)
+      
       if (useDummyData) {
         const mockSubmission = mockSEOReviews.find(s => s.id === id)
-        if (!mockSubmission) throw new Error('Submission not found')
+        console.log('Found mock submission:', mockSubmission)
+        if (!mockSubmission) {
+          console.error('No mock submission found for ID:', id)
+          throw new Error('Submission not found')
+        }
         return mockSubmission
       }
       
@@ -104,7 +114,10 @@ export default function SEOReviewPageDetail() {
         .eq('id', id)
         .single()
       
-      if (error) throw error
+      if (error) {
+        console.error('Supabase error:', error)
+        throw error
+      }
       return data as Submission
     }
   })
@@ -193,10 +206,48 @@ export default function SEOReviewPageDetail() {
     })
   }
 
-  if (isLoading || !submission) {
+  // Error state
+  if (error) {
+    console.error('Query error:', error)
+    return (
+      <div className="max-w-4xl mx-auto p-6">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <h2 className="text-lg font-semibold text-red-800 mb-2">Error Loading Submission</h2>
+          <p className="text-red-600">{error.message}</p>
+          <button
+            onClick={() => navigate('/seo-review')}
+            className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+          >
+            Back to SEO Review
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // Loading state
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+      </div>
+    )
+  }
+
+  // No submission found
+  if (!submission) {
+    return (
+      <div className="max-w-4xl mx-auto p-6">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <h2 className="text-lg font-semibold text-yellow-800 mb-2">Submission Not Found</h2>
+          <p className="text-yellow-600">The requested submission could not be found.</p>
+          <button
+            onClick={() => navigate('/seo-review')}
+            className="mt-4 px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700"
+          >
+            Back to SEO Review
+          </button>
+        </div>
       </div>
     )
   }
