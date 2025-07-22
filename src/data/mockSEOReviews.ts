@@ -1,4 +1,38 @@
-export const mockSEOReviews = [
+interface MockSubmission {
+  id: string
+  compliance_id: string
+  product_name: string
+  therapeutic_area: string
+  stage: string
+  workflow_stage: string
+  target_audience: string[]
+  created_at: string
+  submitter_name: string
+  submitter_email: string
+  priority_level: string
+  medical_indication?: string
+  langchain_status?: string
+  geography?: string[]
+  client_name?: string
+  mechanism_of_action?: string
+  key_differentiators?: string[]
+  seo_keywords?: string[]
+  long_tail_keywords?: string[]
+  consumer_questions?: string[]
+  h1_tag?: string
+  meta_title?: string
+  meta_description?: string
+  seo_title?: string
+  geo_event_tags?: string[]
+  h2_tags?: string[]
+  seo_strategy_outline?: string
+  geo_optimization?: any
+  geo_optimization_score?: number
+  ai_output?: any
+  seo_strategy?: any
+}
+
+export const mockSEOReviews: MockSubmission[] = [
   {
     id: 'mock-1',
     compliance_id: 'COMP-2024-001',
