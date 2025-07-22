@@ -56,10 +56,11 @@ export default function SEOReview() {
   const [priorityFilter, setPriorityFilter] = useState<string>('all')
   const [therapeuticAreaFilter, setTherapeuticAreaFilter] = useState<string>('all')
   
-  // Initialize from localStorage
+  // Initialize from localStorage, defaulting to 'live' if not set
   const [useDummyData, setUseDummyData] = useState(() => {
     const stored = localStorage.getItem('seoReviewDataMode')
-    return stored === 'demo'
+    // Default to live data if not set
+    return stored === 'demo' ? true : false
   })
 
   // Update localStorage when state changes
