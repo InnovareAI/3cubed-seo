@@ -68,7 +68,7 @@ export default function SEOReview() {
     localStorage.setItem('seoReviewDataMode', useDummyData ? 'demo' : 'live')
   }, [useDummyData])
 
-  const { data: dbSubmissions, isLoading } = useQuery({
+  const { isLoading } = useQuery({
     queryKey: ['seo-review-queue'],
     queryFn: async () => {
       const { data, error } = await supabase
