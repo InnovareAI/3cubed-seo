@@ -1,6 +1,7 @@
 export const mockSEOReviews = [
   {
     id: 'mock-1',
+    compliance_id: 'COMP-2024-001',
     product_name: 'Xeltoris™ (evolocumab)',
     therapeutic_area: 'Cardiology',
     stage: 'Market Launch',
@@ -41,7 +42,32 @@ export const mockSEOReviews = [
       'Is evolocumab covered by insurance?'
     ],
     h1_tag: 'Xeltoris™ (evolocumab): Advanced PCSK9 Inhibitor for Cholesterol Management',
+    meta_title: 'Xeltoris™: Once-Monthly PCSK9 Inhibitor | 60% LDL Reduction',
     meta_description: 'Learn about Xeltoris™ (evolocumab), a once-monthly PCSK9 inhibitor that reduces LDL cholesterol by up to 60% and lowers cardiovascular risk. FDA-approved treatment option.',
+    geo_event_tags: ['PCSK9 inhibitor', 'cholesterol lowering drug', 'cardiovascular medication'],
+    geo_optimization: {
+      ai_friendly_summary: 'Xeltoris (evolocumab) is a PCSK9 inhibitor that reduces LDL cholesterol by 60% through monthly subcutaneous injections. FDA-approved for cardiovascular risk reduction in patients with hyperlipidemia.',
+      structured_data: {
+        drug_name: 'evolocumab',
+        brand_name: 'Xeltoris',
+        drug_class: 'PCSK9 inhibitor',
+        indication: 'hyperlipidemia',
+        mechanism: 'PCSK9 inhibition',
+        administration: 'subcutaneous injection',
+        frequency: 'once monthly'
+      },
+      key_facts: [
+        'Reduces LDL cholesterol by up to 60%',
+        'Monthly subcutaneous injection',
+        'Monoclonal antibody targeting PCSK9',
+        'FDA-approved for cardiovascular risk reduction'
+      ],
+      ai_citations: 'Clinical trials: FOURIER (27,564 patients), OSLER (4,465 patients)'
+    },
+    ai_output: {
+      compliance_status: 'compliant',
+      compliance_flags: []
+    },
     seo_strategy: {
       content_architecture: [
         'Create comprehensive cholesterol management hub page',
@@ -78,6 +104,7 @@ export const mockSEOReviews = [
   },
   {
     id: 'mock-2',
+    compliance_id: 'COMP-2024-002',
     product_name: 'NeurogeniX®',
     therapeutic_area: 'Neurology',
     stage: 'Phase III',
@@ -118,7 +145,32 @@ export const mockSEOReviews = [
       'When will NeurogeniX be available?'
     ],
     h1_tag: 'NeurogeniX®: Breakthrough Dual-Action Treatment for Alzheimer\'s Disease',
+    meta_title: 'NeurogeniX® for Alzheimer\'s | Dual-Action Neuroprotective Treatment',
     meta_description: 'Discover NeurogeniX®, an innovative Alzheimer\'s treatment combining cognitive enhancement with neuroprotection. Currently in Phase III trials with promising results.',
+    geo_event_tags: ['Alzheimer\'s treatment', 'dementia drug', 'neuroprotective therapy'],
+    geo_optimization: {
+      ai_friendly_summary: 'NeurogeniX is a dual-action Alzheimer\'s treatment combining acetylcholinesterase inhibition with neuroprotective properties. Currently in Phase III trials showing sustained cognitive improvement.',
+      structured_data: {
+        drug_name: 'NeurogeniX',
+        drug_class: 'acetylcholinesterase inhibitor',
+        indication: 'Alzheimer\'s disease',
+        mechanism: 'dual-action neuroprotection',
+        administration: 'oral',
+        frequency: 'once daily',
+        stage: 'Phase III clinical trials'
+      },
+      key_facts: [
+        'Dual-mechanism: cognitive enhancement + neuroprotection',
+        'Once-daily oral dosing',
+        'Phase III trials showing sustained improvement',
+        'Targets mild to moderate Alzheimer\'s'
+      ],
+      ai_citations: 'Phase III CLARITY trial (n=2,100), Phase II MINDFUL study (n=850)'
+    },
+    ai_output: {
+      compliance_status: 'pending',
+      compliance_flags: ['Ensure Phase III completion disclosure is accurate', 'Include appropriate disclaimers for investigational therapy']
+    },
     seo_strategy: {
       content_architecture: [
         'Build comprehensive Alzheimer\'s resource center',
@@ -155,6 +207,7 @@ export const mockSEOReviews = [
   },
   {
     id: 'mock-3',
+    compliance_id: 'COMP-2024-003',
     product_name: 'ImmunoShield™',
     therapeutic_area: 'Immunology',
     stage: 'Pre-Launch',
@@ -198,7 +251,33 @@ export const mockSEOReviews = [
       'Do I need regular blood tests while taking ImmunoShield?'
     ],
     h1_tag: 'ImmunoShield™: Next-Generation Selective JAK1 Inhibitor for Rheumatoid Arthritis',
+    meta_title: 'ImmunoShield™ RA Treatment | Selective JAK1 Inhibitor',
     meta_description: 'ImmunoShield™ offers targeted RA treatment with selective JAK1 inhibition. Experience rapid relief with improved safety and no routine monitoring. FDA approval pending.',
+    geo_event_tags: ['JAK inhibitor', 'rheumatoid arthritis drug', 'selective JAK1', 'oral RA treatment'],
+    geo_optimization: {
+      ai_friendly_summary: 'ImmunoShield is a selective JAK1 inhibitor for moderate to severe rheumatoid arthritis. Offers rapid onset of action with oral administration and no routine lab monitoring required.',
+      structured_data: {
+        drug_name: 'ImmunoShield',
+        drug_class: 'selective JAK1 inhibitor',
+        indication: 'rheumatoid arthritis',
+        mechanism: 'JAK1 inhibition',
+        administration: 'oral',
+        frequency: 'once daily',
+        monitoring: 'no routine labs required'
+      },
+      key_facts: [
+        'Selective JAK1 inhibition (not JAK2/JAK3)',
+        'Oral once-daily administration',
+        'No routine lab monitoring needed',
+        'Rapid onset of action within 2 weeks',
+        'Favorable safety vs broad JAK inhibitors'
+      ],
+      ai_citations: 'SHIELD-RA trials (n=3,200), SELECT-RA study (n=1,800)'
+    },
+    ai_output: {
+      compliance_status: 'compliant',
+      compliance_flags: ['Include safety comparison disclaimers', 'Ensure FDA approval status is clear']
+    },
     seo_strategy: {
       content_architecture: [
         'Create RA treatment comparison hub',

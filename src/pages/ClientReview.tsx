@@ -28,7 +28,7 @@ export default function ClientReview() {
   const [selectedPriority, setSelectedPriority] = useState<string>('all')
   const [selectedClient, setSelectedClient] = useState<string>('all')
   const [selectedStatus, setSelectedStatus] = useState<string>('all')
-  const [useDemoData] = useState(true)
+  const [useDemoData] = useState(false)
 
   const { data: submissions, isLoading } = useQuery({
     queryKey: ['client-review-content', { searchQuery, selectedPriority, selectedClient, selectedStatus }],
@@ -46,9 +46,11 @@ export default function ClientReview() {
       }
 
       const { data, error } = await supabase
-        .from('submissions')
+        .from('pharma_seo_submissions')
         .select('*')
-        .eq('workflow_stage', 'client_review')
+        .eq('workflow_stage', 'seo_review')
+        .eq('langchain_status', 'completed')
+        .not('ai_generated_content', 'is', null)
         .order('created_at', { ascending: false })
 
       if (error) throw error
@@ -62,7 +64,7 @@ export default function ClientReview() {
       submission.therapeutic_area?.toLowerCase().includes(searchQuery.toLowerCase())
     
     const matchesPriority = selectedPriority === 'all' || submission.priority_level === selectedPriority
-    const matchesClient = selectedClient === 'all' || submission.client_name === selectedClient
+    const matchesClient = selectedClient === 'all' || submission.sponsor_name === selectedClient
     const matchesStatus = selectedStatus === 'all' || submission.client_review_status === selectedStatus
     
     return matchesSearch && matchesPriority && matchesClient && matchesStatus
@@ -207,9 +209,9 @@ export default function ClientReview() {
             className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="all">All Clients</option>
-            <option value="Pharma Corp">Pharma Corp</option>
-            <option value="BioPharma Inc">BioPharma Inc</option>
-            <option value="HealthCare Solutions">HealthCare Solutions</option>
+            {[...new Set(submissions?.map(s => s.sponsor_name).filter(Boolean))].map(client => (
+              <option key={client} value={client}>{client}</option>
+            ))}
           </select>
 
           <select
@@ -252,12 +254,12 @@ export default function ClientReview() {
             <div className="space-y-3">
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <Building className="h-4 w-4" />
-                <span>{submission.client_name || 'Pharma Corp'}</span>
+                <span>{submission.sponsor_name || 'Pharma Corp'}</span>
               </div>
 
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <Users className="h-4 w-4" />
-                <span>{submission.target_audience?.join(', ') || 'Healthcare Professionals'}</span>
+                <span>{submission.target_audience || 'Healthcare Professionals'}</span>
               </div>
 
               <div className="flex items-center gap-2 text-sm text-gray-600">

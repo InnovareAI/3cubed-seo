@@ -99,6 +99,10 @@ export interface Submission {
   seo_keyword_approvals?: Record<string, boolean>
   seo_internal_notes?: string
   seo_client_feedback?: string
+  // GEO fields
+  geo_event_tags?: string[]
+  geo_optimization?: GeoOptimization
+  sponsor_name?: string
 }
 
 export interface AuditLog {

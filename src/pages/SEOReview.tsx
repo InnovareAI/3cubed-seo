@@ -50,7 +50,7 @@ export default function SEOReview() {
   const [searchTerm, setSearchTerm] = useState('')
   const [priorityFilter, setPriorityFilter] = useState<string>('all')
   const [therapeuticAreaFilter, setTherapeuticAreaFilter] = useState<string>('all')
-  const [useDummyData, setUseDummyData] = useState(true)
+  const [useDummyData, setUseDummyData] = useState(false)
 
   const { data: dbSubmissions, isLoading } = useQuery({
     queryKey: ['seo-review-queue'],
@@ -281,7 +281,7 @@ export default function SEOReview() {
 
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <Users className="h-4 w-4" />
-                <span>{submission.target_audience?.join(', ') || 'Healthcare Professionals'}</span>
+                <span>{submission.target_audience || 'Healthcare Professionals'}</span>
               </div>
 
               <div className="flex items-center gap-2 text-sm text-gray-600">

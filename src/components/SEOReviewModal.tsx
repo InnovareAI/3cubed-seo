@@ -1,7 +1,7 @@
 import { Fragment } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
-import { X, Target, BarChart3, AlertCircle, CheckCircle } from 'lucide-react'
-import { ContentPiece } from '@/lib/supabase'
+import { X, Target, AlertCircle, CheckCircle } from 'lucide-react'
+import { Submission } from '@/lib/supabase'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { useState } from 'react'
@@ -9,12 +9,17 @@ import { useState } from 'react'
 interface SEOReviewModalProps {
   isOpen: boolean
   onClose: () => void
-  content: ContentPiece
+  content: Submission
 }
 
 export default function SEOReviewModal({ isOpen, onClose, content }: SEOReviewModalProps) {
-  const [activeTab, setActiveTab] = useState<'overview' | 'seo' | 'compliance'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'seo' | 'geo' | 'compliance'>('overview')
   const [revisionNotes, setRevisionNotes] = useState('')
+  const [titleApproved, setTitleApproved] = useState(false)
+  const [geoTagsApproved, setGeoTagsApproved] = useState(false)
+  const [metaDescriptionApproved, setMetaDescriptionApproved] = useState(false)
+  const [keywordApprovals, setKeywordApprovals] = useState<Record<string, boolean>>({})
+  
   const queryClient = useQueryClient()
 
   // Update content status mutation
@@ -26,12 +31,38 @@ export default function SEOReviewModal({ isOpen, onClose, content }: SEOReviewMo
       newStatus: 'pending_client_review' | 'requires_revision'
       notes?: string 
     }) => {
-      const { data, error } = await supabase.rpc('transition_content_status', {
-        p_content_id: content.id,
-        p_new_status: newStatus,
-        p_user_id: '11111111-1111-1111-1111-111111111111', // TODO: Get from auth
-        p_notes: notes || null
-      })
+      // First, create an SEO review record
+      const { error: reviewError } = await supabase
+        .from('seo_reviews')
+        .insert({
+          submission_id: content.id,
+          reviewer_name: 'Current User', // TODO: Get from auth
+          reviewer_email: 'user@example.com', // TODO: Get from auth
+          status: newStatus === 'pending_client_review' ? 'approved' : 'revision_requested',
+          keyword_approvals: keywordApprovals,
+          internal_notes: notes,
+          seo_title_approved: titleApproved,
+          meta_description_approved: metaDescriptionApproved,
+          content_approved: newStatus === 'pending_client_review'
+        })
+        .select()
+        .single()
+
+      if (reviewError) throw reviewError
+
+      // Then update the submission
+      const { data, error } = await supabase
+        .from('submissions')
+        .update({
+          workflow_stage: newStatus === 'pending_client_review' ? 'client_review' : 'revision',
+          seo_reviewed_at: new Date().toISOString(),
+          seo_reviewed_by: 'Current User', // TODO: Get from auth
+          seo_keyword_approvals: keywordApprovals,
+          seo_internal_notes: notes
+        })
+        .eq('id', content.id)
+        .select()
+        .single()
 
       if (error) throw error
       return data
@@ -63,6 +94,13 @@ export default function SEOReviewModal({ isOpen, onClose, content }: SEOReviewMo
       newStatus: 'requires_revision',
       notes: revisionNotes
     })
+  }
+
+  const handleKeywordApproval = (keyword: string) => {
+    setKeywordApprovals(prev => ({
+      ...prev,
+      [keyword]: !prev[keyword]
+    }))
   }
 
   return (
@@ -101,7 +139,7 @@ export default function SEOReviewModal({ isOpen, onClose, content }: SEOReviewMo
                       SEO Review
                     </h3>
                     <p className="mt-1 text-sm text-gray-500">
-                      {content.title}
+                      {content.product_name} - {content.compliance_id}
                     </p>
                   </div>
                   <button
@@ -136,6 +174,16 @@ export default function SEOReviewModal({ isOpen, onClose, content }: SEOReviewMo
                       SEO Analysis
                     </button>
                     <button
+                      onClick={() => setActiveTab('geo')}
+                      className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                        activeTab === 'geo'
+                          ? 'border-green-500 text-green-600'
+                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      }`}
+                    >
+                      GEO Optimization
+                    </button>
+                    <button
                       onClick={() => setActiveTab('compliance')}
                       className={`py-2 px-1 border-b-2 font-medium text-sm ${
                         activeTab === 'compliance'
@@ -153,20 +201,27 @@ export default function SEOReviewModal({ isOpen, onClose, content }: SEOReviewMo
                     <div className="space-y-6">
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <h4 className="text-sm font-medium text-gray-500">Project</h4>
-                          <p className="mt-1">{content.project?.name}</p>
+                          <h4 className="text-sm font-medium text-gray-500">Product</h4>
+                          <p className="mt-1">{content.product_name}</p>
                         </div>
                         <div>
-                          <h4 className="text-sm font-medium text-gray-500">Client</h4>
-                          <p className="mt-1">{content.project?.client?.name}</p>
+                          <h4 className="text-sm font-medium text-gray-500">Stage</h4>
+                          <p className="mt-1">{content.stage}</p>
                         </div>
                         <div>
                           <h4 className="text-sm font-medium text-gray-500">Therapeutic Area</h4>
-                          <p className="mt-1">{content.project?.therapeutic_area}</p>
+                          <p className="mt-1">{content.therapeutic_area}</p>
                         </div>
                         <div>
-                          <h4 className="text-sm font-medium text-gray-500">Target Keyword</h4>
-                          <p className="mt-1 font-medium text-green-600">{content.target_keyword}</p>
+                          <h4 className="text-sm font-medium text-gray-500">Priority</h4>
+                          <p className="mt-1">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                              ${content.priority_level === 'High' ? 'bg-red-100 text-red-800' : 
+                                content.priority_level === 'Medium' ? 'bg-yellow-100 text-yellow-800' : 
+                                'bg-gray-100 text-gray-800'}`}>
+                              {content.priority_level}
+                            </span>
+                          </p>
                         </div>
                       </div>
 
@@ -174,11 +229,7 @@ export default function SEOReviewModal({ isOpen, onClose, content }: SEOReviewMo
                         <h4 className="text-sm font-medium text-gray-500 mb-2">Content Preview</h4>
                         <div className="bg-gray-50 rounded-lg p-4">
                           <p className="text-sm text-gray-700 line-clamp-6">
-                            {/* In a real app, we'd parse the actual content here */}
-                            This pharmaceutical content has been optimized for the target keyword "{content.target_keyword}" 
-                            and includes relevant information about {content.project?.therapeutic_area}. 
-                            The content addresses key search intents and provides value to healthcare professionals 
-                            seeking information about this therapeutic indication.
+                            {content.raw_input_content || content.ai_output?.content || 'No content available'}
                           </p>
                         </div>
                       </div>
@@ -187,59 +238,204 @@ export default function SEOReviewModal({ isOpen, onClose, content }: SEOReviewMo
 
                   {activeTab === 'seo' && (
                     <div className="space-y-6">
+                      {/* SEO Title Tag Section */}
                       <div>
-                        <h4 className="text-sm font-medium text-gray-500 mb-2">SEO Strategy</h4>
-                        <div className="bg-green-50 rounded-lg p-4">
-                          <p className="text-sm text-gray-700">{content.content.seo_analysis.strategy}</p>
+                        <h4 className="text-sm font-medium text-gray-500 mb-2">
+                          SEO Title Tag
+                          <span className="ml-2 text-xs font-normal text-gray-400">
+                            (50-60 characters)
+                          </span>
+                        </h4>
+                        <div className="bg-white border rounded-lg p-4">
+                          <p className="text-base font-medium text-gray-900">
+                            {content.meta_title || 'No title tag set'}
+                          </p>
+                          <div className="mt-2 flex items-center justify-between">
+                            <span className={`text-xs ${
+                              content.meta_title && content.meta_title.length >= 50 && content.meta_title.length <= 60
+                                ? 'text-green-600'
+                                : 'text-red-600'
+                            }`}>
+                              Character count: {content.meta_title?.length || 0}/60
+                            </span>
+                            <label className="flex items-center">
+                              <input
+                                type="checkbox"
+                                checked={titleApproved}
+                                onChange={(e) => setTitleApproved(e.target.checked)}
+                                className="mr-2"
+                              />
+                              <span className="text-sm">Approved</span>
+                            </label>
+                          </div>
                         </div>
                       </div>
 
+                      {/* Meta Description */}
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-500 mb-2">
+                          Meta Description
+                          <span className="ml-2 text-xs font-normal text-gray-400">
+                            (140-155 characters)
+                          </span>
+                        </h4>
+                        <div className="bg-white border rounded-lg p-4">
+                          <p className="text-sm text-gray-700">
+                            {content.meta_description || 'No meta description set'}
+                          </p>
+                          <div className="mt-2 flex items-center justify-between">
+                            <span className={`text-xs ${
+                              content.meta_description && content.meta_description.length >= 140 && content.meta_description.length <= 155
+                                ? 'text-green-600'
+                                : 'text-amber-600'
+                            }`}>
+                              Character count: {content.meta_description?.length || 0}/155
+                            </span>
+                            <label className="flex items-center">
+                              <input
+                                type="checkbox"
+                                checked={metaDescriptionApproved}
+                                onChange={(e) => setMetaDescriptionApproved(e.target.checked)}
+                                className="mr-2"
+                              />
+                              <span className="text-sm">Approved</span>
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* H1 Tag */}
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-500 mb-2">H1 Tag</h4>
+                        <div className="bg-gray-50 rounded-lg p-4">
+                          <p className="text-sm font-medium text-gray-900">{content.h1_tag || 'No H1 tag set'}</p>
+                        </div>
+                      </div>
+
+                      {/* Keywords */}
                       <div>
                         <h4 className="text-sm font-medium text-gray-500 mb-2">Target Keywords</h4>
                         <div className="flex flex-wrap gap-2">
-                          {content.content.seo_analysis.keywords.map((keyword, idx) => (
-                            <span key={idx} className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                              <Target className="h-3 w-3 mr-1" />
-                              {keyword}
-                            </span>
+                          {content.seo_keywords?.map((keyword, idx) => (
+                            <div key={idx} className="flex items-center">
+                              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                <Target className="h-3 w-3 mr-1" />
+                                {keyword}
+                              </span>
+                              <input
+                                type="checkbox"
+                                checked={keywordApprovals[keyword] || false}
+                                onChange={() => handleKeywordApproval(keyword)}
+                                className="ml-2"
+                              />
+                            </div>
                           ))}
                         </div>
                       </div>
 
+                      {/* Long-tail Keywords */}
+                      {content.long_tail_keywords && content.long_tail_keywords.length > 0 && (
+                        <div>
+                          <h4 className="text-sm font-medium text-gray-500 mb-2">Long-tail Keywords</h4>
+                          <div className="flex flex-wrap gap-2">
+                            {content.long_tail_keywords.map((keyword, idx) => (
+                              <span key={idx} className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                                {keyword}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Consumer Questions */}
+                      {content.consumer_questions && content.consumer_questions.length > 0 && (
+                        <div>
+                          <h4 className="text-sm font-medium text-gray-500 mb-2">Consumer Questions Addressed</h4>
+                          <ul className="space-y-2">
+                            {content.consumer_questions.map((question, idx) => (
+                              <li key={idx} className="flex items-start">
+                                <span className="text-green-600 mr-2">•</span>
+                                <span className="text-sm text-gray-700">{question}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {activeTab === 'geo' && (
+                    <div className="space-y-6">
+                      {/* Event Tags Section */}
                       <div>
-                        <h4 className="text-sm font-medium text-gray-500 mb-2">Content Recommendations</h4>
+                        <h4 className="text-sm font-medium text-gray-500 mb-2">GEO Event Tags</h4>
                         <div className="bg-gray-50 rounded-lg p-4">
-                          <p className="text-sm text-gray-700">{content.content.seo_analysis.content_recommendations}</p>
+                          {content.geo_event_tags && content.geo_event_tags.length > 0 ? (
+                            <div className="flex flex-wrap gap-2">
+                              {content.geo_event_tags.map((tag: string, idx: number) => (
+                                <span key={idx} className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-sm text-gray-500 italic">No event tags defined</p>
+                          )}
+                          <label className="flex items-center mt-3">
+                            <input
+                              type="checkbox"
+                              checked={geoTagsApproved}
+                              onChange={(e) => setGeoTagsApproved(e.target.checked)}
+                              className="mr-2"
+                            />
+                            <span className="text-sm">Event tags approved</span>
+                          </label>
                         </div>
                       </div>
 
+                      {/* AI-Friendly Summary */}
                       <div>
-                        <h4 className="text-sm font-medium text-gray-500 mb-2">SEO Metrics</h4>
-                        <div className="grid grid-cols-3 gap-4">
-                          <div className="bg-white border rounded-lg p-3">
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm text-gray-500">Keyword Density</span>
-                              <BarChart3 className="h-4 w-4 text-gray-400" />
-                            </div>
-                            <p className="mt-1 text-xl font-semibold">2.3%</p>
-                            <p className="text-xs text-green-600">Optimal</p>
+                        <h4 className="text-sm font-medium text-gray-500 mb-2">AI-Friendly Summary</h4>
+                        <div className="bg-gray-50 rounded-lg p-4">
+                          <p className="text-sm text-gray-700">
+                            {content.geo_optimization?.ai_friendly_summary || 'No AI summary generated'}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Structured Data */}
+                      {content.geo_optimization?.structured_data && (
+                        <div>
+                          <h4 className="text-sm font-medium text-gray-500 mb-2">Structured Data</h4>
+                          <div className="bg-white border rounded-lg p-4">
+                            <dl className="space-y-2">
+                              {Object.entries(content.geo_optimization.structured_data).map(([key, value]) => (
+                                <div key={key} className="flex">
+                                  <dt className="text-sm font-medium text-gray-600 w-1/3">{key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}:</dt>
+                                  <dd className="text-sm text-gray-900 w-2/3">{String(value) || 'Not specified'}</dd>
+                                </div>
+                              ))}
+                            </dl>
                           </div>
-                          <div className="bg-white border rounded-lg p-3">
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm text-gray-500">Readability Score</span>
-                              <BarChart3 className="h-4 w-4 text-gray-400" />
-                            </div>
-                            <p className="mt-1 text-xl font-semibold">85/100</p>
-                            <p className="text-xs text-green-600">Good</p>
-                          </div>
-                          <div className="bg-white border rounded-lg p-3">
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm text-gray-500">Content Length</span>
-                              <BarChart3 className="h-4 w-4 text-gray-400" />
-                            </div>
-                            <p className="mt-1 text-xl font-semibold">1,250</p>
-                            <p className="text-xs text-gray-600">Words</p>
-                          </div>
+                        </div>
+                      )}
+
+                      {/* Key Facts */}
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-500 mb-2">Key Facts for AI</h4>
+                        <div className="bg-gray-50 rounded-lg p-4">
+                          {content.geo_optimization?.key_facts && content.geo_optimization.key_facts.length > 0 ? (
+                            <ul className="space-y-2">
+                              {content.geo_optimization.key_facts.map((fact: string, idx: number) => (
+                                <li key={idx} className="flex items-start">
+                                  <span className="text-green-600 mr-2">•</span>
+                                  <span className="text-sm text-gray-700">{fact}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <p className="text-sm text-gray-500 italic">No key facts defined</p>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -250,7 +446,7 @@ export default function SEOReviewModal({ isOpen, onClose, content }: SEOReviewMo
                       <div>
                         <h4 className="text-sm font-medium text-gray-500 mb-2">Compliance Status</h4>
                         <div className="flex items-center gap-2">
-                          {content.content.compliance_report.status === 'compliant' ? (
+                          {content.ai_output?.compliance_status === 'compliant' ? (
                             <>
                               <CheckCircle className="h-5 w-5 text-green-600" />
                               <span className="font-medium text-green-600">Compliant</span>
@@ -259,18 +455,18 @@ export default function SEOReviewModal({ isOpen, onClose, content }: SEOReviewMo
                             <>
                               <AlertCircle className="h-5 w-5 text-yellow-600" />
                               <span className="font-medium text-yellow-600 capitalize">
-                                {content.content.compliance_report.status}
+                                {content.ai_output?.compliance_status || 'Pending Review'}
                               </span>
                             </>
                           )}
                         </div>
                       </div>
 
-                      {content.content.compliance_report.flags.length > 0 && (
+                      {content.ai_output?.compliance_flags && content.ai_output.compliance_flags.length > 0 && (
                         <div>
                           <h4 className="text-sm font-medium text-gray-500 mb-2">Compliance Flags</h4>
                           <div className="space-y-2">
-                            {content.content.compliance_report.flags.map((flag, idx) => (
+                            {content.ai_output.compliance_flags.map((flag: string, idx: number) => (
                               <div key={idx} className="flex items-start gap-2 bg-yellow-50 rounded-lg p-3">
                                 <AlertCircle className="h-4 w-4 text-yellow-600 mt-0.5" />
                                 <p className="text-sm text-gray-700">{flag}</p>
@@ -283,7 +479,9 @@ export default function SEOReviewModal({ isOpen, onClose, content }: SEOReviewMo
                       <div>
                         <h4 className="text-sm font-medium text-gray-500 mb-2">Review Notes</h4>
                         <div className="bg-gray-50 rounded-lg p-4">
-                          <p className="text-sm text-gray-700">{content.content.compliance_report.review_notes}</p>
+                          <p className="text-sm text-gray-700">
+                            {content.review_notes || 'No review notes available'}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -292,6 +490,39 @@ export default function SEOReviewModal({ isOpen, onClose, content }: SEOReviewMo
 
                 {/* Action Section */}
                 <div className="mt-6 border-t pt-6">
+                  <div className="space-y-3 mb-4">
+                    <h4 className="text-sm font-medium text-gray-700">Approval Checklist</h4>
+                    <div className="space-y-2">
+                      <label className="flex items-center text-sm">
+                        <input
+                          type="checkbox"
+                          checked={titleApproved}
+                          onChange={(e) => setTitleApproved(e.target.checked)}
+                          className="mr-2"
+                        />
+                        <span>SEO Title Tag approved</span>
+                      </label>
+                      <label className="flex items-center text-sm">
+                        <input
+                          type="checkbox"
+                          checked={metaDescriptionApproved}
+                          onChange={(e) => setMetaDescriptionApproved(e.target.checked)}
+                          className="mr-2"
+                        />
+                        <span>Meta Description approved</span>
+                      </label>
+                      <label className="flex items-center text-sm">
+                        <input
+                          type="checkbox"
+                          checked={geoTagsApproved}
+                          onChange={(e) => setGeoTagsApproved(e.target.checked)}
+                          className="mr-2"
+                        />
+                        <span>GEO Event Tags approved</span>
+                      </label>
+                    </div>
+                  </div>
+
                   <div className="mb-4">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Review Notes (Optional)
@@ -323,7 +554,7 @@ export default function SEOReviewModal({ isOpen, onClose, content }: SEOReviewMo
                       </button>
                       <button
                         onClick={handleApprove}
-                        disabled={updateStatus.isPending}
+                        disabled={updateStatus.isPending || (!titleApproved || !metaDescriptionApproved)}
                         className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         Approve & Send to Client

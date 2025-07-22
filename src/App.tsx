@@ -16,7 +16,7 @@ import AuditTrail from './pages/AuditTrail'
 import Administration from './pages/Administration'
 import ClientDashboard from './pages/ClientDashboard'
 import SubmissionDetail from './pages/SubmissionDetail'
-import SEOReviewDetail from './pages/SEOReviewDetail'
+import SEOReviewPageDetail from './pages/SEOReviewPageDetail'
 import ClientReviewDetail from './pages/ClientReviewDetail'
 import MLRReviewDetail from './pages/MLRReviewDetail'
 
@@ -79,7 +79,7 @@ function App() {
             <Route path="submissions/:id" element={<SubmissionDetail />} />
             <Route path="hitl-review" element={<HITLReview />} />
             <Route path="seo-review" element={<SEOReview />} />
-            <Route path="seo-review/:id" element={<SEOReviewDetail />} />
+            <Route path="seo-review/:id" element={<SEOReviewPageDetail />} />
             <Route path="client-review" element={<ClientReview />} />
             <Route path="client-review/:id" element={<ClientReviewDetail />} />
             <Route path="compliance" element={<Compliance />} />
