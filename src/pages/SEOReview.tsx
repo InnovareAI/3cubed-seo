@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
@@ -55,7 +55,17 @@ export default function SEOReview() {
   const [searchTerm, setSearchTerm] = useState('')
   const [priorityFilter, setPriorityFilter] = useState<string>('all')
   const [therapeuticAreaFilter, setTherapeuticAreaFilter] = useState<string>('all')
-  const [useDummyData, setUseDummyData] = useState(false)
+  
+  // Initialize from localStorage
+  const [useDummyData, setUseDummyData] = useState(() => {
+    const stored = localStorage.getItem('seoReviewDataMode')
+    return stored === 'demo'
+  })
+
+  // Update localStorage when state changes
+  useEffect(() => {
+    localStorage.setItem('seoReviewDataMode', useDummyData ? 'demo' : 'live')
+  }, [useDummyData])
 
   const { data: dbSubmissions, isLoading } = useQuery({
     queryKey: ['seo-review-queue'],
