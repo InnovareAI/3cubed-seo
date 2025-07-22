@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
@@ -28,7 +28,7 @@ import { format } from 'date-fns'
 
 interface Submission {
   id: string
-  compliance_id: string
+  compliance_id?: string
   product_name: string
   therapeutic_area: string
   stage: string
@@ -70,11 +70,30 @@ export default function SEOReviewPageDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const [useDummyData] = useState(true)
+  
+  // Get the data mode from localStorage (set by the SEO Review list page)
+  const [useDummyData, setUseDummyData] = useState(() => {
+    const stored = localStorage.getItem('seoReviewDataMode')
+    return stored === 'demo'
+  })
+  
+  // Update when localStorage changes
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const stored = localStorage.getItem('seoReviewDataMode')
+      setUseDummyData(stored === 'demo')
+    }
+    
+    window.addEventListener('storage', handleStorageChange)
+    return () => window.removeEventListener('storage', handleStorageChange)
+  }, [])
   
   // Add debug logging
   console.log('SEOReviewPageDetail - ID from params:', id)
-  console.log('Mock SEO Reviews:', mockSEOReviews)
+  console.log('Using dummy data:', useDummyData)
+  if (useDummyData) {
+    console.log('Mock SEO Reviews:', mockSEOReviews)
+  }
   
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     'overview': true,
@@ -94,9 +113,9 @@ export default function SEOReviewPageDetail() {
   const [seoNotes, setSeoNotes] = useState('')
 
   const { data: submission, isLoading, error } = useQuery({
-    queryKey: ['seo-review-detail', id],
+    queryKey: ['seo-review-detail', id, useDummyData],
     queryFn: async () => {
-      console.log('Fetching submission for ID:', id)
+      console.log('Fetching submission for ID:', id, 'Demo mode:', useDummyData)
       
       if (useDummyData) {
         const mockSubmission = mockSEOReviews.find(s => s.id === id)
@@ -131,6 +150,11 @@ export default function SEOReviewPageDetail() {
       newStatus: 'pending_client_review' | 'requires_revision'
       notes?: string 
     }) => {
+      if (useDummyData) {
+        // Simulate success for demo mode
+        return { ...submission, workflow_stage: newStatus }
+      }
+
       const { error: reviewError } = await supabase
         .from('seo_reviews')
         .insert({
@@ -145,7 +169,7 @@ export default function SEOReviewPageDetail() {
           content_approved: newStatus === 'pending_client_review'
         })
 
-      if (reviewError && !useDummyData) throw reviewError
+      if (reviewError) throw reviewError
 
       const { data, error } = await supabase
         .from('submissions')
@@ -160,7 +184,7 @@ export default function SEOReviewPageDetail() {
         .select()
         .single()
 
-      if (error && !useDummyData) throw error
+      if (error) throw error
       return data
     },
     onSuccess: () => {
@@ -270,12 +294,17 @@ export default function SEOReviewPageDetail() {
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">{submission.product_name}</h1>
                 <p className="text-sm text-gray-600 mt-1">
-                  {submission.stage} • {submission.therapeutic_area} • {'compliance_id' in submission ? submission.compliance_id : 'N/A'}
+                  {submission.stage} • {submission.therapeutic_area} • {submission.compliance_id || 'N/A'}
                 </p>
               </div>
             </div>
             
             <div className="flex items-center gap-3">
+              {useDummyData && (
+                <span className="px-3 py-1 text-sm font-medium rounded-md bg-amber-100 text-amber-700">
+                  Demo Data
+                </span>
+              )}
               <CTAButton variant="secondary" icon={<Eye className="h-4 w-4" />}>
                 Preview Content
               </CTAButton>
@@ -719,7 +748,7 @@ export default function SEOReviewPageDetail() {
         {expandedSections.compliance && (
           <div className="p-6 space-y-4">
             <div className="flex items-center gap-2">
-              {('ai_output' in submission && submission.ai_output?.compliance_status === 'compliant') ? (
+              {(submission.ai_output?.compliance_status === 'compliant') ? (
                 <>
                   <CheckCircle className="h-5 w-5 text-green-600" />
                   <span className="font-medium text-green-600">Compliant</span>
@@ -728,13 +757,13 @@ export default function SEOReviewPageDetail() {
                 <>
                   <AlertCircle className="h-5 w-5 text-yellow-600" />
                   <span className="font-medium text-yellow-600 capitalize">
-                    {('ai_output' in submission && submission.ai_output?.compliance_status) || 'Pending Review'}
+                    {submission.ai_output?.compliance_status || 'Pending Review'}
                   </span>
                 </>
               )}
             </div>
 
-            {('ai_output' in submission && submission.ai_output?.compliance_flags && submission.ai_output.compliance_flags.length > 0) && (
+            {(submission.ai_output?.compliance_flags && submission.ai_output.compliance_flags.length > 0) && (
               <div className="space-y-2">
                 {submission.ai_output.compliance_flags.map((flag: string, idx: number) => (
                   <div key={idx} className="flex items-start gap-2 bg-yellow-50 rounded-lg p-3">
