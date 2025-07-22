@@ -74,7 +74,8 @@ export default function SEOReviewPageDetail() {
   // Get the data mode from localStorage (set by the SEO Review list page)
   const [useDummyData, setUseDummyData] = useState(() => {
     const stored = localStorage.getItem('seoReviewDataMode')
-    return stored === 'demo'
+    // Default to live data if not set
+    return stored === 'demo' ? true : false
   })
   
   // Update when localStorage changes
