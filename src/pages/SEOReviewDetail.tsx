@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
@@ -60,7 +60,23 @@ export default function SEOReviewDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const [useDemoData] = useState(true)
+  
+  // Read from localStorage and sync with main page
+  const [useDemoData, setUseDemoData] = useState(() => {
+    const stored = localStorage.getItem('seoReviewDataMode')
+    return stored === 'demo'
+  })
+  
+  // Listen for changes from other tabs/pages
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const stored = localStorage.getItem('seoReviewDataMode')
+      setUseDemoData(stored === 'demo')
+    }
+    
+    window.addEventListener('storage', handleStorageChange)
+    return () => window.removeEventListener('storage', handleStorageChange)
+  }, [])
   
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     'overview': true,
@@ -80,7 +96,7 @@ export default function SEOReviewDetail() {
   })
 
   const { data: submission, isLoading } = useQuery({
-    queryKey: ['seo-review-detail', id],
+    queryKey: ['seo-review-detail', id, useDemoData],
     queryFn: async () => {
       if (useDemoData) {
         const mockSubmission = mockSEOReviews.find(s => s.id === id)
@@ -245,9 +261,16 @@ export default function SEOReviewDetail() {
               </div>
             </div>
           </div>
-          <span className={`inline-flex items-center px-3 py-1.5 border rounded-full text-sm font-medium ${getPriorityColor(submission.priority_level || 'medium')}`}>
-            {submission.priority_level || 'Medium'} Priority
-          </span>
+          <div className="flex items-center gap-3">
+            {useDemoData && (
+              <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-amber-100 text-amber-700">
+                Demo Data
+              </span>
+            )}
+            <span className={`inline-flex items-center px-3 py-1.5 border rounded-full text-sm font-medium ${getPriorityColor(submission.priority_level || 'medium')}`}>
+              {submission.priority_level || 'Medium'} Priority
+            </span>
+          </div>
         </div>
       </div>
 
