@@ -19,7 +19,6 @@ import {
   BarChart,
   User,
   CheckCircle,
-  Trash2,
   X
 } from 'lucide-react'
 
@@ -105,7 +104,7 @@ export default function ClientManagement() {
   const [useDemoData] = useState(true)
   const [activeTab, setActiveTab] = useState<'overview' | 'details' | 'compliance' | 'billing'>('overview')
   const [showSuccessMessage, setShowSuccessMessage] = useState(false)
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null)
+  // const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null)
   const [editingClient, setEditingClient] = useState<ExtendedClient | null>(null)
   const [localClients, setLocalClients] = useState<ExtendedClient[]>(mockClients)
   
@@ -173,7 +172,7 @@ export default function ClientManagement() {
         submissions_count: 0,
         active_campaigns: 0,
         compliance_score: 100,
-        last_submission: null,
+        last_submission: null as any,
         contract_value: 0,
         therapeutic_areas: newClient.therapeutic_areas
       }
@@ -185,7 +184,7 @@ export default function ClientManagement() {
     }
   }
 
-  const showSuccess = (message: string) => {
+  const showSuccess = (_message: string) => {
     setShowSuccessMessage(true)
     setTimeout(() => setShowSuccessMessage(false), 3000)
   }
@@ -213,7 +212,7 @@ export default function ClientManagement() {
     setExpandedClient(expandedClient === clientId ? null : clientId)
   }
 
-  const handleEditClient = (client: ExtendedClient) => {
+  const _handleEditClient = (client: ExtendedClient) => {
     setEditingClient(client)
     setNewClient({
       name: client.name,
@@ -234,7 +233,7 @@ export default function ClientManagement() {
     setIsAddingClient(true)
   }
 
-  const handleUpdateClient = async () => {
+  const _handleUpdateClient = async () => {
     if (!editingClient) return
     
     if (!newClient.name || !newClient.company_domain || !newClient.contact_name || !newClient.contact_email) {
@@ -261,12 +260,12 @@ export default function ClientManagement() {
     }
   }
 
-  const handleDeleteClient = async (clientId: string) => {
-    if (useDemoData) {
-      setLocalClients(localClients.filter(client => client.id !== clientId))
-      setShowDeleteConfirm(null)
-      showSuccess('Client deleted successfully!')
-    }
+  const _handleDeleteClient = async (_clientId: string) => {
+    // if (useDemoData) {
+    //   setLocalClients(localClients.filter(client => client.id !== clientId))
+    //   setShowDeleteConfirm(null)
+    //   showSuccess('Client deleted successfully!')
+    // }
   }
 
   const therapeuticAreaOptions = [

@@ -15,8 +15,7 @@ import {
   Filter,
   Users,
   Building,
-  ArrowRight,
-  Eye
+  ArrowRight
 } from 'lucide-react'
 import { format } from 'date-fns'
 

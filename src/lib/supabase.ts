@@ -143,7 +143,12 @@ export interface ContentPiece {
   geo_optimization?: GeoOptimization
   seo_strategy_outline?: string
   h2_tags?: string[]
+  // Additional fields
+  project?: string
+  target_keyword?: string
 }
+
+export type ContentStatus = 'draft' | 'in_review' | 'approved' | 'published'
 
 export interface GeoOptimization {
   ai_friendly_summary?: string

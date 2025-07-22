@@ -15,7 +15,6 @@ import {
   Hash,
   FileText,
   Brain,
-  Code,
   Target,
   Globe,
   Calendar,
@@ -23,7 +22,6 @@ import {
   Users,
   Pill,
   XCircle,
-  Copy,
   Shield
 } from 'lucide-react'
 import { format } from 'date-fns'
@@ -503,7 +501,7 @@ export default function SEOReviewDetail() {
               <div className="bg-purple-50 rounded-lg p-4">
                 {submission.geo_event_tags && submission.geo_event_tags.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
-                    {submission.geo_event_tags.map((tag, idx) => (
+                    {submission.geo_event_tags.map((tag: string, idx: number) => (
                       <span key={idx} className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
                         {tag}
                       </span>
