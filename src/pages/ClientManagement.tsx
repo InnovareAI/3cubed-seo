@@ -17,7 +17,10 @@ import {
   Mail,
   Phone,
   BarChart,
-  User
+  User,
+  CheckCircle,
+  Trash2,
+  X
 } from 'lucide-react'
 
 interface Client {
@@ -101,6 +104,10 @@ export default function ClientManagement() {
   const [expandedClient, setExpandedClient] = useState<string | null>(null)
   const [useDemoData] = useState(true)
   const [activeTab, setActiveTab] = useState<'overview' | 'details' | 'compliance' | 'billing'>('overview')
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null)
+  const [editingClient, setEditingClient] = useState<ExtendedClient | null>(null)
+  const [localClients, setLocalClients] = useState<ExtendedClient[]>(mockClients)
   
   const [newClient, setNewClient] = useState({
     name: '',
@@ -133,9 +140,15 @@ export default function ClientManagement() {
     enabled: !useDemoData
   })
 
-  const clients = useDemoData ? mockClients : dbClients || []
+  const clients = useDemoData ? localClients : dbClients || []
 
   const handleCreateClient = async () => {
+    // Validate required fields
+    if (!newClient.name || !newClient.company_domain || !newClient.contact_name || !newClient.contact_email) {
+      alert('Please fill in all required fields')
+      return
+    }
+
     if (!useDemoData) {
       const { error } = await supabase
         .from('clients')
@@ -145,12 +158,36 @@ export default function ClientManagement() {
         setIsAddingClient(false)
         resetNewClient()
         refetch()
+        showSuccess('Client created successfully!')
+      } else {
+        alert('Error creating client: ' + error.message)
       }
     } else {
-      // Demo mode - just close the form
+      // Demo mode - add to local state
+      const newExtendedClient: ExtendedClient = {
+        ...newClient,
+        id: `client-${Date.now()}`,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        projects_count: 0,
+        submissions_count: 0,
+        active_campaigns: 0,
+        compliance_score: 100,
+        last_submission: null,
+        contract_value: 0,
+        therapeutic_areas: newClient.therapeutic_areas
+      }
+      
+      setLocalClients([newExtendedClient, ...localClients])
       setIsAddingClient(false)
       resetNewClient()
+      showSuccess('Client created successfully!')
     }
+  }
+
+  const showSuccess = (message: string) => {
+    setShowSuccessMessage(true)
+    setTimeout(() => setShowSuccessMessage(false), 3000)
   }
 
   const resetNewClient = () => {
@@ -176,6 +213,62 @@ export default function ClientManagement() {
     setExpandedClient(expandedClient === clientId ? null : clientId)
   }
 
+  const handleEditClient = (client: ExtendedClient) => {
+    setEditingClient(client)
+    setNewClient({
+      name: client.name,
+      company_domain: client.company_domain,
+      contact_name: client.contact_name || '',
+      contact_email: client.contact_email || '',
+      status: client.status,
+      phone: client.phone || '',
+      address: '',
+      contract_type: 'annual',
+      therapeutic_areas: client.therapeutic_areas || [],
+      compliance_requirements: {
+        fda_regulated: true,
+        ema_regulated: false,
+        other_regulations: ''
+      }
+    })
+    setIsAddingClient(true)
+  }
+
+  const handleUpdateClient = async () => {
+    if (!editingClient) return
+    
+    if (!newClient.name || !newClient.company_domain || !newClient.contact_name || !newClient.contact_email) {
+      alert('Please fill in all required fields')
+      return
+    }
+
+    if (useDemoData) {
+      // Update in local state
+      const updatedClients = localClients.map(client => 
+        client.id === editingClient.id 
+          ? {
+              ...client,
+              ...newClient,
+              updated_at: new Date().toISOString()
+            }
+          : client
+      )
+      setLocalClients(updatedClients)
+      setIsAddingClient(false)
+      setEditingClient(null)
+      resetNewClient()
+      showSuccess('Client updated successfully!')
+    }
+  }
+
+  const handleDeleteClient = async (clientId: string) => {
+    if (useDemoData) {
+      setLocalClients(localClients.filter(client => client.id !== clientId))
+      setShowDeleteConfirm(null)
+      showSuccess('Client deleted successfully!')
+    }
+  }
+
   const therapeuticAreaOptions = [
     'Oncology', 'Cardiology', 'Neurology', 'Rheumatology', 'Immunology',
     'Endocrinology', 'Psychiatry', 'Dermatology', 'Pulmonology', 'Gastroenterology'
@@ -191,6 +284,15 @@ export default function ClientManagement() {
 
   return (
     <div className="space-y-6">
+      {/* Success Message */}
+      {showSuccessMessage && (
+        <div className="fixed top-4 right-4 z-50 bg-green-50 border border-green-200 rounded-lg p-4 shadow-lg">
+          <div className="flex items-center gap-2">
+            <CheckCircle className="h-5 w-5 text-green-600" />
+            <p className="text-sm font-medium text-green-800">Operation completed successfully!</p>
+          </div>
+        </div>
+      )}
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900">Client Management</h1>
@@ -256,29 +358,45 @@ export default function ClientManagement() {
         </div>
       </div>
 
-      {/* Add Client Form */}
+      {/* Add/Edit Client Modal */}
       {isAddingClient && (
-        <div className="bg-white shadow rounded-lg p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Add New Client</h3>
-          
-          {/* Tabs */}
-          <div className="border-b border-gray-200 mb-6">
-            <nav className="-mb-px flex space-x-8">
-              {(['overview', 'details', 'compliance', 'billing'] as const).map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                    activeTab === tab
-                      ? 'border-primary-500 text-primary-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                </button>
-              ))}
-            </nav>
-          </div>
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+              <h3 className="text-lg font-medium text-gray-900">
+                {editingClient ? 'Edit Client' : 'Add New Client'}
+              </h3>
+              <button
+                onClick={() => {
+                  setIsAddingClient(false)
+                  setEditingClient(null)
+                  resetNewClient()
+                }}
+                className="text-gray-400 hover:text-gray-500"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+            
+            <div className="px-6 py-4 overflow-y-auto max-h-[calc(90vh-8rem)]">
+              {/* Tabs */}
+              <div className="border-b border-gray-200 mb-6">
+                <nav className="-mb-px flex space-x-8">
+                  {(['overview', 'details', 'compliance', 'billing'] as const).map((tab) => (
+                    <button
+                      key={tab}
+                      onClick={() => setActiveTab(tab)}
+                      className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                        activeTab === tab
+                          ? 'border-primary-500 text-primary-600'
+                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      }`}
+                    >
+                      {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                    </button>
+                  ))}
+                </nav>
+              </div>
 
           {/* Tab Content */}
           {activeTab === 'overview' && (

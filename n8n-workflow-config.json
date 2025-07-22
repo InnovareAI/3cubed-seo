@@ -1,0 +1,255 @@
+{
+  "name": "3cubed-seo-content-generation-with-qa",
+  "nodes": [
+    {
+      "id": "webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "generate-pharma-content"
+      }
+    },
+    {
+      "id": "openrouter",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [450, 300],
+      "parameters": {
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "method": "POST",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $credentials.openRouterApiKey }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "anthropic/claude-3-opus"
+            },
+            {
+              "name": "messages",
+              "value": "={{ $json.messages }}"
+            },
+            {
+              "name": "temperature",
+              "value": "0.7"
+            },
+            {
+              "name": "max_tokens",
+              "value": "4000"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "qa_agent",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [650, 300],
+      "parameters": {
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "method": "POST",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $credentials.openRouterApiKey }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "anthropic/claude-3-haiku"
+            },
+            {
+              "name": "messages",
+              "value": "={{ $json.qa_messages }}"
+            },
+            {
+              "name": "temperature",
+              "value": "0.1"
+            },
+            {
+              "name": "max_tokens",
+              "value": "1000"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "qa_router",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [850, 300],
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{ $json.qa_status }}",
+        "rules": {
+          "rules": [
+            {
+              "value2": "PASS",
+              "output": 0
+            },
+            {
+              "value2": "REVISIONS_NEEDED",
+              "output": 1
+            },
+            {
+              "value2": "FAIL",
+              "output": 2
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "save_to_supabase",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1050, 200],
+      "parameters": {
+        "operation": "update",
+        "table": "submissions",
+        "filters": {
+          "conditions": [
+            {
+              "field": "id",
+              "value": "={{ $json.submission_id }}"
+            }
+          ]
+        },
+        "updateFields": {
+          "ai_output": "={{ $json.content }}",
+          "seo_title": "={{ $json.content.seo_title }}",
+          "geo_event_tags": "={{ $json.content.geo_event_tags }}",
+          "h2_tags": "={{ $json.content.h2_tags }}",
+          "seo_strategy_outline": "={{ $json.content.seo_strategy_outline }}",
+          "langchain_status": "completed",
+          "workflow_stage": "pending_seo_review"
+        }
+      }
+    },
+    {
+      "id": "revision_loop",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [850, 500],
+      "parameters": {
+        "jsCode": "// Check revision count\nconst revisionCount = $input.item.json.revision_count || 0;\n\nif (revisionCount >= 3) {\n  // Max revisions reached, mark as failed\n  return {\n    action: 'fail',\n    reason: 'Maximum revision attempts (3) reached',\n    revision_count: revisionCount\n  };\n}\n\n// Prepare for another revision\nreturn {\n  action: 'revise',\n  revision_count: revisionCount + 1,\n  feedback: $input.item.json.qa_feedback,\n  previous_content: $input.item.json.content\n};"
+      }
+    },
+    {
+      "id": "error_handler",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1050, 600],
+      "parameters": {
+        "operation": "update",
+        "table": "submissions",
+        "filters": {
+          "conditions": [
+            {
+              "field": "id",
+              "value": "={{ $json.submission_id }}"
+            }
+          ]
+        },
+        "updateFields": {
+          "langchain_status": "failed",
+          "langchain_error": "={{ $json.error_message }}",
+          "workflow_stage": "failed"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "webhook": {
+      "main": [
+        [
+          {
+            "node": "openrouter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "openrouter": {
+      "main": [
+        [
+          {
+            "node": "qa_agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "qa_agent": {
+      "main": [
+        [
+          {
+            "node": "qa_router",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "qa_router": {
+      "main": [
+        [
+          {
+            "node": "save_to_supabase",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "revision_loop",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "error_handler",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "revision_loop": {
+      "main": [
+        [
+          {
+            "node": "openrouter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

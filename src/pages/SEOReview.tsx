@@ -42,6 +42,12 @@ interface Submission {
   h1_tag?: string
   meta_title?: string
   meta_description?: string
+  // AI-generated fields
+  seo_title?: string
+  geo_event_tags?: string[]
+  h2_tags?: string[]
+  seo_strategy_outline?: string
+  geo_optimization_score?: number
 }
 
 export default function SEOReview() {
@@ -295,6 +301,22 @@ export default function SEOReview() {
                 <Hash className="h-4 w-4" />
                 <span>{submission.seo_keywords?.length || 0} keywords • {submission.long_tail_keywords?.length || 0} long-tail</span>
               </div>
+
+              {/* Display AI-generated SEO title if available */}
+              {submission.seo_title && (
+                <div className="flex items-start gap-2 text-sm text-gray-600">
+                  <FileText className="h-4 w-4 text-green-600" />
+                  <span className="text-xs font-medium">SEO Title: {submission.seo_title}</span>
+                </div>
+              )}
+
+              {/* Display GEO event tags if available */}
+              {submission.geo_event_tags && submission.geo_event_tags.length > 0 && (
+                <div className="flex items-start gap-2 text-sm text-gray-600">
+                  <Hash className="h-4 w-4 text-blue-600" />
+                  <span className="text-xs">Events: {submission.geo_event_tags.join(', ')}</span>
+                </div>
+              )}
 
               {submission.medical_indication && (
                 <div className="flex items-start gap-2 text-sm text-gray-600 bg-blue-50 p-2 rounded">
