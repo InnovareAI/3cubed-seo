@@ -409,7 +409,7 @@ export default function SEOReviewPageDetail() {
             <div>
               <h3 className="text-sm font-medium text-gray-700 mb-2">Target Keywords</h3>
               <div className="flex flex-wrap gap-2">
-                {submission.seo_keywords?.map((keyword, idx) => (
+                {submission.seo_keywords?.map((keyword: string, idx: number) => (
                   <div key={idx} className="flex items-center">
                     <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
                       <Target className="h-3 w-3 mr-1" />
@@ -431,7 +431,7 @@ export default function SEOReviewPageDetail() {
               <div>
                 <h3 className="text-sm font-medium text-gray-700 mb-2">Long-tail Keywords</h3>
                 <div className="flex flex-wrap gap-2">
-                  {submission.long_tail_keywords.map((keyword, idx) => (
+                  {submission.long_tail_keywords.map((keyword: string, idx: number) => (
                     <span key={idx} className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
                       {keyword}
                     </span>
@@ -445,7 +445,7 @@ export default function SEOReviewPageDetail() {
               <div>
                 <h3 className="text-sm font-medium text-gray-700 mb-2">Consumer Questions Addressed</h3>
                 <ul className="space-y-2">
-                  {submission.consumer_questions.map((question, idx) => (
+                  {submission.consumer_questions.map((question: string, idx: number) => (
                     <li key={idx} className="flex items-start">
                       <span className="text-green-600 mr-2">•</span>
                       <span className="text-sm text-gray-700">{question}</span>
@@ -484,7 +484,7 @@ export default function SEOReviewPageDetail() {
               <div className="bg-gray-50 rounded-lg p-4">
                 {submission.geo_event_tags && submission.geo_event_tags.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
-                    {submission.geo_event_tags.map((tag, idx) => (
+                    {submission.geo_event_tags.map((tag: string, idx: number) => (
                       <span key={idx} className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
                         {tag}
                       </span>
@@ -540,7 +540,7 @@ export default function SEOReviewPageDetail() {
               <div className="bg-gray-50 rounded-lg p-4">
                 {submission.geo_optimization?.key_facts && submission.geo_optimization.key_facts.length > 0 ? (
                   <ul className="space-y-2">
-                    {submission.geo_optimization.key_facts.map((fact, idx) => (
+                    {submission.geo_optimization.key_facts.map((fact: string, idx: number) => (
                       <li key={idx} className="flex items-start">
                         <span className="text-purple-600 mr-2">•</span>
                         <span className="text-sm text-gray-700">{fact}</span>
@@ -585,7 +585,7 @@ export default function SEOReviewPageDetail() {
                     <h3 className="font-semibold text-gray-900">Content Architecture</h3>
                   </div>
                   <ul className="space-y-2">
-                    {submission.seo_strategy.content_architecture.map((item, index) => (
+                    {submission.seo_strategy.content_architecture.map((item: string, index: number) => (
                       <li key={index} className="flex items-start">
                         <span className="text-amber-500 mr-2 mt-0.5">•</span>
                         <span className="text-sm text-gray-700">{item}</span>
@@ -601,7 +601,7 @@ export default function SEOReviewPageDetail() {
                     <h3 className="font-semibold text-gray-900">Technical SEO</h3>
                   </div>
                   <ul className="space-y-2">
-                    {submission.seo_strategy.technical_seo.map((item, index) => (
+                    {submission.seo_strategy.technical_seo.map((item: string, index: number) => (
                       <li key={index} className="flex items-start">
                         <span className="text-amber-500 mr-2 mt-0.5">•</span>
                         <span className="text-sm text-gray-700">{item}</span>
@@ -617,7 +617,7 @@ export default function SEOReviewPageDetail() {
                     <h3 className="font-semibold text-gray-900">Content Strategy</h3>
                   </div>
                   <ul className="space-y-2">
-                    {submission.seo_strategy.content_strategy.map((item, index) => (
+                    {submission.seo_strategy.content_strategy.map((item: string, index: number) => (
                       <li key={index} className="flex items-start">
                         <span className="text-amber-500 mr-2 mt-0.5">•</span>
                         <span className="text-sm text-gray-700">{item}</span>
@@ -633,7 +633,7 @@ export default function SEOReviewPageDetail() {
                     <h3 className="font-semibold text-gray-900">Link Building</h3>
                   </div>
                   <ul className="space-y-2">
-                    {submission.seo_strategy.link_building.map((item, index) => (
+                    {submission.seo_strategy.link_building.map((item: string, index: number) => (
                       <li key={index} className="flex items-start">
                         <span className="text-amber-500 mr-2 mt-0.5">•</span>
                         <span className="text-sm text-gray-700">{item}</span>
