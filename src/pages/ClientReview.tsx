@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
@@ -28,10 +28,20 @@ export default function ClientReview() {
   const [selectedPriority, setSelectedPriority] = useState<string>('all')
   const [selectedClient, setSelectedClient] = useState<string>('all')
   const [selectedStatus, setSelectedStatus] = useState<string>('all')
-  const [useDemoData] = useState(false)
+  
+  // Initialize from localStorage
+  const [useDemoData, setUseDemoData] = useState(() => {
+    const stored = localStorage.getItem('clientReviewDataMode')
+    return stored === 'demo'
+  })
+
+  // Update localStorage when state changes
+  useEffect(() => {
+    localStorage.setItem('clientReviewDataMode', useDemoData ? 'demo' : 'live')
+  }, [useDemoData])
 
   const { data: submissions, isLoading } = useQuery({
-    queryKey: ['client-review-content', { searchQuery, selectedPriority, selectedClient, selectedStatus }],
+    queryKey: ['client-review-content', { searchQuery, selectedPriority, selectedClient, selectedStatus, useDemoData }],
     queryFn: async () => {
       if (useDemoData) {
         // Transform SEO Review mock data into Client Review data
@@ -106,7 +116,7 @@ export default function ClientReview() {
     navigate(`/client-review/${id}`)
   }
 
-  if (isLoading) {
+  if (isLoading && !useDemoData) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -122,9 +132,21 @@ export default function ClientReview() {
           <h1 className="text-2xl font-bold text-gray-900">Client Review</h1>
           <p className="text-sm text-gray-600 mt-1">Review and approve SEO-optimized content with clients</p>
         </div>
-        <CTAButton variant="primary" icon={<FileText className="h-4 w-4" />}>
-          Export Report
-        </CTAButton>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setUseDemoData(!useDemoData)}
+            className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+              useDemoData 
+                ? 'bg-amber-100 text-amber-700' 
+                : 'bg-green-100 text-green-700'
+            }`}
+          >
+            {useDemoData ? 'Demo Data' : 'Live Data'}
+          </button>
+          <CTAButton variant="primary" icon={<FileText className="h-4 w-4" />}>
+            Export Report
+          </CTAButton>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -209,7 +231,7 @@ export default function ClientReview() {
             className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="all">All Clients</option>
-            {[...new Set(submissions?.map(s => s.sponsor_name).filter(Boolean))].map(client => (
+            {[...new Set(submissions?.map(s => s.sponsor_name || s.client_name).filter(Boolean))].map(client => (
               <option key={client} value={client}>{client}</option>
             ))}
           </select>
@@ -254,7 +276,7 @@ export default function ClientReview() {
             <div className="space-y-3">
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <Building className="h-4 w-4" />
-                <span>{submission.sponsor_name || 'Pharma Corp'}</span>
+                <span>{submission.sponsor_name || submission.client_name || 'Pharma Corp'}</span>
               </div>
 
               <div className="flex items-center gap-2 text-sm text-gray-600">
