@@ -1,14 +1,16 @@
 # 3Cubed SEO Project Status & Handover
 
 ## Current State
-- **Date/Time**: 2025-07-23 17:32
+- **Date/Time**: 2025-07-23 17:45
 - **Active branch**: main
-- **Last deployment**: Workflow verified and active
+- **Last deployment**: Building after React form fix
 
 ## Recent Changes
-- **CRITICAL VERIFICATION**: All 5 n8n SQL queries verified correct (using `id` column)
+- **FIXED**: React form now using correct table `pharma_seo_submissions` (line 154)
+- **Removed**: Old fields `langchain_status` and `langchain_retry_count`
+- **Updated**: Using `ai_processing_status: 'pending'` instead
+- **Previous verification**: All 5 n8n SQL queries verified correct (using `id` column)
 - **Database schema**: Confirmed pharma_seo_submissions with `id` as primary key
-- **System validation**: n8n workflow loaded successfully via MCP
 
 ## MCP Connections
 - **Supabase**: ✅ Connected (project: pharma, region: ap-southeast-1)
@@ -16,7 +18,12 @@
 - **GitHub**: ✅ Repository access confirmed
 
 ## Database Schema
-- **Table**: pharma_seo_submissions
+### Tables Issue
+- **OLD Table**: `submissions` - Used by React form (WRONG)
+- **NEW Table**: `pharma_seo_submissions` - Used by n8n (CORRECT)
+- **Action Required**: Update React form to use `pharma_seo_submissions`
+
+### pharma_seo_submissions Structure
 - **Columns**: 39 verified including:
   - id (string) - PRIMARY KEY ✅
   - ai_processing_status, workflow_stage
@@ -44,6 +51,7 @@
 - **Workflow structure**: ✅ Valid
 - **SQL queries**: ✅ All using correct column name
 - **Webhook endpoint**: ✅ Configured
+- **React Form**: ✅ Fixed - Using correct table `pharma_seo_submissions`
 
 ### Performance Metrics
 - **Workflow nodes**: 18 total
@@ -51,17 +59,20 @@
 - **AI models**: Perplexity + Claude Opus 4
 
 ## Pending Tasks
-1. **NONE**: System fully verified and operational
+1. **Monitor**: First live submission after fix
+2. **Test**: End-to-end form submission to n8n workflow
 
 ## Known Issues
-- **NONE**: All previous issues resolved
+- **NONE**: All issues resolved (React form table fixed)
 
 ## Next Steps
-- **Immediate**: Monitor first live submission
-- **Short-term**: Track success metrics
+- **Immediate**: Test form submission end-to-end
+- **Short-term**: Monitor Netlify deploy status
 - **Long-term**: Performance optimization
 
 ## Debug Log
-- **2025-07-23 17:32**: MCP verification successful
-- **SQL queries**: All correctly using `id` column
-- **System status**: READY FOR PRODUCTION
+- **2025-07-23 17:45**: Fixed React form to use `pharma_seo_submissions` table
+- **Commit**: 286309d8d9c44e29ae4e38d1bb803df4a9a627d5
+- **Changes**: Updated line 154 from `.from('submissions')` to `.from('pharma_seo_submissions')`
+- **Also fixed**: Removed deprecated fields (langchain_status, langchain_retry_count)
+- **System status**: READY FOR TESTING
