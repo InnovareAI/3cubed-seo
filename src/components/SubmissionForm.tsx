@@ -161,14 +161,13 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         raw_input_content: JSON.stringify(formData),
         // Default values for new submissions
         priority_level: 'Medium',
-        langchain_status: 'needs_processing',
+        ai_processing_status: 'pending',
         workflow_stage: 'Form_Submitted',
-        langchain_retry_count: 0,
         compliance_id: `COMP-${Date.now()}`
       };
 
       const { error: supabaseError } = await supabase
-        .from('submissions')
+        .from('pharma_seo_submissions')
         .insert([submissionData]);
 
       if (supabaseError) throw supabaseError;
