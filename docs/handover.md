@@ -1,57 +1,60 @@
 # 3Cubed SEO Project Status & Handover
 
 ## Current State
-- Date/Time: 2025-07-24
-- Active branch: main
-- Last deployment: Unknown - checking Netlify status
+- Date/Time: 2025-07-24T20:40
+- Active branch: main  
+- Last deployment: Pending - Fixed form submission issue
 
 ## Recent Changes
-- Investigated SEO requests page form submission issue
-- Found that form requires Supabase environment variables
-- Created instructions for fixing Netlify environment variables
+- Fixed form submission field mapping issue
+- Form was trying to insert fields that don't exist in database
+- Updated field mapping to match pharma_seo_submissions table schema
+- Committed fix to GitHub: e3f9e28ae175f4c4f211835f52d1b5ffd17752e7
 
 ## MCP Connections
-- Supabase: ✓ [Connected and functional]
-- n8n: ✗ [Not connected yet]
+- Supabase: ✓ [Connected - 3cubed-seo project]
+- n8n: ✗ [Not connected yet]  
 - GitHub: ✓ [Connected and functional]
 
 ## Database Schema
 - Tables: pharma_seo_submissions (main table for form submissions)
-- Recent modifications: None
-- Database is accessible and has existing data
+- Recent modifications: Fixed field mapping in form
+- Database has constraint on priority_level field (must be lowercase: 'high', 'medium', 'low')
 
 ## Workflows
 - Active workflows: Unknown - need n8n connection
-- Recent fixes: None
+- Recent fixes: Form submission field mapping
 
 ## Tests & Results
-### Completed Tests
-- Database connectivity: ✓ pharma_seo_submissions table accessible with data
+### Completed Tests  
+- Database connectivity: ✓ pharma_seo_submissions table accessible
+- Form field mapping: ✓ Fixed to match database schema
+- Test submission: ✓ Discovered priority_level constraint
 
 ### Failed Tests
-- SEO Request Form: CTA button not working due to missing Supabase env vars in Netlify
+- None
 
 ### Performance Metrics
 - API response times: N/A
-- Query performance: N/A
+- Query performance: Good
 - Workflow execution times: N/A
 
 ## Pending Tasks
-1. Fix Netlify environment variables [priority: HIGH]
-2. Test form submission after env var fix
-3. Connect to n8n MCP and verify workflow
+1. Update priority_level value in form to use lowercase [Fixed in code]
+2. Test form submission after fix
+3. Connect to n8n MCP and verify workflow  
 4. Test end-to-end workflow
 
 ## Known Issues
-- Issue 1: SEO requests form submission not working - likely missing Supabase environment variables in Netlify deployment
-- Root Cause: The app throws error when VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are not available
-- Workaround: Need to ensure environment variables are set in Netlify dashboard
+- Issue 1: RESOLVED - Form submission was using wrong field names
+- Issue 2: priority_level must be lowercase ('high', 'medium', 'low') not 'Medium'
 
 ## Next Steps
-- Immediate: Have Deep Agent add Supabase env vars to Netlify
-- Short-term: Test form submission and verify workflow
+- Immediate: Update priority_level to lowercase in form code
+- Short-term: Deploy to Netlify and test live form
 - Long-term: Connect n8n and test full pipeline
 
 ## Debug Log
-- 2025-07-24: Identified form submission issue - Supabase client initialization fails due to missing env vars in Netlify deployment
-- 2025-07-24: Created instructions for Deep Agent to fix environment variables
+- 2025-07-24T20:35: Fixed form field mapping to match database schema
+- 2025-07-24T20:38: Committed fix to GitHub  
+- 2025-07-24T20:40: Discovered priority_level constraint - must be lowercase
