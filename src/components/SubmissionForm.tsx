@@ -232,7 +232,7 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         competitor_names: '',
         competitor_urls: '',
         problem_solved: '',
-        treatment_settings: '',
+        treatment_settings: [],
         mechanism_of_action: '',
         clinical_trials: '',
         key_results: '',
