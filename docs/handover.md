@@ -1,12 +1,18 @@
 # 3Cubed SEO Project Status & Handover
 
 ## Current State
-- **Date/Time**: 2025-01-23 21:30 UTC
+- **Date/Time**: 2025-07-24 10:50 UTC
 - **Active branch**: main
 - **Last deployment**: System operational
-- **Critical Discovery**: AI Processing Pipeline Stalled
+- **Critical Discovery**: n8n Database Connection Issue - View Access Problem
 
 ## Recent Changes
+- **Database View Access Issue Discovered (2025-07-24 10:50)**:
+  - Confirmed `pharma_seo_submissions` view EXISTS and is ACCESSIBLE
+  - Successfully queried the view - got record id: 12182ddd-c266-4d4a-9f79-13dca5bbaf7a
+  - n8n reporting "relation not found" despite view existing
+  - Root cause: n8n needs schema prefix `public.pharma_seo_submissions`
+  
 - **Visual Database Verification (2025-01-23 21:00)**:
   - Successfully accessed Supabase dashboard
   - Executed monitoring queries in SQL Editor
@@ -125,29 +131,27 @@
 - Processing queue might have backlog
 
 ## Immediate Actions Required
-1. **Check AI Service Health**:
-   - Verify Perplexity API key validity
-   - Test Anthropic API key
-   - Check API rate limits/quotas
+1. **FIX n8n Database Queries - Schema Prefix**:
+   - Change ALL queries from: `pharma_seo_submissions`
+   - To: `public.pharma_seo_submissions`
+   - This includes all SELECT, UPDATE, INSERT queries in the workflow
    
-2. **Debug Processing Pipeline**:
-   - Review n8n workflow execution logs
-   - Check error handling in AI nodes
-   - Verify JSON parsing in workflow
-   
-3. **Service Recovery**:
-   - Restart stalled workflows
-   - Clear processing queue if needed
-   - Test with fresh submission
+2. **Alternative if Schema Prefix Fails**:
+   - Verify n8n PostgreSQL credential settings
+   - Ensure schema is set to 'public' in connection
+   - Test connection with different permission levels
 
 ## System Status
-- **Database**: ✅ Schema fixed, queries working
-- **n8n Workflow**: ✅ SQL queries secured, webhook functional
-- **AI Processing**: ❌ Service stalled - requires immediate attention
-- **API Credentials**: ⚠️ Need urgent verification
+- **Database**: ✅ View exists and is accessible via `pharma_seo_submissions`
+- **n8n Workflow**: ❌ Cannot access view - needs schema prefix `public.`
+- **AI Processing**: ⏸️ Blocked by n8n database access issue
+- **API Credentials**: ⚠️ Need verification after n8n fix
 - **External Notifications**: ❌ example.com needs configuration
 
 ## Debug Log
+- **2025-07-24 10:50**: Confirmed `pharma_seo_submissions` view exists and is accessible
+- **2025-07-24 10:52**: Identified n8n schema prefix issue - needs `public.` prefix
+- **2025-07-24 10:55**: Created fix instructions for Deep Agent
 - **2025-01-23 20:15**: Fixed all SQL injection vulnerabilities in n8n workflow
 - **2025-01-23 20:34**: Created migration file for meta columns
 - **2025-01-23 20:40**: Recreated pharma_seo_submissions view
