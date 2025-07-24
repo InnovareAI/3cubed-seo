@@ -1,12 +1,18 @@
 # 3Cubed SEO Project Status & Handover
 
 ## Current State
-- **Date/Time**: 2025-07-24 19:30 UTC
+- **Date/Time**: 2025-07-24 20:00 UTC
 - **Active branch**: main
 - **Last deployment**: ✅ WORKFLOW LIVE ON N8N CLOUD
-- **Critical Issue**: WORKFLOW ACTIVATION ERROR - NEEDS CREDENTIAL FIX
+- **Critical Issue**: WEBHOOK CONFIGURATION ERROR - NOT CREDENTIAL RELATED
 
 ## Recent Changes
+- **Webhook Configuration Issue Found (2025-07-24 20:00)**:
+  - ❌ Webhook Trigger set to "responseNode" mode causing execution errors
+  - ❌ Error: "No Respond to Webhook node found in the workflow"
+  - ✅ Webhook Response node EXISTS but not being recognized
+  - 📝 Both Perplexity and Claude nodes have correct credentials assigned
+  
 - **Workflow Credential Error (2025-07-24 19:30)**:
   - ❌ Workflow shows "propertyValues[itemName] is not iterable" error
   - ❌ AI nodes have hardcoded/incorrect credentials
@@ -44,22 +50,23 @@ All submissions show `ai_processing_status = 'pending'`:
 ### 3cubed SEO Workflow - Cloud Version (ID: BNKl1IJoWxTCKUak)
 - **Platform**: n8n Cloud (innovareai.app.n8n.cloud)
 - **Webhook**: POST to `https://innovareai.app.n8n.cloud/webhook/3cubed-seo-webhook`
-- **Status**: ❌ ACTIVE but has credential error
-- **Credentials Status**:
-  - ✅ Supabase: All nodes correctly configured
-  - ❌ Perplexity: Hardcoded token needs fixing
-  - ❌ Anthropic: Wrong credential selected
+- **Status**: ❌ ACTIVE but has configuration errors
+- **Issues Found**:
+  - ❌ All 3 Supabase nodes using "create" instead of "update" operation
+  - ❌ Missing submission ID field in Supabase updates
+  - ✅ Perplexity credential: Correctly assigned (kJzYrHsimJhOKqAH)
+  - ✅ Anthropic credential: Correctly assigned (WFzCGYLEjEfBhcXo)
 
 ## Immediate Actions Required
-1. **CRITICAL - Fix AI Node Credentials**:
-   - Follow instructions in "Instructions for Deep Agent" artifact
-   - Log into n8n Cloud and manually fix both AI nodes
-   - Save and ensure workflow activates without errors
+1. **CRITICAL - Fix Supabase Node Operations**:
+   - Follow instructions in "Instructions for Deep Agent - Fix n8n Workflow" artifact
+   - Change all 3 Supabase nodes from "create" to "update" operation
+   - Add submission ID field to each update
    
 2. **Test the Fixed Workflow**:
    - Use test command from instructions
    - Monitor execution logs
-   - Verify AI content generation works
+   - Verify database updates work correctly
    
 3. **Process Pending Submissions**:
    - Start with Keytruda submission
@@ -74,29 +81,31 @@ Form Submission → Supabase (submissions table) ✅
                             ↓
                   n8n Cloud Webhook Trigger ✅
                             ↓
-                  AI Processing Pipeline ❌ [CREDENTIAL ERROR]
+                  AI Processing Pipeline ✅ [CREDENTIALS OK]
                   (Perplexity → QA Review → Database Update)
-                            ↓
+                            ↓ [SUPABASE CONFIG ERROR]
                   Dashboard Display ✅
 ```
 
 ## Known Issues
-- **Webhook returns 404**: Workflow is active but webhook may need re-activation after credential fix
-- **AI Credentials**: Both AI nodes need manual credential configuration
-- **Test webhook URL**: Only works after clicking "Execute workflow" in n8n editor
+- **Webhook execution fails**: All Supabase nodes incorrectly using "create" instead of "update"
+- **Missing submission IDs**: Supabase update nodes not passing ID field for matching
+- **Workflow Response**: Webhook Response node exists but webhook configuration may need adjustment
 
 ## Next Steps
-1. Fix credentials immediately (manual action required)
+1. Fix Supabase nodes immediately (manual action required)
 2. Test workflow with Keytruda submission
 3. Monitor first execution carefully
 4. Process remaining 19 submissions
 5. Update this handover after successful fix
 
 ## Debug Log
+- **2025-07-24 20:00**: Discovered real issue - Supabase nodes using wrong operation type
+- **2025-07-24 19:45**: Webhook error is due to node response configuration, not credentials
 - **2025-07-24 19:30**: Workflow activation error due to credential issues
 - **2025-07-24 19:25**: Attempted programmatic fix failed - manual intervention needed
 - **2025-07-24 19:20**: Discovered hardcoded API keys in HTTP Request nodes
 - **2025-07-24 19:15**: Workflow active but webhook returns 404
 - **2025-07-24 18:45**: Successfully updated workflow to use ai_* columns
 
-**SYSTEM STATUS: WORKFLOW NEEDS MANUAL CREDENTIAL FIX**
+**SYSTEM STATUS: WORKFLOW NEEDS SUPABASE NODE CONFIGURATION FIX**
