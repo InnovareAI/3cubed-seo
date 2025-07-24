@@ -7,6 +7,12 @@
 - **Critical Discovery**: n8n Database Connection Issue - View Access Problem
 
 ## Recent Changes
+- **n8n Cloud Migration (2025-07-24 11:00)**:
+  - Converted workflow from self-hosted to n8n Cloud version
+  - Replaced PostgreSQL nodes with Supabase nodes
+  - Replaced HTTP Request nodes with native Perplexity and Anthropic nodes
+  - Created updated workflow JSON for cloud deployment
+  
 - **Database View Access Issue Discovered (2025-07-24 10:50)**:
   - Confirmed `pharma_seo_submissions` view EXISTS and is ACCESSIBLE
   - Successfully queried the view - got record id: 12182ddd-c266-4d4a-9f79-13dca5bbaf7a
@@ -72,12 +78,18 @@
 - AI processing time: Infinite (stalled) ❌
 
 ## Workflows
-### 3cubed SEO Workflow (ID: 2o3DxEeLInnYV1Se)
-- **Status**: Active ✅
+### 3cubed SEO Workflow - Cloud Version
+- **Platform**: n8n Cloud
 - **Webhook**: POST to `/webhook/3cubed-seo-webhook`
 - **Expected payload**: `{"submission_id": "uuid-here"}`
-- **Last updated**: 2025-07-23T20:15:56.784Z
-- **Database Operations**: ✅ All SQL queries fixed and working
+- **Last updated**: 2025-07-24T11:00:00.000Z
+- **Key Changes**:
+  - All database operations use Supabase nodes
+  - AI operations use native n8n nodes (Perplexity, Anthropic)
+  - No schema prefix needed with Supabase nodes
+  
+### 3cubed SEO Workflow (ID: 2o3DxEeLInnYV1Se) - Legacy
+- **Status**: Deprecated (self-hosted version)
 
 ### SQL Query Updates Applied
 1. **Get Submission**: 
@@ -131,24 +143,27 @@
 - Processing queue might have backlog
 
 ## Immediate Actions Required
-1. **FIX n8n Database Queries - Schema Prefix**:
-   - Change ALL queries from: `pharma_seo_submissions`
-   - To: `public.pharma_seo_submissions`
-   - This includes all SELECT, UPDATE, INSERT queries in the workflow
+1. **Deploy n8n Cloud Workflow**:
+   - Import the new workflow JSON to n8n Cloud
+   - Configure Supabase credentials with project URL and API key
+   - Configure Perplexity API credentials
+   - Configure Anthropic API credentials
+   - Test webhook endpoint
    
-2. **Alternative if Schema Prefix Fails**:
-   - Verify n8n PostgreSQL credential settings
-   - Ensure schema is set to 'public' in connection
-   - Test connection with different permission levels
+2. **Supabase Connection Setup**:
+   - URL: https://ktchrfgkbpaixbiwbieg.supabase.co
+   - Service Role Key required for full access
+   - No schema prefix needed with Supabase nodes
 
 ## System Status
 - **Database**: ✅ View exists and is accessible via `pharma_seo_submissions`
-- **n8n Workflow**: ❌ Cannot access view - needs schema prefix `public.`
-- **AI Processing**: ⏸️ Blocked by n8n database access issue
-- **API Credentials**: ⚠️ Need verification after n8n fix
-- **External Notifications**: ❌ example.com needs configuration
+- **n8n Workflow**: 🔄 Migrating to n8n Cloud with Supabase nodes
+- **AI Processing**: ⏸️ Ready to test with cloud deployment
+- **API Credentials**: ⚠️ Need setup in n8n Cloud
+- **External Notifications**: ❌ Removed from cloud version (was example.com)
 
 ## Debug Log
+- **2025-07-24 11:00**: Created n8n Cloud workflow with Supabase and AI nodes
 - **2025-07-24 10:50**: Confirmed `pharma_seo_submissions` view exists and is accessible
 - **2025-07-24 10:52**: Identified n8n schema prefix issue - needs `public.` prefix
 - **2025-07-24 10:55**: Created fix instructions for Deep Agent
