@@ -195,10 +195,10 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         // Store all form data as JSON for reference
         raw_input_content: JSON.stringify(formData),
         
-        // Default values for new submissions
+        // Default values for new submissions - using lowercase values
         priority_level: 'medium',
         ai_processing_status: 'pending',
-        workflow_stage: 'Form_Submitted',
+        workflow_stage: 'draft',
         compliance_id: `COMP-${Date.now()}`,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
