@@ -3,7 +3,6 @@ import { supabase } from '../lib/supabase'
 import CTAButton from '../components/CTAButton'
 import { THERAPEUTIC_AREAS } from '../constants/therapeuticAreas'
 import { 
-  FileText,
   Send,
   AlertCircle
 } from 'lucide-react'
@@ -17,7 +16,7 @@ export default function SubmissionForm() {
     medical_indication: '',
     mechanism_of_action: '',
     target_audience: ['Healthcare Professionals'],
-    key_differentiators: [],
+    key_differentiators: [] as string[],
     submitter_name: '',
     submitter_email: '',
     geography: 'United States'
@@ -266,14 +265,14 @@ export default function SubmissionForm() {
 
         {/* Submit Button */}
         <div className="flex justify-end">
-          <CTAButton
+          <button
             type="submit"
-            variant="primary"
-            icon={<Send className="h-4 w-4" />}
             disabled={isSubmitting}
+            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
+            {!isSubmitting && <Send className="h-4 w-4 mr-2" />}
             {isSubmitting ? 'Submitting...' : 'Submit for SEO Generation'}
-          </CTAButton>
+          </button>
         </div>
       </form>
     </div>
