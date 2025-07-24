@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { Building2, TrendingUp, Clock, CheckCircle, AlertCircle, ArrowRight, Search, Filter } from 'lucide-react'
+import { Building2, TrendingUp, Clock, CheckCircle, AlertCircle, ArrowRight, Search, Filter, Plus } from 'lucide-react'
+import CTAButton from '../components/CTAButton'
 
 interface ClientProject {
   client_name: string
@@ -107,12 +108,22 @@ export default function ProjectsOverview() {
 
   return (
     <div>
-      {/* Page Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-gray-900">Current Projects</h1>
-        <p className="mt-1 text-sm text-gray-500">
-          Active client projects and SEO content production
-        </p>
+      {/* Page Header with CTA */}
+      <div className="mb-8 flex justify-between items-start">
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-900">Current Projects</h1>
+          <p className="mt-1 text-sm text-gray-500">
+            Active client projects and SEO content production
+          </p>
+        </div>
+        <CTAButton
+          variant="primary"
+          size="md"
+          icon={<Plus className="h-4 w-4" />}
+          onClick={() => navigate('/seo-requests')}
+        >
+          Start New Project
+        </CTAButton>
       </div>
 
       {/* Summary Stats */}
