@@ -166,9 +166,9 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         compliance_id: `COMP-${Date.now()}`
       };
 
-      // Use the submissions table instead of the view
+      // Use the correct table name: pharma_seo_submissions
       const { error: supabaseError } = await supabase
-        .from('submissions')
+        .from('pharma_seo_submissions')
         .insert([submissionData]);
 
       if (supabaseError) throw supabaseError;
