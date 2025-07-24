@@ -205,9 +205,9 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         last_updated: new Date().toISOString()
       };
 
-      // Use the correct table name: pharma_seo_submissions
+      // Use the correct table name: seo_requests
       const { error: supabaseError } = await supabase
-        .from('pharma_seo_submissions')
+        .from('seo_requests')
         .insert([submissionData]);
 
       if (supabaseError) throw supabaseError;
@@ -232,7 +232,7 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         competitor_names: '',
         competitor_urls: '',
         problem_solved: '',
-        treatment_settings: [],
+        treatment_settings: '',
         mechanism_of_action: '',
         clinical_trials: '',
         key_results: '',
