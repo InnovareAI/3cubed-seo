@@ -1,12 +1,17 @@
 # 3Cubed SEO Project Status & Handover
 
 ## Current State
-- **Date/Time**: 2025-07-24 20:30 UTC
+- **Date/Time**: 2025-07-24 21:27 UTC
 - **Active branch**: main
-- **Last deployment**: ✅ WORKFLOW LIVE ON N8N CLOUD
-- **Status**: ✅ WEBHOOK FIXED - READY FOR PROCESSING
+- **Last deployment**: ✅ FORM FIX DEPLOYED
+- **Status**: ✅ FORM SUBMISSION FIXED - INSERTS TO CORRECT TABLE
 
 ## Recent Changes
+- **Form Submission Fixed (2025-07-24 21:27)**:
+  - ✅ Changed form to insert into `submissions` table instead of `pharma_seo_submissions` view
+  - ✅ Form submissions will now work correctly
+  - ✅ Committed to GitHub - will auto-deploy to Netlify
+  
 - **Webhook Fixed Successfully (2025-07-24 20:30)**:
   - ✅ Changed Webhook Trigger response mode to "When Last Node Finishes"
   - ✅ Webhook now receives and processes requests correctly
@@ -75,9 +80,13 @@ All submissions show `ai_processing_status = 'pending'`:
    - Script includes all submission data with proper fields
    - Monitor n8n executions for success/failure
 
+## Known Issues
+- **Perplexity API Credential**: Returns 401 Unauthorized - API key may be invalid or expired
+- **All 20 submissions ready**: Script prepared to process all pending submissions once API fixed
+
 ## System Architecture
 ```
-Form Submission → Supabase (submissions table) ✅
+Form Submission → Supabase (submissions table) ✅ [FIXED]
                             ↓
                   pharma_seo_submissions (view) ✅
                             ↓
@@ -89,10 +98,6 @@ Form Submission → Supabase (submissions table) ✅
                   Dashboard Display ✅
 ```
 
-## Known Issues
-- **Perplexity API Credential**: Returns 401 Unauthorized - API key may be invalid or expired
-- **All 20 submissions ready**: Script prepared to process all pending submissions once API fixed
-
 ## Next Steps
 1. Fix Perplexity API credential immediately
 2. Run the processing script for all 20 submissions
@@ -101,6 +106,7 @@ Form Submission → Supabase (submissions table) ✅
 5. Confirm all submissions processed successfully
 
 ## Debug Log
+- **2025-07-24 21:27**: Fixed form submission - now inserts to `submissions` table directly
 - **2025-07-24 20:30**: Webhook fixed - changed response mode to "When Last Node Finishes"
 - **2025-07-24 20:25**: Discovered Perplexity API returns 401 Unauthorized
 - **2025-07-24 20:15**: All 3 Supabase nodes successfully fixed - UPDATE operations configured
@@ -113,4 +119,4 @@ Form Submission → Supabase (submissions table) ✅
 - **2025-07-24 19:15**: Workflow active but webhook returns 404
 - **2025-07-24 18:45**: Successfully updated workflow to use ai_* columns
 
-**SYSTEM STATUS: WEBHOOK OPERATIONAL - PERPLEXITY API NEEDS FIX**
+**SYSTEM STATUS: FORM & WEBHOOK OPERATIONAL - PERPLEXITY API NEEDS FIX**
