@@ -146,24 +146,63 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
 
     try {
       const submissionData = {
+        // Basic required fields
         submitter_name: formData.seo_reviewer_name,
         submitter_email: formData.seo_reviewer_email,
         product_name: formData.product_name,
-        therapeutic_area: formData.therapeutic_area,
         stage: formData.stage,
+        
+        // Map form fields to database columns
+        therapeutic_area: formData.therapeutic_area,
         indication: formData.condition_treated,
         mechanism_of_action: formData.mechanism_of_action,
-        competitive_landscape: formData.competitor_names,
         key_differentiators: formData.key_advantages,
         target_audience: formData.target_audience.join(', '),
-        target_markets: formData.geography.join(', '),
-        // Store all form data as JSON in raw_input_content
+        geography: formData.geography.join(', '),
+        
+        // Store additional data in appropriate fields
+        client_name: formData.client_name,
+        client_reviewer_name: formData.client_reviewer_name,
+        client_reviewer_email: formData.client_reviewer_email,
+        mlr_reviewer_name: formData.mlr_reviewer_name,
+        mlr_reviewer_email: formData.mlr_reviewer_email,
+        
+        // Store competitor info
+        competitor_products: formData.competitor_names,
+        competitive_positioning: formData.problem_solved,
+        
+        // Store clinical data
+        clinical_trial_details: formData.clinical_trials,
+        primary_endpoints: formData.key_results,
+        safety_profile: formData.safety_info,
+        dosing_information: formData.dosing_info,
+        patient_population: formData.patient_population,
+        regulatory_status: formData.regulatory_status,
+        market_size: formData.patient_numbers,
+        
+        // Store additional keywords and info
+        additional_keywords: formData.industry_keywords,
+        content_restrictions: formData.avoid_keywords,
+        existing_digital_assets: formData.website_url,
+        unmet_medical_need: formData.unique_value_prop,
+        conference_presence: formData.conference_data,
+        key_opinion_leaders: formData.kol_names,
+        special_considerations: formData.special_considerations,
+        
+        // Treatment settings
+        treatment_setting: formData.treatment_settings.join(', '),
+        
+        // Store all form data as JSON for reference
         raw_input_content: JSON.stringify(formData),
+        
         // Default values for new submissions
         priority_level: 'Medium',
         ai_processing_status: 'pending',
         workflow_stage: 'Form_Submitted',
-        compliance_id: `COMP-${Date.now()}`
+        compliance_id: `COMP-${Date.now()}`,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        last_updated: new Date().toISOString()
       };
 
       // Use the correct table name: pharma_seo_submissions
