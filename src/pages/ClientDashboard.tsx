@@ -5,7 +5,6 @@ import { supabase } from '../lib/supabase'
 import { 
   ArrowLeft, 
   CheckCircle, 
-  XCircle,
   Hash,
   Search,
   HelpCircle,
@@ -13,9 +12,7 @@ import {
   Type,
   Sparkles,
   UserCheck,
-  Building2,
-  Clock,
-  AlertCircle
+  Building2
 } from 'lucide-react'
 
 interface SEOContentItem {
