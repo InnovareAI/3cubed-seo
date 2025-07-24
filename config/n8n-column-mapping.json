@@ -1,0 +1,48 @@
+{
+  "columnMapping": {
+    "langchain_phase": "ai_phase",
+    "langchain_status": "ai_status",
+    "langchain_retry_count": "ai_retry_count",
+    "langchain_error": "ai_error",
+    "langchain_last_retry": "ai_last_retry"
+  },
+  "columnDefinitions": {
+    "ai_phase": {
+      "type": "string",
+      "nullable": true,
+      "values": ["marketBuilding", "contentGeneration", "validation", "complete"]
+    },
+    "ai_status": {
+      "type": "string",
+      "nullable": true,
+      "values": ["needs_processing", "processing", "completed", "failed", "retry"]
+    },
+    "ai_retry_count": {
+      "type": "number",
+      "nullable": true,
+      "default": 0
+    },
+    "ai_error": {
+      "type": "text",
+      "nullable": true
+    },
+    "ai_last_retry": {
+      "type": "timestamp",
+      "nullable": true
+    }
+  },
+  "n8nUpdates": {
+    "databaseQueries": {
+      "updateStatus": "UPDATE submissions SET ai_status = :status WHERE id = :id",
+      "updatePhase": "UPDATE submissions SET ai_phase = :phase WHERE id = :id",
+      "incrementRetry": "UPDATE submissions SET ai_retry_count = COALESCE(ai_retry_count, 0) + 1, ai_last_retry = NOW() WHERE id = :id",
+      "setError": "UPDATE submissions SET ai_error = :error, ai_status = 'failed' WHERE id = :id",
+      "getPending": "SELECT * FROM submissions WHERE ai_status = 'needs_processing' ORDER BY created_at ASC LIMIT 10"
+    },
+    "expressions": {
+      "checkRetry": "{{ $json.ai_retry_count < 3 }}",
+      "checkStatus": "{{ $json.ai_status === 'failed' }}",
+      "checkPhase": "{{ $json.ai_phase === 'marketBuilding' }}"
+    }
+  }
+}
