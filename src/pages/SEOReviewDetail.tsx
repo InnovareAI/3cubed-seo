@@ -161,13 +161,20 @@ export default function SEOReviewDetail() {
     }) => {
       const updateData: any = {
         workflow_stage: newStatus === 'pending_client_review' ? 'Client_Review' : 'Revision_Requested',
-        seo_reviewed_at: new Date().toISOString(),
-        seo_reviewed_by: 'SEO Team', // Would come from auth
-        seo_keyword_approvals: approvals
+        seo_approved_at: new Date().toISOString(),
+        seo_approved_by: 'SEO Team', // Would come from auth
+        review_notes: {
+          seo_approval: true,
+          seo_keyword_approvals: approvals,
+          timestamp: new Date().toISOString()
+        }
       }
       
       if (notes) {
-        updateData.seo_internal_notes = notes
+        updateData.review_notes = {
+          ...updateData.review_notes,
+          seo_internal_notes: notes
+        }
         updateData.rejection_reason = notes
         updateData.rejected_at = new Date().toISOString()
       }
