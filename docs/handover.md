@@ -1,35 +1,32 @@
 # 3Cubed SEO Project Status & Handover
 
 ## Current State
-- **Date/Time**: 2025-07-24 18:00 UTC
+- **Date/Time**: 2025-07-24 19:30 UTC
 - **Active branch**: main
 - **Last deployment**: ✅ WORKFLOW LIVE ON N8N CLOUD
-- **Critical Update**: UPDATING WORKFLOW TO USE AI_* COLUMNS
+- **Critical Issue**: WORKFLOW ACTIVATION ERROR - NEEDS CREDENTIAL FIX
 
 ## Recent Changes
-- **Workflow Column Update COMPLETED (2025-07-24 18:45)**:
-  - ✅ Updated n8n Cloud workflow (ID: BNKl1IJoWxTCKUak) to use new `ai_*` columns
-  - ✅ Replaced ALL `langchain_*` references with `ai_*` equivalents
-  - ✅ Fixed self-hosted n8n connection issue
-  - ✅ Updated all database update nodes with correct field mappings
-  - ✅ Fixed all workflow connections
-  - ✅ Updated credentials on all nodes to use "Supabase account 3C SEO"
-  - ✅ Workflow ready for activation and testing
+- **Workflow Credential Error (2025-07-24 19:30)**:
+  - ❌ Workflow shows "propertyValues[itemName] is not iterable" error
+  - ❌ AI nodes have hardcoded/incorrect credentials
+  - ⚠️ "Generate Content - Perplexity" has hardcoded Bearer token
+  - ⚠️ "QA Review - Claude" using wrong credential (Perplexity instead of Anthropic)
+  - 📝 Created manual fix instructions for Deep Agent
   
-- **n8n Cloud Deployment SUCCESS (2025-07-24 12:30)**:
-  - ✅ Workflow ACTIVE and OPERATIONAL on n8n Cloud
-  - ✅ All credentials connected: Supabase, Perplexity, Anthropic
-  - ✅ Webhook URL: `https://innovareai.app.n8n.cloud/webhook-test/3cubed-seo-webhook`
-  - ✅ Database operations functional with `pharma_seo_submissions`
-  - ✅ No schema prefix issues - Supabase nodes working perfectly
+- **Workflow Column Update COMPLETED (2025-07-24 18:45)**:
+  - ✅ Updated n8n Cloud workflow to use new `ai_*` columns
+  - ✅ All database update nodes have correct field mappings
+  - ✅ Workflow structure intact and connections verified
 
 ## MCP Connections
-- **Supabase**: ✅ Connected (project: ktchrfgkbpaixbiwbieg)
+- **Supabase**: ✅ Connected (project: 3cubed-seo)
 - **n8n**: ✅ Connected to Cloud instance (innovareai.app.n8n.cloud)
 - **GitHub**: ✅ Repository access confirmed
+- **Warp Bridge**: ✅ Terminal access working
 
 ## Database Schema
-### Current Columns
+### Current Columns (ai_* naming)
 - `ai_processing_status` (replaces `langchain_processing_status`)
 - `ai_generated_content` (replaces `langchain_generated_content`)
 - `ai_provider` (replaces `langchain_provider`)
@@ -37,82 +34,37 @@
 - `ai_processing_error` (replaces `langchain_processing_error`)
 - `ai_vector_id` (replaces `langchain_vector_id`)
 
-### Architecture
-- **Base Table**: `submissions` (actual data storage)
-- **View**: `pharma_seo_submissions` (view of submissions table)
-- **React App**: Uses the view ✅
-- **n8n**: Uses the view ✅
+### Pending Submissions (20 total)
+All submissions show `ai_processing_status = 'pending'`:
+- 5 in draft/seo_review status
+- 15 in revision_requested status
+- Top priority: Keytruda (ID: 12182ddd-c266-4d4a-9f79-13dca5bbaf7a)
 
 ## Workflows
 ### 3cubed SEO Workflow - Cloud Version (ID: BNKl1IJoWxTCKUak)
 - **Platform**: n8n Cloud (innovareai.app.n8n.cloud)
-- **Webhook**: POST to `https://innovareai.app.n8n.cloud/webhook-test/3cubed-seo-webhook`
-- **Expected payload**: `{"submission_id": "uuid-here"}`
-- **Status**: ⚠️ INACTIVE - Ready for activation
-- **Last Update**: 2025-07-24T08:45:16.125Z
-- **Credentials Configured**:
-  - ✅ Supabase account 3C SEO (all nodes)
-  - ✅ Perplexity 3C SEO (configured, needs node connection)
-  - ✅ Anthropic 3C SEO (configured, needs node connection)
-
-### Workflow Updates Applied
-- ✅ Get Submission: Uses submission_id from webhook body
-- ✅ Update Status - Processing: Updates ai_processing_status = 'processing'
-- ✅ Update DB with AI Content: Updates ai_generated_content, seo_keywords, meta_title, meta_description
-- ✅ Update DB with QA Results: Updates ai_processing_status, qa_status, qa_score, qa_feedback
-- ✅ Update Submission - Failed: Updates ai_processing_status = 'failed', ai_processing_error
-- ✅ All connections properly configured
-- ✅ All nodes use correct Supabase credential
-
-## Current Database Status
-**Outstanding Submissions Needing Processing**:
-- `12182ddd-c266-4d4a-9f79-13dca5bbaf7a` - Keytruda (pembrolizumab) - Status: pending/draft
-- `377bcfba-54a1-4619-8be6-436607c19cd7` - Ozempic (semaglutide) - Status: pending/seo_review
-- `822c11f7-7d01-4745-a290-f92c27f705b5` - Ozempic (semaglutide) - Status: pending/draft
-- `c50246ea-3c3b-4350-98ea-3431cbde4a61` - Test Vaccine Gamma - Status: pending/revision_requested
-- `2fe2df57-55a6-444b-83cf-92008dc7d644` - Keytruda (pembrolizumab) - Status: pending/seo_review
-
-All show `ai_processing_status = 'pending'` indicating workflow hasn't processed them
+- **Webhook**: POST to `https://innovareai.app.n8n.cloud/webhook/3cubed-seo-webhook`
+- **Status**: ❌ ACTIVE but has credential error
+- **Credentials Status**:
+  - ✅ Supabase: All nodes correctly configured
+  - ❌ Perplexity: Hardcoded token needs fixing
+  - ❌ Anthropic: Wrong credential selected
 
 ## Immediate Actions Required
-1. **CRITICAL - Configure AI Node Credentials**:
-   - Log into n8n Cloud: https://innovareai.app.n8n.cloud/
-   - Open the 3cubed SEO workflow
-   - Configure credentials for:
-     - "Generate Content - Perplexity" node → Select "Perplexity 3C SEO"
-     - "QA Review - Claude" node → Select "Anthropic 3C SEO"
-   - Save workflow
+1. **CRITICAL - Fix AI Node Credentials**:
+   - Follow instructions in "Instructions for Deep Agent" artifact
+   - Log into n8n Cloud and manually fix both AI nodes
+   - Save and ensure workflow activates without errors
    
-2. **Activate n8n Workflow**:
-   - Toggle workflow from inactive to ACTIVE mode
-   - Save and verify activation
+2. **Test the Fixed Workflow**:
+   - Use test command from instructions
+   - Monitor execution logs
+   - Verify AI content generation works
    
-3. **Test the Live Workflow**:
-   - Use test submission ID: `12182ddd-c266-4d4a-9f79-13dca5bbaf7a`
-   - Send POST request to: `https://innovareai.app.n8n.cloud/webhook-test/3cubed-seo-webhook`
-   - Payload: `{"submission_id": "12182ddd-c266-4d4a-9f79-13dca5bbaf7a"}`
-   
-4. **Monitor Execution**:
-   - Check n8n Cloud execution logs
-   - Verify AI content generation (Perplexity)
-   - Confirm QA review (Anthropic)
-   - Check database updates
-
-## System Status
-- **Database**: ✅ Connected and operational
-- **n8n Workflow**: ✅ Updated with ai_* columns - needs AI credential configuration & activation
-- **AI Processing**: ⚠️ Credentials configured but not connected to nodes
-- **API Credentials**: ✅ All configured in n8n Cloud
-- **Webhook**: ⚠️ Returns 404 - Workflow inactive
-
-## Debug Log
-- **2025-07-24 18:45**: Successfully updated workflow to use ai_* columns - ready for activation
-- **2025-07-24 18:00**: Connected to n8n Cloud, updating workflow to use ai_* columns
-- **2025-07-24 16:15**: Visual test completed - n8n workflow INACTIVE, needs activation
-- **2025-07-24 16:03**: Created detailed visual test instructions for Deep Agent
-- **2025-07-24 16:01**: React app environment variable updated on Netlify - system fully operational
-- **2025-07-24 16:00**: Connected to all services, verified database has 5 pending submissions
-- **2025-07-24 12:30**: 🎉 N8N CLOUD DEPLOYMENT SUCCESSFUL - Workflow is LIVE!
+3. **Process Pending Submissions**:
+   - Start with Keytruda submission
+   - Process all 20 pending submissions
+   - Monitor for any failures
 
 ## System Architecture
 ```
@@ -120,12 +72,31 @@ Form Submission → Supabase (submissions table) ✅
                             ↓
                   pharma_seo_submissions (view) ✅
                             ↓
-                  n8n Cloud Webhook Trigger ⚠️ [INACTIVE]
+                  n8n Cloud Webhook Trigger ✅
                             ↓
-                  AI Processing Pipeline ⚠️ [NEEDS CREDENTIAL CONNECTION]
+                  AI Processing Pipeline ❌ [CREDENTIAL ERROR]
                   (Perplexity → QA Review → Database Update)
                             ↓
                   Dashboard Display ✅
 ```
 
-**SYSTEM STATUS: WORKFLOW UPDATED - NEEDS AI CREDENTIAL CONNECTION & ACTIVATION**
+## Known Issues
+- **Webhook returns 404**: Workflow is active but webhook may need re-activation after credential fix
+- **AI Credentials**: Both AI nodes need manual credential configuration
+- **Test webhook URL**: Only works after clicking "Execute workflow" in n8n editor
+
+## Next Steps
+1. Fix credentials immediately (manual action required)
+2. Test workflow with Keytruda submission
+3. Monitor first execution carefully
+4. Process remaining 19 submissions
+5. Update this handover after successful fix
+
+## Debug Log
+- **2025-07-24 19:30**: Workflow activation error due to credential issues
+- **2025-07-24 19:25**: Attempted programmatic fix failed - manual intervention needed
+- **2025-07-24 19:20**: Discovered hardcoded API keys in HTTP Request nodes
+- **2025-07-24 19:15**: Workflow active but webhook returns 404
+- **2025-07-24 18:45**: Successfully updated workflow to use ai_* columns
+
+**SYSTEM STATUS: WORKFLOW NEEDS MANUAL CREDENTIAL FIX**
