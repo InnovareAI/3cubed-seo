@@ -205,12 +205,20 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         last_updated: new Date().toISOString()
       };
 
-      // Use the correct table name: seo_requests
-      const { error: supabaseError } = await supabase
-        .from('seo_requests')
-        .insert([submissionData]);
+      console.log('Submitting data:', submissionData);
 
-      if (supabaseError) throw supabaseError;
+      // Use the correct table name: seo_requests
+      const { data, error: supabaseError } = await supabase
+        .from('seo_requests')
+        .insert([submissionData])
+        .select();
+
+      if (supabaseError) {
+        console.error('Supabase error:', supabaseError);
+        throw supabaseError;
+      }
+
+      console.log('Submission successful:', data);
 
       // Reset form
       setFormData({
@@ -250,11 +258,28 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         special_considerations: ''
       });
       
+      // Show success message
+      alert('SEO Content Request submitted successfully!');
+      
       if (onSuccess) onSuccess();
       if (onClose) onClose();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error submitting form:', err);
-      setError('Failed to submit form. Please try again.');
+      
+      // Provide more detailed error message
+      let errorMessage = 'Failed to submit form. ';
+      
+      if (err?.message) {
+        errorMessage += err.message;
+      } else if (err?.details) {
+        errorMessage += err.details;
+      } else if (err?.hint) {
+        errorMessage += err.hint;
+      } else {
+        errorMessage += 'Please check the console for details.';
+      }
+      
+      setError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
