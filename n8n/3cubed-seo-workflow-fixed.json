@@ -420,7 +420,7 @@
               "fieldValue": "failed"
             },
             {
-              "fieldId": "langchain_error",
+              "fieldId": "ai_error",
               "fieldValue": "No content generated from Perplexity API"
             },
             {
