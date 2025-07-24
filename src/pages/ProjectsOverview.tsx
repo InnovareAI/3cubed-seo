@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { Building2, TrendingUp, Clock, CheckCircle, AlertCircle, ArrowRight, Search, Filter, Plus } from 'lucide-react'
+import { Building2, TrendingUp, Clock, CheckCircle, AlertCircle, ArrowRight, Search, Filter } from 'lucide-react'
 
 interface ClientProject {
   client_name: string
@@ -292,25 +292,6 @@ export default function ProjectsOverview() {
           <p className="mt-2 text-sm text-gray-500">No projects found matching your criteria</p>
         </div>
       )}
-
-      {/* CTA Button Section */}
-      <div className="mt-12 text-center">
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-8 border border-blue-100">
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">
-            Ready to create SEO-optimized content?
-          </h3>
-          <p className="text-gray-600 mb-6">
-            Submit your pharmaceutical product information and let our AI generate compliant, high-ranking content.
-          </p>
-          <button
-            onClick={() => navigate('/seo-requests')}
-            className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
-          >
-            <Plus className="h-5 w-5 mr-2" />
-            Submit SEO Content Request
-          </button>
-        </div>
-      </div>
     </div>
   )
 }
