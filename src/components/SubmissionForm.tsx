@@ -196,7 +196,7 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         raw_input_content: JSON.stringify(formData),
         
         // Default values for new submissions
-        priority_level: 'Medium',
+        priority_level: 'medium',
         ai_processing_status: 'pending',
         workflow_stage: 'Form_Submitted',
         compliance_id: `COMP-${Date.now()}`,
