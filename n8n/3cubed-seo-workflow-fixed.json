@@ -1,0 +1,670 @@
+{
+  "name": "3cubed SEO",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "3cubed-seo-webhook",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "45235d03-9546-4151-862f-53a54229c589",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1800,
+        -60
+      ],
+      "webhookId": "ebada15f-efe2-4f8e-9fcd-a2ec233aa0ed"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "pharma_seo_submissions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $json.body.submission_id }}"
+            }
+          ]
+        }
+      },
+      "id": "155288cd-3f1e-4ade-97c2-2e787ef4a2ef",
+      "name": "Get Submission",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -1500,
+        -60
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "pgPh6lGomFMfn2ju",
+          "name": "Supabase account 3C SEO"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "check-found",
+              "leftValue": "={{ $json.length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "7d70beaa-20d9-4117-868a-ea37777e282b",
+      "name": "Check Submission Found",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -1280,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "pharma_seo_submissions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $node['Get Submission'].json[0].id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "workflow_stage",
+              "fieldValue": "processing"
+            },
+            {
+              "fieldId": "ai_processing_status",
+              "fieldValue": "processing"
+            },
+            {
+              "fieldId": "last_updated",
+              "fieldValue": "={{ new Date().toISOString() }}"
+            }
+          ]
+        }
+      },
+      "id": "27d6d9d6-5e00-46b0-af44-a26a24b8cf29",
+      "name": "Update Status - Processing",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -1160,
+        -380
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "pgPh6lGomFMfn2ju",
+          "name": "Supabase account 3C SEO"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the record from the previous node\nconst record = $json[0] || $json;\n\n// Only process Phase III, Market Shaping, and Market Launch\nconst allowedPhases = ['phase3', 'marketShaping', 'marketLaunch'];\n\n// Determine phase from development stage\nlet phase = '';\nconst stage = record.development_stage?.toLowerCase() || record.stage?.toLowerCase() || '';\n\nif (stage.includes('phase 3') || stage.includes('phase iii') || stage.includes('phase3')) {\n  phase = 'phase3';\n} else if (stage.includes('pre-launch') || stage.includes('market shaping') || stage.includes('pre-approval')) {\n  phase = 'marketShaping';\n} else if (stage.includes('marketed') || stage.includes('market launch') || stage.includes('market building') || stage.includes('post-launch')) {\n  phase = 'marketLaunch';\n}\n\n// Check if phase is allowed\nif (!allowedPhases.includes(phase)) {\n  throw new Error(`Invalid phase: ${phase} (from stage: ${record.development_stage || record.stage}). Only Phase III, Market Shaping, and Market Launch are supported.`);\n}\n\n// Return the validated phase\nreturn {\n  phase: phase,\n  record: record\n};"
+      },
+      "id": "fe197903-1f7a-43ab-b31f-6b5c0c1d9edc",
+      "name": "Validate Phase",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -940,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "model": "llama-3.1-sonar-large-128k-online",
+        "options": {
+          "temperature": 0.7
+        }
+      },
+      "id": "afd92d9e-ccd3-43fc-a160-7950a456d54e",
+      "name": "Generate Content - Perplexity",
+      "type": "@n8n/n8n-nodes-langchain.lmChatPerplexity",
+      "typeVersion": 1,
+      "position": [
+        -700,
+        -360
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "perplexityApi": {
+          "id": "perplexity-credentials-id",
+          "name": "Perplexity 3C SEO"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse the Perplexity response\nconst response = $json;\n\n// Extract the content\nconst content = response.text || response.content || response.message?.content || '';\n\n// Get the original submission record\nconst submission = $node['Validate Phase'].json.record;\n\n// Parse the content into structured sections\nconst sections = {\n  seo_content: {},\n  keywords: [],\n  clinical_trials: {},\n  competitive_analysis: {},\n  compliance_notes: {},\n  target_messaging: {}\n};\n\n// Extract SEO Content section\nconst seoMatch = content.match(/1\\.\\s*\\*\\*SEO-Optimized Content\\*\\*[\\s\\S]*?(?=\\n\\n\\d+\\.|$)/i);\nif (seoMatch) {\n  const seoContent = seoMatch[0];\n  const titleMatch = seoContent.match(/H1 Title[^:]*:\\s*(.+)/i);\n  const metaMatch = seoContent.match(/Meta Description[^:]*:\\s*(.+)/i);\n  const summaryMatch = seoContent.match(/Executive Summary[^:]*:\\s*([\\s\\S]*?)(?=\\n\\n|$)/i);\n  \n  sections.seo_content = {\n    title: titleMatch ? titleMatch[1].trim() : '',\n    meta_description: metaMatch ? metaMatch[1].trim() : '',\n    executive_summary: summaryMatch ? summaryMatch[1].trim() : ''\n  };\n}\n\n// Extract Keywords\nconst keywordsMatch = content.match(/2\\.\\s*\\*\\*Keywords\\*\\*[\\s\\S]*?(?=\\n\\n\\d+\\.|$)/i);\nif (keywordsMatch) {\n  const primaryMatch = keywordsMatch[0].match(/Primary keywords[^:]*:([\\s\\S]*?)(?=\\n.*Long-tail|$)/i);\n  const longtailMatch = keywordsMatch[0].match(/Long-tail keywords[^:]*:([\\s\\S]*?)(?=\\n.*Related|$)/i);\n  \n  if (primaryMatch) {\n    const primaryKeywords = primaryMatch[1].match(/[-•*]\\s*(.+)/g) || [];\n    sections.keywords = primaryKeywords.map(k => k.replace(/[-•*]\\s*/, '').trim());\n  }\n}\n\n// Extract Clinical Evidence\nconst clinicalMatch = content.match(/3\\.\\s*\\*\\*Clinical Evidence[\\s\\S]*?(?=\\n\\n\\d+\\.|$)/i);\nif (clinicalMatch) {\n  sections.clinical_trials = { \n    summary: clinicalMatch[0].replace(/3\\.\\s*\\*\\*Clinical Evidence[^:]*:?/i, '').trim() \n  };\n}\n\n// Extract Full SEO Article\nconst articleMatch = content.match(/6\\.\\s*\\*\\*Full SEO Article\\*\\*[\\s\\S]*$/i);\nif (articleMatch) {\n  sections.seo_content.main_content = articleMatch[0].replace(/6\\.\\s*\\*\\*Full SEO Article\\*\\*[^:]*:?/i, '').trim();\n}\n\n// Prepare data for database update\nreturn {\n  submission_id: submission.id,\n  generated_content: {\n    full_response: content,\n    structured_sections: sections\n  },\n  seo_keywords: sections.keywords,\n  meta_title: sections.seo_content.title || '',\n  meta_description: sections.seo_content.meta_description || '',\n  ai_content: content,\n  processing_metadata: {\n    model: 'perplexity/llama-3.1-sonar-large-128k-online',\n    processing_time: new Date().toISOString()\n  },\n  status: 'generated'\n};"
+      },
+      "id": "9d58c574-2322-4524-93ea-b170cd31653d",
+      "name": "Parse Perplexity Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        -360
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "pharma_seo_submissions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $json.submission_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "ai_processing_status",
+              "fieldValue": "qa_review"
+            },
+            {
+              "fieldId": "ai_generated_content",
+              "fieldValue": "={{ JSON.stringify($json.generated_content) }}"
+            },
+            {
+              "fieldId": "seo_keywords",
+              "fieldValue": "={{ $json.seo_keywords }}"
+            },
+            {
+              "fieldId": "meta_title",
+              "fieldValue": "={{ $json.meta_title }}"
+            },
+            {
+              "fieldId": "meta_description",
+              "fieldValue": "={{ $json.meta_description }}"
+            },
+            {
+              "fieldId": "workflow_stage",
+              "fieldValue": "qa_review"
+            },
+            {
+              "fieldId": "last_updated",
+              "fieldValue": "={{ new Date().toISOString() }}"
+            }
+          ]
+        }
+      },
+      "id": "63f4a2a5-2d1e-4449-baad-05537e0f1973",
+      "name": "Update DB with AI Content",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -260,
+        -360
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "continueOnFail": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "pgPh6lGomFMfn2ju",
+          "name": "Supabase account 3C SEO"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "claude-3-5-sonnet-20241022",
+        "options": {
+          "temperature": 0.1
+        }
+      },
+      "id": "5f18b423-6212-4d06-88d3-84960781f66c",
+      "name": "QA Review - Claude",
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.2,
+      "position": [
+        -40,
+        -360
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "anthropicApi": {
+          "id": "anthropic-credentials-id",
+          "name": "Anthropic 3C SEO"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const claudeResponse = $json;\n\n// Extract content from Claude's response\nconst content = claudeResponse.text || claudeResponse.content || claudeResponse.message?.content || '';\n\nlet qaResult;\ntry {\n  // Extract JSON from response\n  const jsonMatch = content.match(/\\{[\\s\\S]*\\}/);\n  if (jsonMatch) {\n    qaResult = JSON.parse(jsonMatch[0]);\n  } else {\n    throw new Error('No JSON found in response');\n  }\n} catch (e) {\n  qaResult = {\n    qa_score: 0,\n    compliance_score: 0,\n    medical_accuracy: 0,\n    seo_effectiveness: 0,\n    critical_issues: ['Failed to parse QA response'],\n    required_changes: [],\n    recommendation: \"FAIL\",\n    detailed_feedback: \"Failed to parse QA response: \" + e.message\n  };\n}\n\n// Add processing metadata\nreturn {\n  ...qaResult,\n  qa_status: qaResult.recommendation === 'PASS' ? 'passed' : 'failed',\n  submission_id: $node['Validate Phase'].json.record.id,\n  processing_metadata: {\n    model: 'claude-3-5-sonnet-20241022',\n    qa_timestamp: new Date().toISOString()\n  }\n};"
+      },
+      "id": "f2a768e8-e49d-472c-908e-28d75dd4d1b7",
+      "name": "Parse QA Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        180,
+        -360
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "value1": "={{ $json.qa_status }}",
+              "operation": "equals",
+              "value2": "passed"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Check QA Result",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        400,
+        -360
+      ],
+      "id": "e9ffd9e1-6352-4858-9fb4-fa9693366d0c"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "pharma_seo_submissions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $json.submission_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "ai_processing_status",
+              "fieldValue": "={{ $json.qa_status === 'passed' ? 'completed' : 'failed' }}"
+            },
+            {
+              "fieldId": "qa_status",
+              "fieldValue": "={{ $json.qa_status }}"
+            },
+            {
+              "fieldId": "qa_score",
+              "fieldValue": "={{ $json.qa_score }}"
+            },
+            {
+              "fieldId": "qa_feedback",
+              "fieldValue": "={{ JSON.stringify($json) }}"
+            },
+            {
+              "fieldId": "workflow_stage",
+              "fieldValue": "={{ $json.qa_status === 'passed' ? 'completed' : 'qa_failed' }}"
+            },
+            {
+              "fieldId": "last_updated",
+              "fieldValue": "={{ new Date().toISOString() }}"
+            }
+          ]
+        }
+      },
+      "id": "804765b8-1f5c-4d81-a331-9befe8fbceda",
+      "name": "Update DB with QA Results",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        620,
+        -360
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "pgPh6lGomFMfn2ju",
+          "name": "Supabase account 3C SEO"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Prepare response data\nconst submission = $node['Validate Phase'].json.record;\nconst qaResult = $node['Parse QA Response']?.json || {};\n\nreturn {\n  success: true,\n  submission_id: submission.id,\n  status: qaResult.qa_status === 'passed' ? 'completed' : 'needs_revision',\n  message: qaResult.qa_status === 'passed' \n    ? 'SEO content generated and QA approved successfully' \n    : 'Content generated but requires revision based on QA feedback',\n  details: {\n    product_name: submission.product_name,\n    phase: $node['Validate Phase'].json.phase,\n    qa_score: qaResult.qa_score,\n    compliance_score: qaResult.compliance_score,\n    medical_accuracy: qaResult.medical_accuracy,\n    seo_effectiveness: qaResult.seo_effectiveness,\n    critical_issues: qaResult.critical_issues || [],\n    models_used: {\n      content_generation: 'perplexity/llama-3.1-sonar-large-128k-online',\n      qa_review: 'claude-3-5-sonnet-20241022'\n    }\n  }\n};"
+      },
+      "id": "8d3ec5ac-3700-4b9c-9877-346c3f5e1d83",
+      "name": "Prepare Webhook Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        860,
+        -220
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "65a13749-bf4a-4117-b7e2-cabb5a9c2705",
+      "name": "Webhook Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1080,
+        -220
+      ]
+    },
+    {
+      "parameters": {
+        "errorMessage": "Submission not found in database"
+      },
+      "id": "3b312d08-351b-4edd-8feb-46e0bbe918b7",
+      "name": "Error - Not Found",
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        -1100,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "pharma_seo_submissions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $node['Validate Phase'].json.record.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "ai_processing_status",
+              "fieldValue": "failed"
+            },
+            {
+              "fieldId": "workflow_stage",
+              "fieldValue": "failed"
+            },
+            {
+              "fieldId": "langchain_error",
+              "fieldValue": "No content generated from Perplexity API"
+            },
+            {
+              "fieldId": "last_updated",
+              "fieldValue": "={{ new Date().toISOString() }}"
+            }
+          ]
+        }
+      },
+      "id": "0f9b5b27-724f-436c-a5c9-39f867b4fcab",
+      "name": "Update Submission - Failed",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -700,
+        320
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "pgPh6lGomFMfn2ju",
+          "name": "Supabase account 3C SEO"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "value1": "={{ $json.text || $json.content || $json.message?.content || '' }}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "841e983b-91d6-4a7d-98c2-789e8f200ef8",
+      "name": "Check Perplexity Response",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -500,
+        -60
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Submission",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Submission": {
+      "main": [
+        [
+          {
+            "node": "Check Submission Found",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Submission Found": {
+      "main": [
+        [
+          {
+            "node": "Update Status - Processing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error - Not Found",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Status - Processing": {
+      "main": [
+        [
+          {
+            "node": "Validate Phase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Phase": {
+      "main": [
+        [
+          {
+            "node": "Generate Content - Perplexity",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Content - Perplexity": {
+      "main": [
+        [
+          {
+            "node": "Check Perplexity Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Perplexity Response": {
+      "main": [
+        [
+          {
+            "node": "Parse Perplexity Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update Submission - Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Perplexity Response": {
+      "main": [
+        [
+          {
+            "node": "Update DB with AI Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update DB with AI Content": {
+      "main": [
+        [
+          {
+            "node": "QA Review - Claude",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "QA Review - Claude": {
+      "main": [
+        [
+          {
+            "node": "Parse QA Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse QA Response": {
+      "main": [
+        [
+          {
+            "node": "Check QA Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check QA Result": {
+      "main": [
+        [
+          {
+            "node": "Update DB with QA Results",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update DB with QA Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update DB with QA Results": {
+      "main": [
+        [
+          {
+            "node": "Prepare Webhook Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Webhook Response": {
+      "main": [
+        [
+          {
+            "node": "Webhook Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Submission - Failed": {
+      "main": [
+        [
+          {
+            "node": "Prepare Webhook Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1a93f39f-bbfa-4182-88d4-ae5345e2eb8b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b0b9e2f5518b22aecfd704badf2ee48ee42112f0fb3b57bba0487ba4b9cc8828"
+  },
+  "id": "BNKl1IJoWxTCKUak",
+  "tags": []
+}
