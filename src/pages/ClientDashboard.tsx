@@ -1,13 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import { 
   ArrowLeft, 
   CheckCircle, 
-  XCircle, 
-  Save,
-  Send,
+  XCircle,
   Hash,
   Search,
   HelpCircle,
@@ -16,7 +14,8 @@ import {
   Sparkles,
   UserCheck,
   Building2,
-  ArrowRight
+  Clock,
+  AlertCircle
 } from 'lucide-react'
 
 interface SEOContentItem {
@@ -40,19 +39,11 @@ interface SEOContentItem {
 export default function ClientDashboard() {
   const { clientName } = useParams<{ clientName: string }>()
   const navigate = useNavigate()
-  const queryClient = useQueryClient()
   
   const decodedClientName = decodeURIComponent(clientName || '')
   
   // State for content items
   const [contentItems, setContentItems] = useState<SEOContentItem[]>([])
-  const [reviewComments, setReviewComments] = useState('')
-  const [aiRequest, setAiRequest] = useState('')
-  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
-  const [approvalMode, setApprovalMode] = useState<'internal' | 'client'>('internal')
-
-  // Check if user is client based on email domain
-  // const isClientUser = false // TODO: Get from auth context
 
   // Fetch client submissions and generate SEO content
   const { data: clientData, isLoading } = useQuery({
@@ -165,64 +156,6 @@ export default function ClientDashboard() {
     }
   }, [clientData])
 
-  // Update individual item
-  const updateItem = (id: string, updates: Partial<SEOContentItem>) => {
-    setContentItems(items => 
-      items.map(item => 
-        item.id === id ? { ...item, ...updates } : item
-      )
-    )
-  }
-
-  // Bulk approve selected items
-  const approveSelected = () => {
-    setContentItems(items =>
-      items.map(item =>
-        selectedItems.has(item.id) 
-          ? { 
-              ...item, 
-              [approvalMode === 'internal' ? 'internal_approved' : 'client_approved']: true 
-            } 
-          : item
-      )
-    )
-    setSelectedItems(new Set())
-  }
-
-  // Save all changes
-  const saveMutation = useMutation({
-    mutationFn: async () => {
-      // In real app, save to database
-      console.log('Saving SEO content:', contentItems)
-      console.log('Review comments:', reviewComments)
-      console.log('AI request:', aiRequest)
-      
-      // Simulate save
-      await new Promise(resolve => setTimeout(resolve, 1000))
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['client-seo-content'] })
-      alert('Changes saved successfully!')
-    }
-  })
-
-  const proceedToContentGeneration = () => {
-    // Get selected keywords
-    const selectedKeywords = contentItems
-      .filter(item => item.selected_for_content)
-      .map(item => item.content)
-    
-    if (selectedKeywords.length === 0) {
-      alert('Please select at least one keyword for content generation')
-      return
-    }
-    
-    // Navigate to content generation with selected keywords
-    navigate(`/content-generation/${encodeURIComponent(decodedClientName)}`, {
-      state: { selectedKeywords, contentItems }
-    })
-  }
-
   const getTypeIcon = (type: string) => {
     switch (type) {
       case 'seo_keyword':
@@ -266,15 +199,28 @@ export default function ClientDashboard() {
     return acc
   }, {} as Record<string, SEOContentItem[]>)
 
-  // Check if all internal approvals are done
-  const allInternalApproved = contentItems.every(item => item.internal_approved)
-  
   // Count approvals
   const approvalStats = {
     internal: contentItems.filter(item => item.internal_approved).length,
     client: contentItems.filter(item => item.client_approved).length,
     total: contentItems.length
   }
+
+  // Get approval stage status
+  const getApprovalStageStatus = () => {
+    const allInternalApproved = contentItems.every(item => item.internal_approved)
+    const allClientApproved = contentItems.every(item => item.client_approved)
+    
+    if (allClientApproved) {
+      return { stage: 'Completed', icon: <CheckCircle className="h-5 w-5 text-green-600" />, color: 'text-green-600' }
+    } else if (allInternalApproved) {
+      return { stage: 'Client Review', icon: <Building2 className="h-5 w-5 text-blue-600" />, color: 'text-blue-600' }
+    } else {
+      return { stage: 'Internal Review', icon: <UserCheck className="h-5 w-5 text-yellow-600" />, color: 'text-yellow-600' }
+    }
+  }
+
+  const stageStatus = getApprovalStageStatus()
 
   return (
     <div className="space-y-6">
@@ -290,98 +236,62 @@ export default function ClientDashboard() {
           <div>
             <h1 className="text-2xl font-semibold text-gray-900">{decodedClientName}</h1>
             <p className="text-sm text-gray-500">
-              SEO Content Review • {clientData?.submissions?.[0]?.product_identifier}
+              SEO Content Approval Summary • {clientData?.submissions?.[0]?.product_identifier}
             </p>
           </div>
         </div>
         
-        <div className="flex items-center gap-3">
-          {/* Approval Mode Toggle */}
-          <div className="bg-gray-100 rounded-lg p-1 flex">
-            <button
-              onClick={() => setApprovalMode('internal')}
-              className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
-                approvalMode === 'internal' 
-                  ? 'bg-white text-gray-900 shadow-sm' 
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              <UserCheck className="h-4 w-4 inline mr-1" />
-              Internal
-            </button>
-            <button
-              onClick={() => setApprovalMode('client')}
-              className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
-                approvalMode === 'client' 
-                  ? 'bg-white text-gray-900 shadow-sm' 
-                  : 'text-gray-600 hover:text-gray-900'
-              } ${!allInternalApproved ? 'opacity-50 cursor-not-allowed' : ''}`}
-              disabled={!allInternalApproved}
-            >
-              <Building2 className="h-4 w-4 inline mr-1" />
-              Client
-            </button>
-          </div>
-          
-          <button
-            onClick={() => approveSelected()}
-            disabled={selectedItems.size === 0}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <CheckCircle className="h-4 w-4" />
-            Approve Selected ({selectedItems.size})
-          </button>
-          <button
-            onClick={() => saveMutation.mutate()}
-            disabled={saveMutation.isPending}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700 disabled:opacity-50"
-          >
-            <Save className="h-4 w-4" />
-            Save All Changes
-          </button>
+        <div className="flex items-center gap-2">
+          {stageStatus.icon}
+          <span className={`text-lg font-medium ${stageStatus.color}`}>
+            {stageStatus.stage}
+          </span>
         </div>
       </div>
 
       {/* Approval Progress */}
-      <div className="bg-white rounded-lg shadow p-4">
-        <div className="grid grid-cols-3 gap-4">
+      <div className="bg-white rounded-lg shadow p-6">
+        <h2 className="text-lg font-medium text-gray-900 mb-4">Approval Progress</h2>
+        <div className="grid grid-cols-2 gap-6">
           <div>
-            <p className="text-sm text-gray-500">Internal Approval</p>
-            <div className="mt-1 flex items-center gap-2">
-              <div className="flex-1 bg-gray-200 rounded-full h-2">
+            <p className="text-sm text-gray-500 mb-2">Internal Approval</p>
+            <div className="flex items-center gap-3">
+              <div className="flex-1 bg-gray-200 rounded-full h-3">
                 <div 
-                  className="bg-green-500 h-2 rounded-full transition-all"
+                  className="bg-green-500 h-3 rounded-full transition-all"
                   style={{ width: `${(approvalStats.internal / approvalStats.total) * 100}%` }}
                 />
               </div>
-              <span className="text-sm font-medium">
+              <span className="text-sm font-medium min-w-[50px] text-right">
                 {approvalStats.internal}/{approvalStats.total}
               </span>
             </div>
+            <p className="text-xs text-gray-500 mt-1">
+              {approvalStats.internal === approvalStats.total 
+                ? 'All items approved internally' 
+                : `${approvalStats.total - approvalStats.internal} items pending approval`}
+            </p>
           </div>
           <div>
-            <p className="text-sm text-gray-500">Client Approval</p>
-            <div className="mt-1 flex items-center gap-2">
-              <div className="flex-1 bg-gray-200 rounded-full h-2">
+            <p className="text-sm text-gray-500 mb-2">Client Approval</p>
+            <div className="flex items-center gap-3">
+              <div className="flex-1 bg-gray-200 rounded-full h-3">
                 <div 
-                  className="bg-blue-500 h-2 rounded-full transition-all"
+                  className="bg-blue-500 h-3 rounded-full transition-all"
                   style={{ width: `${(approvalStats.client / approvalStats.total) * 100}%` }}
                 />
               </div>
-              <span className="text-sm font-medium">
+              <span className="text-sm font-medium min-w-[50px] text-right">
                 {approvalStats.client}/{approvalStats.total}
               </span>
             </div>
-          </div>
-          <div className="flex items-center justify-end">
-            <button
-              onClick={proceedToContentGeneration}
-              disabled={approvalStats.client === 0}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Generate Content
-              <ArrowRight className="h-4 w-4" />
-            </button>
+            <p className="text-xs text-gray-500 mt-1">
+              {approvalStats.client === approvalStats.total 
+                ? 'All items approved by client' 
+                : approvalStats.internal < approvalStats.total
+                  ? 'Awaiting internal approval completion'
+                  : `${approvalStats.total - approvalStats.client} items pending client approval`}
+            </p>
           </div>
         </div>
       </div>
@@ -401,7 +311,7 @@ export default function ClientDashboard() {
         </div>
       </div>
 
-      {/* Content Sections */}
+      {/* Content Sections - Read Only */}
       <div className="space-y-6">
         {Object.entries(groupedContent).map(([type, items]) => (
           <div key={type} className="bg-white rounded-lg shadow">
@@ -412,131 +322,63 @@ export default function ClientDashboard() {
               </h2>
             </div>
             <div className="p-6">
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {items.map((item) => (
-                  <div key={item.id} className="border rounded-lg p-4 hover:bg-gray-50">
-                    <div className="flex items-start gap-4">
-                      <input
-                        type="checkbox"
-                        checked={selectedItems.has(item.id)}
-                        onChange={(e) => {
-                          const newSelected = new Set(selectedItems)
-                          if (e.target.checked) {
-                            newSelected.add(item.id)
-                          } else {
-                            newSelected.delete(item.id)
-                          }
-                          setSelectedItems(newSelected)
-                        }}
-                        className="mt-1"
-                      />
-                      
+                  <div key={item.id} className="border rounded-lg p-4 bg-gray-50">
+                    <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <input
-                              type="text"
-                              value={item.content}
-                              onChange={(e) => updateItem(item.id, { content: e.target.value })}
-                              className="w-full text-sm font-medium text-gray-900 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none"
-                              disabled={approvalMode === 'client' && !item.internal_approved}
-                            />
-                            
-                            {/* Details */}
-                            {item.details && (
-                              <div className="mt-2 flex items-center gap-4 text-xs text-gray-500">
-                                {item.details.search_volume && (
-                                  <span>Volume: {item.details.search_volume.toLocaleString()}</span>
-                                )}
-                                {item.details.difficulty && (
-                                  <span>Difficulty: {item.details.difficulty}%</span>
-                                )}
-                                {item.details.intent && (
-                                  <span>Intent: {item.details.intent}</span>
-                                )}
-                                {item.details.character_count && (
-                                  <span>Characters: {item.details.character_count}</span>
-                                )}
-                              </div>
-                            )}
-                            
-                            {/* Answer for questions */}
-                            {item.type === 'consumer_question' && item.details?.answer && (
-                              <textarea
-                                value={item.details.answer}
-                                onChange={(e) => updateItem(item.id, { 
-                                  details: { ...item.details, answer: e.target.value }
-                                })}
-                                className="mt-2 w-full text-sm text-gray-600 bg-gray-50 rounded p-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                                rows={2}
-                                disabled={approvalMode === 'client' && !item.internal_approved}
-                              />
-                            )}
-                          </div>
-                          
-                          <div className="flex items-center gap-4 ml-4">
-                            {/* Approval Status */}
-                            <div className="flex items-center gap-2">
-                              <div className={`p-1.5 rounded ${
-                                item.internal_approved 
-                                  ? 'bg-green-100 text-green-600' 
-                                  : 'bg-gray-100 text-gray-400'
-                              }`} title="Internal Approval">
-                                <UserCheck className="h-4 w-4" />
-                              </div>
-                              <div className={`p-1.5 rounded ${
-                                item.client_approved 
-                                  ? 'bg-blue-100 text-blue-600' 
-                                  : 'bg-gray-100 text-gray-400'
-                              }`} title="Client Approval">
-                                <Building2 className="h-4 w-4" />
-                              </div>
-                            </div>
-                            
-                            {/* Action Buttons */}
-                            <div className="flex items-center gap-2">
-                              <button
-                                onClick={() => updateItem(item.id, { 
-                                  [approvalMode === 'internal' ? 'internal_approved' : 'client_approved']: true 
-                                })}
-                                disabled={approvalMode === 'client' && !item.internal_approved}
-                                className={`p-1.5 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed`}
-                              >
-                                <CheckCircle className="h-4 w-4 text-green-600" />
-                              </button>
-                              <button
-                                onClick={() => updateItem(item.id, { 
-                                  [approvalMode === 'internal' ? 'internal_approved' : 'client_approved']: false 
-                                })}
-                                disabled={approvalMode === 'client' && !item.internal_approved}
-                                className={`p-1.5 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed`}
-                              >
-                                <XCircle className="h-4 w-4 text-red-600" />
-                              </button>
-                            </div>
-                            
-                            {/* Select for Content */}
-                            {item.client_approved && (
-                              <input
-                                type="checkbox"
-                                checked={item.selected_for_content}
-                                onChange={(e) => updateItem(item.id, { selected_for_content: e.target.checked })}
-                                className="ml-2"
-                                title="Select for content generation"
-                              />
-                            )}
-                          </div>
-                        </div>
+                        <p className="text-sm font-medium text-gray-900">
+                          {item.content}
+                        </p>
                         
-                        {/* Comments field */}
-                        <div className="mt-2">
-                          <input
-                            type="text"
-                            value={item.comments}
-                            onChange={(e) => updateItem(item.id, { comments: e.target.value })}
-                            placeholder="Add comments..."
-                            className="w-full text-sm text-gray-600 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none placeholder-gray-400"
-                          />
+                        {/* Details */}
+                        {item.details && (
+                          <div className="mt-2 flex items-center gap-4 text-xs text-gray-500">
+                            {item.details.search_volume && (
+                              <span>Volume: {item.details.search_volume.toLocaleString()}</span>
+                            )}
+                            {item.details.difficulty && (
+                              <span>Difficulty: {item.details.difficulty}%</span>
+                            )}
+                            {item.details.intent && (
+                              <span>Intent: {item.details.intent}</span>
+                            )}
+                            {item.details.character_count && (
+                              <span>Characters: {item.details.character_count}</span>
+                            )}
+                          </div>
+                        )}
+                        
+                        {/* Answer for questions */}
+                        {item.type === 'consumer_question' && item.details?.answer && (
+                          <p className="mt-2 text-sm text-gray-600 bg-white rounded p-2">
+                            {item.details.answer}
+                          </p>
+                        )}
+                        
+                        {/* Comments */}
+                        {item.comments && (
+                          <p className="mt-2 text-sm text-gray-600 italic">
+                            Note: {item.comments}
+                          </p>
+                        )}
+                      </div>
+                      
+                      {/* Approval Status Icons */}
+                      <div className="flex items-center gap-2 ml-4">
+                        <div className={`p-1.5 rounded ${
+                          item.internal_approved 
+                            ? 'bg-green-100 text-green-600' 
+                            : 'bg-gray-100 text-gray-400'
+                        }`} title="Internal Approval">
+                          <UserCheck className="h-4 w-4" />
+                        </div>
+                        <div className={`p-1.5 rounded ${
+                          item.client_approved 
+                            ? 'bg-blue-100 text-blue-600' 
+                            : 'bg-gray-100 text-gray-400'
+                        }`} title="Client Approval">
+                          <Building2 className="h-4 w-4" />
                         </div>
                       </div>
                     </div>
@@ -548,67 +390,56 @@ export default function ClientDashboard() {
         ))}
       </div>
 
-      {/* Review Actions */}
-      <div className="bg-white rounded-lg shadow">
-        <div className="p-6 space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Overall Review Comments
-            </label>
-            <textarea
-              value={reviewComments}
-              onChange={(e) => setReviewComments(e.target.value)}
-              placeholder="Add general feedback about this SEO content..."
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-              rows={3}
-            />
+      {/* Approval Timeline */}
+      <div className="bg-white rounded-lg shadow p-6">
+        <h2 className="text-lg font-medium text-gray-900 mb-4">Approval Timeline</h2>
+        <div className="space-y-4">
+          <div className="flex items-center gap-4">
+            <div className={`p-2 rounded-full ${
+              approvalStats.internal > 0 ? 'bg-green-100' : 'bg-gray-100'
+            }`}>
+              <UserCheck className={`h-5 w-5 ${
+                approvalStats.internal > 0 ? 'text-green-600' : 'text-gray-400'
+              }`} />
+            </div>
+            <div className="flex-1">
+              <p className="font-medium text-gray-900">Internal Review</p>
+              <p className="text-sm text-gray-500">
+                {approvalStats.internal === approvalStats.total 
+                  ? 'Completed' 
+                  : approvalStats.internal > 0 
+                    ? 'In Progress' 
+                    : 'Not Started'}
+              </p>
+            </div>
+            {approvalStats.internal === approvalStats.total && (
+              <CheckCircle className="h-5 w-5 text-green-600" />
+            )}
           </div>
           
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Ask AI for Improvements
-            </label>
-            <div className="flex gap-2">
-              <textarea
-                value={aiRequest}
-                onChange={(e) => setAiRequest(e.target.value)}
-                placeholder="Request specific improvements or alternatives from AI..."
-                className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-                rows={2}
-              />
-              <button
-                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700"
-              >
-                <Send className="h-4 w-4" />
-                Ask AI
-              </button>
+          <div className="flex items-center gap-4">
+            <div className={`p-2 rounded-full ${
+              approvalStats.client > 0 ? 'bg-blue-100' : 'bg-gray-100'
+            }`}>
+              <Building2 className={`h-5 w-5 ${
+                approvalStats.client > 0 ? 'text-blue-600' : 'text-gray-400'
+              }`} />
             </div>
-          </div>
-          
-          <div className="flex items-center justify-between pt-4 border-t">
-            <div className="text-sm text-gray-500">
-              {approvalMode === 'internal' 
-                ? 'Reviewing as internal team member' 
-                : 'Reviewing as client representative'}
+            <div className="flex-1">
+              <p className="font-medium text-gray-900">Client Review</p>
+              <p className="text-sm text-gray-500">
+                {approvalStats.client === approvalStats.total 
+                  ? 'Completed' 
+                  : approvalStats.client > 0 
+                    ? 'In Progress' 
+                    : approvalStats.internal < approvalStats.total
+                      ? 'Awaiting Internal Approval'
+                      : 'Ready for Review'}
+              </p>
             </div>
-            <div className="flex items-center gap-3">
-              <button
-                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
-              >
-                <XCircle className="h-4 w-4" />
-                Reject All
-              </button>
-              <button
-                onClick={() => {
-                  const approvalField = approvalMode === 'internal' ? 'internal_approved' : 'client_approved'
-                  setContentItems(items => items.map(item => ({ ...item, [approvalField]: true })))
-                }}
-                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700"
-              >
-                <CheckCircle className="h-4 w-4" />
-                Approve All
-              </button>
-            </div>
+            {approvalStats.client === approvalStats.total && (
+              <CheckCircle className="h-5 w-5 text-blue-600" />
+            )}
           </div>
         </div>
       </div>
