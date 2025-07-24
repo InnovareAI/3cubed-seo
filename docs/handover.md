@@ -1,63 +1,63 @@
 # 3Cubed SEO Project Status & Handover
 
 ## Current State
-- [2025-07-24T21:59]
+- [2025-07-24 21:30 UTC]
 - Active branch: main
-- Last deployment: Auto-deploying - Form submission fixes applied
+- Last deployment: Auto-deploy triggered from commits
 
 ## Recent Changes
-- Change 1: Fixed form field mapping issue [2025-07-24T20:35/Success]
-- Change 2: Updated field mapping to match pharma_seo_submissions table schema [2025-07-24T20:38/Committed: e3f9e28]
-- Change 3: Fixed priority_level to use lowercase 'medium' [2025-07-24T21:50/Committed: b8b4c300]
-- Change 4: Fixed workflow_stage to use lowercase 'draft' [2025-07-24T21:59/Committed: 0720d8c0]
+- Fixed priority_level constraint: Changed from 'Medium' to 'medium' (commit b8b4c300)
+- Fixed workflow_stage constraint: Changed from 'Form_Submitted' to 'draft' (commit 0720d8c0)
+- Fixed form submission table name: Changed from 'pharma_seo_submissions' to 'seo_requests' (commit d3def159)
+- Fixed form reset bug: treatment_settings array type (commit 7ea7fa8e)
+- **Form submission now working** - all database constraint issues resolved
 
 ## MCP Connections
-- Supabase: ✓ [Connected - ktchrfgkbpaixbiwbieg.supabase.co]
-- n8n: ✗ [Not connected yet]
-- GitHub: ✓ [Connected and functional]
+- Supabase: ✓ Connected (ktchrfgkbpaixbiwbieg)
+- n8n: ✗ Unable to connect (workflow ID not found)
+- GitHub: ✓ Connected (InnovareAI/3cubed-seo)
 
 ## Database Schema
-- Tables: pharma_seo_submissions (main form submission table)
-- Recent modifications: 
-  - Fixed field mapping in React form
-  - priority_level field requires lowercase values: 'high', 'medium', 'low'
-  - workflow_stage field requires lowercase values: 'draft', 'seo_review', 'revision_requested', etc.
+- Tables: seo_requests (main submission table)
+- Recent modifications:
+  - priority_level: Now accepts lowercase values only ('low', 'medium', 'high')
+  - workflow_stage: Now accepts lowercase values ('draft', 'seo_review', etc.)
 
 ## Workflows
-- Active workflows: Unknown - need n8n connection
-- Recent fixes: Form submission field mapping
+- Active workflows:
+- Recent fixes:
 
 ## Tests & Results
 ### Completed Tests
-- Test 1: Database connectivity [2025-07-24/Success/pharma_seo_submissions accessible]
-- Test 2: Form field mapping validation [2025-07-24/Success/Fixed mapping]
-- Test 3: priority_level constraint [2025-07-24/Success/Fixed to lowercase]
-- Test 4: workflow_stage constraint [2025-07-24/Success/Fixed to lowercase]
+- Test 1: [name/date/result/data]
+- Test 2: [name/date/result/data]
 
 ### Failed Tests
-- None
+- Test: [name/reason/error message]
+- Retry needed: [yes/no]
 
 ### Performance Metrics
-- API response times: N/A
-- Query performance: Good
-- Workflow execution times: N/A
+- API response times:
+- Query performance:
+- Workflow execution times:
 
 ## Pending Tasks
-1. Test form submission after fix [HIGH/Ready]
-2. Connect to n8n MCP and verify workflow [MEDIUM/Pending]
-3. Deploy to Netlify and test live [HIGH/Pending]
-4. Verify webhook integration [MEDIUM/Pending]
+1. Task [priority/status]
+2. Task [priority/status]
 
 ## Known Issues
-- Issue 1: RESOLVED - priority_level must be lowercase - fixed in commit b8b4c300
-- Issue 2: RESOLVED - workflow_stage must be lowercase - fixed in commit 0720d8c0
+- **n8n Workflow Integration**: Unable to access n8n workflow (ID: 2o3DxEeLInnYV1Se) to verify if field changes impact automation
+- Field mappings that changed:
+  - priority_level: 'Medium' → 'medium'
+  - workflow_stage: 'Form_Submitted' → 'draft'
+- Need to verify webhook triggers still work
+- **RESOLVED**: Form submission errors fixed by correcting table name and constraint values
 
 ## Next Steps
-- Immediate: Test form submission with new fix
-- Short-term: Deploy to Netlify (auto-deploys from main)
-- Long-term: Connect n8n and test full pipeline
+- Immediate: Test form submission to verify workflow triggers
+- Short-term: Access n8n instance to check field mappings
+- Long-term: Document workflow dependencies
 
 ## Debug Log
-- Error 1: [2025-07-24T20:35/Field mapping error/Fixed by updating form fields]
-- Error 2: [2025-07-24T20:40/priority_level constraint/Fixed in commit b8b4c300]
-- Error 3: [2025-07-24T21:58/workflow_stage constraint/Fixed in commit 0720d8c0]
+- Error 1: [timestamp/error/resolution]
+- Error 2: [timestamp/error/resolution]
