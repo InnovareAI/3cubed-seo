@@ -8,6 +8,7 @@
    - Updated `SEOReviewModal.tsx` with GEO tab and approval tracking
    - `SubmissionForm.tsx` already has all required fields
 3. **TypeScript Interfaces**: Already include necessary fields
+4. **n8n Integration**: Migrated to n8n Cloud
 
 ### 🔧 Pending Database Updates
 The following tables need to be created:
@@ -33,7 +34,26 @@ Run the SQL script to create missing tables:
 supabase db push create-missing-tables.sql
 ```
 
-### 2. Deploy to Netlify
+### 2. Update Environment Variables
+
+Create or update your `.env.local` file:
+```bash
+# Copy from example
+cp .env.example .env.local
+
+# Edit with your values
+# Supabase Configuration
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+# n8n Webhook Configuration - UPDATED TO N8N CLOUD
+VITE_N8N_WEBHOOK_URL=https://innovareai.app.n8n.cloud/webhook-test/3cubed-seo-webhook
+
+# Environment
+VITE_APP_ENV=development
+```
+
+### 3. Deploy to Netlify
 
 Make the deployment script executable:
 ```bash
@@ -54,7 +74,7 @@ npm run build
 netlify deploy --prod --dir=dist
 ```
 
-### 3. Verify Deployment
+### 4. Verify Deployment
 
 1. Check build logs in Netlify dashboard
 2. Visit your site: https://app.netlify.com/sites/3cubedai-seo
@@ -62,8 +82,18 @@ netlify deploy --prod --dir=dist
    - Should show 4 tabs: Overview, SEO Analysis, GEO Optimization, Compliance
    - Should have approval checkboxes for SEO fields
    - Should track approvals in the database
+4. Test the n8n webhook integration:
+   - Submit a new form
+   - Check n8n Cloud workflow execution
 
 ## What's New
+
+### n8n Cloud Migration
+- **New Webhook URL**: `https://innovareai.app.n8n.cloud/webhook-test/3cubed-seo-webhook`
+- **Benefits**: 
+  - No more schema prefix issues
+  - Better reliability and scalability
+  - Easier maintenance
 
 ### SEO Review Modal Updates
 - **New GEO Tab**: Shows AI optimization fields
@@ -106,6 +136,11 @@ npm run lint --fix
    ```
 2. Ensure RLS policies are correctly set
 
+### n8n Webhook Issues
+1. Verify the webhook URL is correct in your `.env.local`
+2. Check n8n Cloud workflow is active
+3. Monitor n8n execution logs for errors
+
 ## Next Steps
 
 1. **Test the Review Flow**:
@@ -113,13 +148,15 @@ npm run lint --fix
    - Go through SEO review
    - Verify data is saved correctly
 
-2. **Set up n8n Integration**:
-   - Update webhook endpoints
-   - Test automated processing
+2. **Monitor n8n Integration**:
+   - Check webhook triggers
+   - Verify AI processing pipeline
+   - Monitor execution logs
 
 3. **Monitor Performance**:
    - Check Supabase logs
    - Monitor Netlify analytics
+   - Review n8n execution times
 
 ## Support
 
@@ -127,12 +164,16 @@ For issues:
 1. Check Netlify build logs
 2. Review Supabase logs
 3. Check browser console for errors
+4. Monitor n8n Cloud execution history
 
 ## Environment Variables
 
 Ensure these are set in Netlify:
 - `VITE_SUPABASE_URL`
 - `VITE_SUPABASE_ANON_KEY`
+- `VITE_N8N_WEBHOOK_URL` (NEW - n8n Cloud webhook)
 
 Set via Netlify Dashboard:
 Site settings → Environment variables → Add a variable
+
+**Important**: After updating environment variables in Netlify, trigger a new deployment for changes to take effect.
