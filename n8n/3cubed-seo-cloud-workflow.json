@@ -1,0 +1,703 @@
+{
+  "name": "3cubed SEO - Cloud Version",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "3cubed-seo-webhook",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "06fc9e12-b632-4d1d-8c22-0cf5eca2c696",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1320,
+        580
+      ],
+      "webhookId": "ebada15f-efe2-4f8e-9fcd-a2ec233aa0ed"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": "public",
+        "table": "pharma_seo_submissions",
+        "returnAll": false,
+        "limit": 1,
+        "where": {
+          "values": [
+            {
+              "column": "id",
+              "value": "={{ $json.body.submission_id }}"
+            }
+          ]
+        }
+      },
+      "id": "47acf28c-f6c5-4547-acee-30a97f7faa5c",
+      "name": "Get Submission",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -1020,
+        580
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "1",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "check-found",
+              "leftValue": "={{ $json.length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "aa258999-9cd9-4a1c-9223-a2f0d42c40c1",
+      "name": "Check Submission Found",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -800,
+        580
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": "public",
+        "table": "pharma_seo_submissions",
+        "columns": {
+          "values": [
+            {
+              "column": "ai_processing_status",
+              "value": "processing"
+            },
+            {
+              "column": "workflow_stage",
+              "value": "ai_processing"
+            },
+            {
+              "column": "last_updated",
+              "value": "={{ new Date().toISOString() }}"
+            }
+          ]
+        },
+        "where": {
+          "values": [
+            {
+              "column": "id",
+              "value": "={{ $node[\"Get Submission\"].json[0].id }}"
+            }
+          ]
+        }
+      },
+      "id": "0791167c-e8dc-4566-9c3a-e59742b60798",
+      "name": "Update Status - Processing",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -680,
+        280
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "1",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the record from the previous node\nconst record = $json[0] || $json;\n\n// Only process Phase III, Market Shaping, and Market Launch\nconst allowedPhases = ['phase3', 'marketShaping', 'marketLaunch'];\n\n// Determine phase from development stage\nlet phase = '';\nconst stage = record.development_stage?.toLowerCase() || record.stage?.toLowerCase() || '';\n\nif (stage.includes('phase 3') || stage.includes('phase iii') || stage.includes('phase3')) {\n  phase = 'phase3';\n} else if (stage.includes('pre-launch') || stage.includes('market shaping') || stage.includes('pre-approval')) {\n  phase = 'marketShaping';\n} else if (stage.includes('marketed') || stage.includes('market launch') || stage.includes('market building') || stage.includes('post-launch')) {\n  phase = 'marketLaunch';\n}\n\n// Check if phase is allowed\nif (!allowedPhases.includes(phase)) {\n  throw new Error(`Invalid phase: ${phase} (from stage: ${record.development_stage || record.stage}). Only Phase III, Market Shaping, and Market Launch are supported.`);\n}\n\n// Return the validated phase\nreturn {\n  phase: phase,\n  record: record\n};"
+      },
+      "id": "6b402ff9-7357-499c-9f50-2af685e68892",
+      "name": "Validate Phase",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -460,
+        580
+      ]
+    },
+    {
+      "parameters": {
+        "model": "llama-3.1-sonar-large-128k-online",
+        "messages": {
+          "values": [
+            {
+              "role": "system",
+              "content": "You are a pharmaceutical SEO content expert with the ability to search multiple authoritative sources including clinicaltrials.gov, FDA.gov, EMA.europa.eu, and NCBI/PubMed. Create comprehensive SEO-optimized content for pharmaceutical products."
+            },
+            {
+              "role": "user", 
+              "content": "=Create comprehensive SEO content for:\n\nProduct: {{ $node[\"Validate Phase\"].json.record.product_name }}\nIndication: {{ $node[\"Validate Phase\"].json.record.indication || $node[\"Validate Phase\"].json.record.medical_indication }}\nStage: {{ $node[\"Validate Phase\"].json.record.development_stage || $node[\"Validate Phase\"].json.record.stage }}\nTherapeutic Area: {{ $node[\"Validate Phase\"].json.record.therapeutic_area }}\nMechanism of Action: {{ $node[\"Validate Phase\"].json.record.mechanism_of_action }}\n\nGenerate:\n1. **SEO-Optimized Content**\n   - H1 Title (60 characters max)\n   - Meta Description (155 characters max)\n   - Executive Summary (200 words)\n\n2. **Keywords**\n   - Primary keywords (5-8)\n   - Long-tail keywords (10-15)\n   - Related search terms\n\n3. **Clinical Evidence Summary**\n   - Key trial results\n   - Efficacy data\n   - Safety profile\n\n4. **Competitive Landscape**\n   - Similar treatments\n   - Differentiation points\n\n5. **Target Messaging**\n   - Healthcare professionals\n   - Patients/caregivers\n   - Payers\n\n6. **Full SEO Article** (800-1000 words)\n   - Introduction\n   - Clinical development\n   - Mechanism of action\n   - Clinical evidence\n   - Safety considerations\n   - Future outlook\n\nSearch authoritative medical sources and include citations."
+            }
+          ]
+        },
+        "options": {
+          "temperature": 0.7,
+          "maxTokens": 4000,
+          "searchDomainFilter": [
+            "ncbi.nlm.nih.gov",
+            "clinicaltrials.gov", 
+            "fda.gov",
+            "ema.europa.eu"
+          ],
+          "searchRecencyFilter": "year"
+        }
+      },
+      "id": "295c6931-1948-4c37-a8a0-c88bec4e32ca",
+      "name": "Generate Content - Perplexity",
+      "type": "@n8n/n8n-nodes-langchain.lmChatPerplexity",
+      "typeVersion": 1,
+      "position": [
+        -220,
+        300
+      ],
+      "credentials": {
+        "perplexityApi": {
+          "id": "2",
+          "name": "Perplexity account"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse the Perplexity response\nconst response = $json;\n\n// Extract the content\nconst content = response.text || response.content || response.message?.content || '';\n\n// Get the original submission record\nconst submission = $node['Validate Phase'].json.record;\n\n// Parse the content into structured sections\nconst sections = {\n  seo_content: {},\n  keywords: [],\n  clinical_trials: {},\n  competitive_analysis: {},\n  compliance_notes: {},\n  target_messaging: {}\n};\n\n// Extract SEO Content section\nconst seoMatch = content.match(/1\\.\\s*\\*\\*SEO-Optimized Content\\*\\*[\\s\\S]*?(?=\\n\\n\\d+\\.|$)/i);\nif (seoMatch) {\n  const seoContent = seoMatch[0];\n  const titleMatch = seoContent.match(/H1 Title[^:]*:\\s*(.+)/i);\n  const metaMatch = seoContent.match(/Meta Description[^:]*:\\s*(.+)/i);\n  const summaryMatch = seoContent.match(/Executive Summary[^:]*:\\s*([\\s\\S]*?)(?=\\n\\n|$)/i);\n  \n  sections.seo_content = {\n    title: titleMatch ? titleMatch[1].trim() : '',\n    meta_description: metaMatch ? metaMatch[1].trim() : '',\n    executive_summary: summaryMatch ? summaryMatch[1].trim() : ''\n  };\n}\n\n// Extract Keywords\nconst keywordsMatch = content.match(/2\\.\\s*\\*\\*Keywords\\*\\*[\\s\\S]*?(?=\\n\\n\\d+\\.|$)/i);\nif (keywordsMatch) {\n  const primaryMatch = keywordsMatch[0].match(/Primary keywords[^:]*:([\\s\\S]*?)(?=\\n.*Long-tail|$)/i);\n  const longtailMatch = keywordsMatch[0].match(/Long-tail keywords[^:]*:([\\s\\S]*?)(?=\\n.*Related|$)/i);\n  \n  if (primaryMatch) {\n    const primaryKeywords = primaryMatch[1].match(/[-•*]\\s*(.+)/g) || [];\n    sections.keywords = primaryKeywords.map(k => k.replace(/[-•*]\\s*/, '').trim());\n  }\n}\n\n// Extract Clinical Evidence\nconst clinicalMatch = content.match(/3\\.\\s*\\*\\*Clinical Evidence[\\s\\S]*?(?=\\n\\n\\d+\\.|$)/i);\nif (clinicalMatch) {\n  sections.clinical_trials = { \n    summary: clinicalMatch[0].replace(/3\\.\\s*\\*\\*Clinical Evidence[^:]*:?/i, '').trim() \n  };\n}\n\n// Extract Full SEO Article\nconst articleMatch = content.match(/6\\.\\s*\\*\\*Full SEO Article\\*\\*[\\s\\S]*$/i);\nif (articleMatch) {\n  sections.seo_content.main_content = articleMatch[0].replace(/6\\.\\s*\\*\\*Full SEO Article\\*\\*[^:]*:?/i, '').trim();\n}\n\n// Prepare data for database update\nreturn {\n  submission_id: submission.id,\n  generated_content: {\n    full_response: content,\n    structured_sections: sections\n  },\n  seo_keywords: sections.keywords,\n  meta_title: sections.seo_content.title || '',\n  meta_description: sections.seo_content.meta_description || '',\n  ai_content: content,\n  processing_metadata: {\n    model: 'perplexity/llama-3.1-sonar-large-128k-online',\n    processing_time: new Date().toISOString()\n  },\n  status: 'generated'\n};"
+      },
+      "id": "f50fb7df-f6cf-4324-abb7-a95b78ca55cb",
+      "name": "Parse Perplexity Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": "public",
+        "table": "pharma_seo_submissions",
+        "columns": {
+          "values": [
+            {
+              "column": "ai_processing_status",
+              "value": "qa_review"
+            },
+            {
+              "column": "ai_generated_content",
+              "value": "={{ JSON.stringify($json.generated_content) }}"
+            },
+            {
+              "column": "seo_keywords",
+              "value": "={{ $json.seo_keywords }}"
+            },
+            {
+              "column": "meta_title",
+              "value": "={{ $json.meta_title }}"
+            },
+            {
+              "column": "meta_description", 
+              "value": "={{ $json.meta_description }}"
+            },
+            {
+              "column": "workflow_stage",
+              "value": "qa_review"
+            },
+            {
+              "column": "last_updated",
+              "value": "={{ new Date().toISOString() }}"
+            }
+          ]
+        },
+        "where": {
+          "values": [
+            {
+              "column": "id",
+              "value": "={{ $node[\"Get Submission\"].json[0].id }}"
+            }
+          ]
+        }
+      },
+      "id": "d727efdd-5da2-46eb-a23a-d890d6b15717",
+      "name": "Update DB with AI Content",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        220,
+        300
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "1",
+          "name": "Supabase account"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "model": "claude-3-5-sonnet-20241022",
+        "messages": {
+          "values": [
+            {
+              "role": "user",
+              "content": "=As a pharmaceutical regulatory compliance expert, perform a comprehensive QA review of this SEO content. Be extremely critical and thorough.\n\nProduct: {{ $node[\"Get Submission\"].json[0].product_name }}\nStage: {{ $node[\"Get Submission\"].json[0].stage }}\n\nContent to Review:\n{{ $node[\"Parse Perplexity Response\"].json.ai_content }}\n\nProvide a detailed JSON response with:\n{\n  \"qa_score\": (0-100),\n  \"compliance_score\": (0-100),\n  \"medical_accuracy\": (0-100),\n  \"seo_effectiveness\": (0-100),\n  \"critical_issues\": [],\n  \"required_changes\": [],\n  \"recommendation\": \"PASS or FAIL\",\n  \"detailed_feedback\": \"comprehensive feedback\"\n}\n\nAny score below 85 should result in FAIL.\n\nCheck for:\n1. FDA/EMA compliance\n2. Medical accuracy\n3. Proper disclaimers\n4. SEO optimization\n5. Content completeness\n6. Fair balance between efficacy and safety\n7. Appropriate safety information\n8. Clinical trial citations accuracy"
+            }
+          ]
+        },
+        "options": {
+          "temperature": 0.1,
+          "maxTokens": 4000
+        }
+      },
+      "id": "19dd3db9-9e76-4b20-b394-26a2e160e749",
+      "name": "QA Review - Claude",
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.2,
+      "position": [
+        440,
+        300
+      ],
+      "credentials": {
+        "anthropicApi": {
+          "id": "3",
+          "name": "Anthropic account"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "jsCode": "const claudeResponse = $json;\n\n// Extract content from Claude's response\nconst content = claudeResponse.text || claudeResponse.content || claudeResponse.message?.content || '';\n\nlet qaResult;\ntry {\n  // Extract JSON from response\n  const jsonMatch = content.match(/\\{[\\s\\S]*\\}/);\n  if (jsonMatch) {\n    qaResult = JSON.parse(jsonMatch[0]);\n  } else {\n    throw new Error('No JSON found in response');\n  }\n} catch (e) {\n  qaResult = {\n    qa_score: 0,\n    compliance_score: 0,\n    medical_accuracy: 0,\n    seo_effectiveness: 0,\n    critical_issues: ['Failed to parse QA response'],\n    required_changes: [],\n    recommendation: \"FAIL\",\n    detailed_feedback: \"Failed to parse QA response: \" + e.message\n  };\n}\n\n// Add processing metadata\nreturn {\n  ...qaResult,\n  qa_status: qaResult.recommendation === 'PASS' ? 'passed' : 'failed',\n  submission_id: $node['Validate Phase'].json.record.id,\n  processing_metadata: {\n    model: 'claude-3-5-sonnet-20241022',\n    qa_timestamp: new Date().toISOString()\n  }\n};"
+      },
+      "id": "83b66f1b-eba7-42b4-b8a5-3ad0077f138c",
+      "name": "Parse QA Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "value1": "={{ $json.qa_status }}",
+              "operation": "equals",
+              "value2": "passed"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Check QA Result",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        880,
+        300
+      ],
+      "id": "1d9c9f0a-dab1-4c83-8035-b3f92d346709"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": "public",
+        "table": "pharma_seo_submissions",
+        "columns": {
+          "values": [
+            {
+              "column": "ai_processing_status",
+              "value": "={{ $json.qa_status === 'passed' ? 'completed' : 'revision_required' }}"
+            },
+            {
+              "column": "qa_status",
+              "value": "={{ $json.qa_status }}"
+            },
+            {
+              "column": "qa_score",
+              "value": "={{ $json.qa_score }}"
+            },
+            {
+              "column": "qa_feedback",
+              "value": "={{ JSON.stringify($json) }}"
+            },
+            {
+              "column": "workflow_stage",
+              "value": "={{ $json.qa_status === 'passed' ? 'completed' : 'revision_required' }}"
+            },
+            {
+              "column": "last_updated",
+              "value": "={{ new Date().toISOString() }}"
+            }
+          ]
+        },
+        "where": {
+          "values": [
+            {
+              "column": "id",
+              "value": "={{ $node[\"Validate Phase\"].json.record.id }}"
+            }
+          ]
+        }
+      },
+      "id": "db8fb070-50ae-4988-9877-59c74f5bf528",
+      "name": "Update DB with QA Results",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1100,
+        300
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "1",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Prepare response data\nconst submission = $node['Validate Phase'].json.record;\nconst qaResult = $node['Parse QA Response']?.json || {};\n\nreturn {\n  success: true,\n  submission_id: submission.id,\n  status: qaResult.qa_status === 'passed' ? 'completed' : 'needs_revision',\n  message: qaResult.qa_status === 'passed' \n    ? 'SEO content generated and QA approved successfully' \n    : 'Content generated but requires revision based on QA feedback',\n  details: {\n    product_name: submission.product_name,\n    phase: $node['Validate Phase'].json.phase,\n    qa_score: qaResult.qa_score,\n    compliance_score: qaResult.compliance_score,\n    medical_accuracy: qaResult.medical_accuracy,\n    seo_effectiveness: qaResult.seo_effectiveness,\n    critical_issues: qaResult.critical_issues || [],\n    models_used: {\n      content_generation: 'perplexity/llama-3.1-sonar-large-128k-online',\n      qa_review: 'claude-3-5-sonnet-20241022'\n    }\n  }\n};"
+      },
+      "id": "135ddbd6-e5a3-48f1-be38-2a40ada348bc",
+      "name": "Prepare Webhook Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        440
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "108d8071-ee39-460b-909a-fd80c52e2853",
+      "name": "Webhook Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1540,
+        440
+      ]
+    },
+    {
+      "parameters": {
+        "errorMessage": "Submission not found in database"
+      },
+      "id": "9f276e5a-a36c-44e4-9fc2-6ec2e711d10f",
+      "name": "Error - Not Found",
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        -620,
+        960
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": "public",
+        "table": "pharma_seo_submissions",
+        "columns": {
+          "values": [
+            {
+              "column": "ai_processing_status",
+              "value": "failed"
+            },
+            {
+              "column": "error_message",
+              "value": "={{ $json.error?.message || 'Unknown error occurred' }}"
+            },
+            {
+              "column": "last_updated",
+              "value": "={{ new Date().toISOString() }}"
+            }
+          ]
+        },
+        "where": {
+          "values": [
+            {
+              "column": "id",
+              "value": "={{ $node[\"Validate Phase\"].json.record.id }}"
+            }
+          ]
+        }
+      },
+      "id": "26df39ee-cf5b-4b95-8a3a-58424ed29779",
+      "name": "Update Submission - Failed",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -220,
+        960
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "1",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "value1": "={{ $json.text || $json.content || $json.message?.content || '' }}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "065141b2-449b-4f83-a043-8f6d121e7092",
+      "name": "Check Perplexity Response",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -20,
+        580
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Submission",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Submission": {
+      "main": [
+        [
+          {
+            "node": "Check Submission Found",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Submission Found": {
+      "main": [
+        [
+          {
+            "node": "Update Status - Processing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error - Not Found",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Status - Processing": {
+      "main": [
+        [
+          {
+            "node": "Validate Phase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Phase": {
+      "main": [
+        [
+          {
+            "node": "Generate Content - Perplexity",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Content - Perplexity": {
+      "main": [
+        [
+          {
+            "node": "Check Perplexity Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Perplexity Response": {
+      "main": [
+        [
+          {
+            "node": "Parse Perplexity Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update Submission - Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Perplexity Response": {
+      "main": [
+        [
+          {
+            "node": "Update DB with AI Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update DB with AI Content": {
+      "main": [
+        [
+          {
+            "node": "QA Review - Claude",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "QA Review - Claude": {
+      "main": [
+        [
+          {
+            "node": "Parse QA Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse QA Response": {
+      "main": [
+        [
+          {
+            "node": "Check QA Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check QA Result": {
+      "main": [
+        [
+          {
+            "node": "Update DB with QA Results",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update DB with QA Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update DB with QA Results": {
+      "main": [
+        [
+          {
+            "node": "Prepare Webhook Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Webhook Response": {
+      "main": [
+        [
+          {
+            "node": "Webhook Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Submission - Failed": {
+      "main": [
+        [
+          {
+            "node": "Prepare Webhook Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveExecutionProgress": true,
+    "saveManualExecutions": true,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "executionTimeout": 900,
+    "timezone": "America/New_York"
+  },
+  "versionId": "cloud-v1",
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "instanceId": "cloud"
+  },
+  "id": "3cubed-seo-cloud",
+  "tags": ["pharmaceutical", "seo", "ai-content"]
+}
