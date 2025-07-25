@@ -5,28 +5,28 @@ import { Send, AlertCircle, Info, ChevronDown, ChevronUp, Sparkles, Database, Us
 
 export default function SubmissionForm() {
   const [formData, setFormData] = useState({
-    // Essential Fields (Required)
+    // Core Clinical Fields (4 Required)
     product_name: '',
+    generic_name: '',
     medical_indication: '',
     therapeutic_area: '',
-    generic_name: '',
+    
+    // Submitter Info (Required)
     submitter_email: '',
     submitter_name: '',
-    
-    // Client & MLR Fields (Now in Review Assignment)
     client_name: '',
+    
+    // Review Assignment (SEO Required, others optional)
+    seo_reviewer_name: '',
+    seo_reviewer_email: '',
     client_reviewer_name: '',
     client_reviewer_email: '',
     mlr_reviewer_name: '',
     mlr_reviewer_email: '',
     
-    // SEO Reviewer (Required)
-    seo_reviewer_name: '',
-    seo_reviewer_email: '',
-    
     // High-Impact Fields (Recommended)
     sponsor_manufacturer: '',
-    stage: 'Phase III',
+    stage: '',
     nct_number: '',
     route_of_administration: '',
     
@@ -44,6 +44,7 @@ export default function SubmissionForm() {
 
   const [showRecommended, setShowRecommended] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [showReviewers, setShowReviewers] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
 
@@ -80,7 +81,9 @@ export default function SubmissionForm() {
         key_differentiators: formData.key_differentiators.filter(d => d.trim()),
         priority_markets: formData.priority_markets.length > 0 ? formData.priority_markets : ['United States'],
         // Map SEO reviewer to the expected field
-        seo_reviewer: formData.seo_reviewer_name
+        seo_reviewer: formData.seo_reviewer_name,
+        // Set default stage if not selected
+        stage: formData.stage || 'Phase III'
       };
 
       // Create submission in database
@@ -122,20 +125,20 @@ export default function SubmissionForm() {
       // Reset form
       setFormData({
         product_name: '',
+        generic_name: '',
         medical_indication: '',
         therapeutic_area: '',
-        generic_name: '',
         submitter_email: '',
         submitter_name: '',
         client_name: '',
+        seo_reviewer_name: '',
+        seo_reviewer_email: '',
         client_reviewer_name: '',
         client_reviewer_email: '',
         mlr_reviewer_name: '',
         mlr_reviewer_email: '',
-        seo_reviewer_name: '',
-        seo_reviewer_email: '',
         sponsor_manufacturer: '',
-        stage: 'Phase III',
+        stage: '',
         nct_number: '',
         route_of_administration: '',
         patient_population: '',
@@ -160,6 +163,29 @@ export default function SubmissionForm() {
     }
   };
 
+  // Calculate clinical data coverage
+  const calculateCoverage = () => {
+    let coverage = 30; // Base coverage with 4 required fields
+    
+    if (formData.generic_name) {
+      coverage = 65; // Jump to 65% with generic name
+    }
+    
+    if (showRecommended && formData.sponsor_manufacturer) {
+      coverage = 75;
+    }
+    
+    if (showRecommended && formData.stage) {
+      coverage = 80;
+    }
+    
+    if (showRecommended && (formData.nct_number || formData.route_of_administration)) {
+      coverage = 85;
+    }
+    
+    return coverage;
+  };
+
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
       {/* Header */}
@@ -177,21 +203,17 @@ export default function SubmissionForm() {
         <div className="flex items-center space-x-2 text-blue-800">
           <Database className="h-5 w-5" />
           <span className="font-medium">Clinical Data Coverage:</span>
-          <span className="ml-auto font-bold">
-            {formData.generic_name ? '65%' : '30%'}
-            {showRecommended && formData.sponsor_manufacturer ? ' → 85%' : ''}
-          </span>
+          <span className="ml-auto font-bold text-lg">{calculateCoverage()}%</span>
         </div>
         <div className="mt-2 bg-white rounded-full h-3 overflow-hidden">
           <div 
-            className="bg-blue-600 h-full transition-all duration-500"
-            style={{ 
-              width: formData.generic_name 
-                ? (showRecommended && formData.sponsor_manufacturer ? '85%' : '65%') 
-                : '30%' 
-            }}
+            className="bg-blue-600 h-full transition-all duration-500 ease-out"
+            style={{ width: `${calculateCoverage()}%` }}
           />
         </div>
+        <p className="text-xs text-blue-700 mt-2">
+          Add more fields to unlock additional clinical trial data
+        </p>
       </div>
 
       {message.text && (
@@ -203,12 +225,15 @@ export default function SubmissionForm() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-8">
-        {/* ESSENTIAL FIELDS */}
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* CORE CLINICAL FIELDS - Just 4 Required */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center mb-4">
-            <h2 className="text-xl font-semibold text-gray-900">Essential Information</h2>
-            <span className="ml-2 text-sm text-red-600">* Required</span>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">Clinical Information</h2>
+              <p className="text-sm text-gray-600 mt-1">Only 4 fields required for 65% data coverage</p>
+            </div>
+            <span className="text-sm text-red-600">* Required</span>
           </div>
           
           <div className="grid md:grid-cols-2 gap-6">
@@ -227,7 +252,7 @@ export default function SubmissionForm() {
               />
             </div>
 
-            {/* Generic Name - NEW CRITICAL FIELD */}
+            {/* Generic Name - CRITICAL FIELD */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Generic/INN Name *
@@ -282,8 +307,14 @@ export default function SubmissionForm() {
                 ))}
               </select>
             </div>
+          </div>
+        </div>
 
-            {/* Submitter Name */}
+        {/* SUBMITTER & CLIENT INFO */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Contact Information</h2>
+          
+          <div className="grid md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Your Name *
@@ -298,7 +329,6 @@ export default function SubmissionForm() {
               />
             </div>
 
-            {/* Submitter Email */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Your Email *
@@ -313,7 +343,6 @@ export default function SubmissionForm() {
               />
             </div>
 
-            {/* Client Name */}
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Client/Company Name *
@@ -348,7 +377,10 @@ export default function SubmissionForm() {
                 </p>
               </div>
             </div>
-            {showRecommended ? <ChevronUp /> : <ChevronDown />}
+            <div className="flex items-center space-x-2">
+              <span className="text-sm font-medium text-green-600">+20% coverage</span>
+              {showRecommended ? <ChevronUp /> : <ChevronDown />}
+            </div>
           </button>
 
           {showRecommended && (
@@ -379,6 +411,7 @@ export default function SubmissionForm() {
                     onChange={(e) => setFormData({ ...formData, stage: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
+                    <option value="">Select stage</option>
                     {developmentStages.map(stage => (
                       <option key={stage} value={stage}>{stage}</option>
                     ))}
@@ -537,115 +570,131 @@ export default function SubmissionForm() {
           )}
         </div>
 
-        {/* REVIEW ASSIGNMENT - NEW SECTION BEFORE CTA */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center mb-4">
-            <Users className="h-5 w-5 text-gray-700 mr-2" />
-            <h2 className="text-xl font-semibold text-gray-900">Review Assignment</h2>
-          </div>
+        {/* REVIEW ASSIGNMENT - Collapsible */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+          <button
+            type="button"
+            onClick={() => setShowReviewers(!showReviewers)}
+            className="w-full p-6 flex items-center justify-between hover:bg-gray-50 transition-colors"
+          >
+            <div className="flex items-center space-x-3">
+              <Users className="h-5 w-5 text-gray-700" />
+              <div className="text-left">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Review Assignment
+                </h3>
+                <p className="text-sm text-gray-600">
+                  SEO reviewer required, others optional
+                </p>
+              </div>
+            </div>
+            {showReviewers ? <ChevronUp /> : <ChevronDown />}
+          </button>
           
-          <div className="space-y-6">
-            {/* SEO Reviewer - REQUIRED */}
-            <div className="border-b pb-4">
-              <h3 className="text-sm font-medium text-gray-900 mb-3">
-                SEO Reviewer <span className="text-red-600">* Required</span>
-              </h3>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    SEO Reviewer Name *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.seo_reviewer_name}
-                    onChange={(e) => setFormData({ ...formData, seo_reviewer_name: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="SEO team member name"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    SEO Reviewer Email *
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    value={formData.seo_reviewer_email}
-                    onChange={(e) => setFormData({ ...formData, seo_reviewer_email: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="seo@3cubed.com"
-                  />
+          {showReviewers && (
+            <div className="px-6 pb-6 pt-0 border-t border-gray-100 space-y-6">
+              {/* SEO Reviewer - REQUIRED */}
+              <div className="border-b pb-4 mt-6">
+                <h3 className="text-sm font-medium text-gray-900 mb-3">
+                  SEO Reviewer <span className="text-red-600">* Required</span>
+                </h3>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      SEO Reviewer Name *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.seo_reviewer_name}
+                      onChange={(e) => setFormData({ ...formData, seo_reviewer_name: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="SEO team member name"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      SEO Reviewer Email *
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      value={formData.seo_reviewer_email}
+                      onChange={(e) => setFormData({ ...formData, seo_reviewer_email: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="seo@3cubed.com"
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Client Reviewer - OPTIONAL */}
-            <div className="border-b pb-4">
-              <h3 className="text-sm font-medium text-gray-900 mb-3">
-                Client Reviewer <span className="text-gray-500">(Optional)</span>
-              </h3>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Client Reviewer Name
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.client_reviewer_name}
-                    onChange={(e) => setFormData({ ...formData, client_reviewer_name: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Client team member name"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Client Reviewer Email
-                  </label>
-                  <input
-                    type="email"
-                    value={formData.client_reviewer_email}
-                    onChange={(e) => setFormData({ ...formData, client_reviewer_email: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="reviewer@client.com"
-                  />
+              {/* Client Reviewer - OPTIONAL */}
+              <div className="border-b pb-4">
+                <h3 className="text-sm font-medium text-gray-900 mb-3">
+                  Client Reviewer <span className="text-gray-500">(Optional)</span>
+                </h3>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Client Reviewer Name
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.client_reviewer_name}
+                      onChange={(e) => setFormData({ ...formData, client_reviewer_name: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Client team member name"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Client Reviewer Email
+                    </label>
+                    <input
+                      type="email"
+                      value={formData.client_reviewer_email}
+                      onChange={(e) => setFormData({ ...formData, client_reviewer_email: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="reviewer@client.com"
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* MLR Reviewer - OPTIONAL */}
-            <div>
-              <h3 className="text-sm font-medium text-gray-900 mb-3">
-                MLR Reviewer <span className="text-gray-500">(Optional)</span>
-              </h3>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    MLR Reviewer Name
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.mlr_reviewer_name}
-                    onChange={(e) => setFormData({ ...formData, mlr_reviewer_name: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="MLR team member name"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    MLR Reviewer Email
-                  </label>
-                  <input
-                    type="email"
-                    value={formData.mlr_reviewer_email}
-                    onChange={(e) => setFormData({ ...formData, mlr_reviewer_email: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="mlr@company.com"
-                  />
+              {/* MLR Reviewer - OPTIONAL */}
+              <div>
+                <h3 className="text-sm font-medium text-gray-900 mb-3">
+                  MLR Reviewer <span className="text-gray-500">(Optional)</span>
+                </h3>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      MLR Reviewer Name
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.mlr_reviewer_name}
+                      onChange={(e) => setFormData({ ...formData, mlr_reviewer_name: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="MLR team member name"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      MLR Reviewer Email
+                    </label>
+                    <input
+                      type="email"
+                      value={formData.mlr_reviewer_email}
+                      onChange={(e) => setFormData({ ...formData, mlr_reviewer_email: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="mlr@company.com"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Submit Button */}
@@ -662,12 +711,17 @@ export default function SubmissionForm() {
       </form>
 
       {/* Helper Text */}
-      <div className="mt-8 p-4 bg-gray-50 rounded-lg text-sm text-gray-600">
-        <p className="font-medium mb-1">💡 Pro Tip:</p>
-        <p>
-          The Generic/INN Name is critical for accessing FDA Orange Book, EMA databases, 
-          and FAERS safety data. Without it, you'll miss 50% of available clinical trials.
-        </p>
+      <div className="mt-8 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+        <div className="flex items-start space-x-3">
+          <Info className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+          <div className="text-sm text-gray-700">
+            <p className="font-semibold mb-1">Why Generic Name Matters</p>
+            <p>
+              The Generic/INN Name unlocks access to FDA Orange Book, EMA databases, and FAERS safety data. 
+              Without it, we miss 50% of available clinical trials. This single field increases data coverage from 30% to 65%.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
