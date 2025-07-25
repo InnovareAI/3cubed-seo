@@ -24,7 +24,7 @@
 
 ## MCP Connections
 - Supabase: ✓ Connected (ktchrfgkbpaixbiwbieg)
-- n8n: ✓ API Connected (workflow list exceeds size limit)
+- n8n: ✓ API Connected (workflow: https://innovareai.app.n8n.cloud/workflow/BNKl1IJoWxTCKUak)
 - GitHub: ✓ Connected (InnovareAI/3cubed-seo)
 - Warp Bridge: ✓ Ready
 - Netlify: ✓ Connected (3cubed-seo)
@@ -37,7 +37,7 @@
   - Fixed column references: using `ai_status` and `ai_processing_status` instead of `langchain_status`
 
 ## Workflows
-- Active workflows: 
+- Active workflows: https://innovareai.app.n8n.cloud/workflow/BNKl1IJoWxTCKUak
 - Recent fixes:
 
 ## Tests & Results
@@ -63,7 +63,7 @@
 1. **Fix form submission to Supabase** [HIGH/COMPLETED] ✓
 2. **Connect all CTA buttons to functions** [HIGH/pending] - Need to identify which buttons need functionality
 3. **Verify Supabase tables if needs cleanup** [MEDIUM/in-progress] - Table schema verified, test record created
-4. **Verify n8n workflow** [HIGH/pending] - Need specific workflow ID to query
+4. **Verify n8n workflow** [HIGH/pending] - Workflow URL: https://innovareai.app.n8n.cloud/workflow/BNKl1IJoWxTCKUak
 5. **Connect workflow output to dashboard** [HIGH/pending]
 6. **n8n workflow needs to generate PDF file** [HIGH/pending]
 7. **Connect Slack for error messages** [MEDIUM/pending]
@@ -73,7 +73,7 @@
 - **RESOLVED**: HITLReview page fixed - now using correct column `ai_status`
 - **RESOLVED**: TypeScript build errors fixed - Submission interface updated
 - **RESOLVED**: DashboardLayout was querying wrong column - now fixed
-- **n8n Workflow Integration**: Unable to access n8n workflow (ID: 2o3DxEeLInnYV1Se) to verify if field changes impact automation
+- **n8n Workflow Integration**: Using new workflow at https://innovareai.app.n8n.cloud/workflow/BNKl1IJoWxTCKUak (old workflow 2o3DxEeLInnYV1Se is outdated)
 
 ## Next Steps
 - Immediate: Check form submission functionality and fix any issues
