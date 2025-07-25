@@ -25,7 +25,7 @@
   - Identified view vs table structure
 
 ## Workflows
-- **Active workflows**: 3cubed-seo-webhook (ID: 2o3DxEeLInnYV1Se)
+- **Active workflows**: 3cubed-seo-webhook (URL: https://innovareai.app.n8n.cloud/workflow/BNKl1IJoWxTCKUak)
 - **Recent fixes**:
   - Updated to use Perplexity native node for clinical data search
   - Added Claude Opus for comprehensive QA review
@@ -78,7 +78,7 @@ Database:
 
 ## Test Command Ready
 ```bash
-curl -X POST https://workflows.innovareai.com/webhook/3cubed-seo-webhook \
+curl -X POST https://innovareai.app.n8n.cloud/webhook/3cubed-seo-webhook \
   -H "Content-Type: application/json" \
   -d '{"submission_id": "48b42daa-0e6a-44b9-903b-d29f642a9183"}'
 ```

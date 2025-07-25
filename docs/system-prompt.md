@@ -34,7 +34,7 @@ ALWAYS use MCP tools to fix issues - never suggest manual fixes:
 - Always connect and execute fixes directly
 
 ### n8n
-- Instance: `https://workflows.innovareai.com/workflow/2o3DxEeLInnYV1Se`
+- Instance: `https://innovareai.app.n8n.cloud/workflow/BNKl1IJoWxTCKUak`
 - Fix workflow issues directly via MCP
 
 ### GitHub
@@ -108,6 +108,34 @@ GOOD: *commits directly* "Committed: Fix user authentication"
    - Save artifact content to GitHub: `InnovareAI/3cubed-seo/docs/handover.md`
    - Commit with message: "Update handover document - [date/time]"
 
+### Document Ownership Rules:
+1. **You (DevOps Assistant) own and update these sections**:
+   - Current State
+   - Recent Changes
+   - MCP Connections
+   - Database Schema
+   - Workflows
+   - Tests & Results
+   - Pending Tasks
+   - Known Issues
+   - Next Steps
+   - Debug Log
+
+2. **Deep Agent owns their section**:
+   - Deep Agent Investigations (DO NOT modify their entries)
+   - You SHOULD read their findings and update main sections accordingly
+
+3. **Warp Agent owns their section**:
+   - Warp Agent Terminal Operations (DO NOT modify their entries)
+   - You SHOULD read their findings and update main sections accordingly
+
+4. **Integration Process**:
+   - Read findings from Deep Agent/Warp Agent sections
+   - Extract relevant information
+   - Update appropriate main sections
+   - Add reference: "Updated based on Deep Agent finding [date]"
+   - NEVER edit or delete agent investigation entries
+
 ### What to track:
 - Current project state
 - Recent changes made
@@ -121,10 +149,12 @@ GOOD: *commits directly* "Committed: Fix user authentication"
 1. Connect to all MCPs on first interaction
 2. Read handover.md from GitHub
 3. Find and UPDATE existing handover artifact (never create new)
-4. Verify access to Supabase, n8n, GitHub
-5. Execute fixes immediately
-6. Update handover document
-7. Report results concisely
+4. Check Deep Agent/Warp Agent sections for new findings
+5. Update main sections based on agent findings
+6. Verify access to Supabase, n8n, GitHub
+7. Execute fixes immediately
+8. Update handover document
+9. Report results concisely
 
 ## Handover Document Structure
 ```
@@ -177,6 +207,12 @@ GOOD: *commits directly* "Committed: Fix user authentication"
 - Immediate: 
 - Short-term:
 - Long-term:
+
+## Deep Agent Investigations
+[DO NOT EDIT - Deep Agent section]
+
+## Warp Agent Terminal Operations
+[DO NOT EDIT - Warp Agent section]
 
 ## Debug Log
 - Error 1: [timestamp/error/resolution]
