@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import { THERAPEUTIC_AREAS } from '../constants/therapeuticAreas';
 
-// Version 4.2 - Added accuracy percentage to tabs and React success modal
+// Version 4.3 - TEMPORARY FIX: Removed generic_name from submission to fix database error
 // Last updated: 2025-07-26
 
 interface SubmissionFormProps {
@@ -171,14 +171,39 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
     setError(null);
 
     try {
-      // Copy reviewer email to submitter_email for backward compatibility
-      const submissionData = {
+      // TEMPORARY: Remove fields that don't exist in database yet
+      const { 
+        generic_name,
+        nct_number,
+        sponsor,
+        development_stage: formDevelopmentStage,
+        line_of_therapy,
+        route_of_administration,
+        key_biomarkers,
+        target_age_groups,
+        seo_reviewer_name,
+        seo_reviewer_email,
+        client_reviewer_name,
+        client_reviewer_email,
+        mlr_reviewer_name,
+        mlr_reviewer_email,
+        ...submittableData 
+      } = formData;
+
+      // Store full form data including generic_name in raw_input_content
+      const fullFormData = {
         ...formData,
+        // Include generic_name here so it's preserved
+        generic_name: formData.generic_name
+      };
+
+      const submissionData = {
+        ...submittableData,
         submitter_email: formData.seo_reviewer_email,
         submitter_name: formData.seo_reviewer_name,
         
-        // Store all form data as JSON for reference
-        raw_input_content: JSON.stringify(formData),
+        // Store ALL form data including generic_name as JSON
+        raw_input_content: JSON.stringify(fullFormData),
         
         // Default values for new submissions
         priority_level: 'medium',
@@ -191,10 +216,27 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         
         // Map array fields that already exist in DB
         geography: formData.geographic_markets,
-        target_audience: ['Specialist Physicians'] // Default for now
+        target_audience: ['Specialist Physicians'], // Default for now
+        
+        // Map development_stage to existing column (if it exists)
+        development_stage: formDevelopmentStage || null,
+        
+        // Store reviewer info in existing columns
+        seo_reviewer: {
+          name: formData.seo_reviewer_name,
+          email: formData.seo_reviewer_email
+        },
+        client_reviewer: {
+          name: formData.client_reviewer_name,
+          email: formData.client_reviewer_email
+        },
+        mlr_reviewer: {
+          name: formData.mlr_reviewer_name,
+          email: formData.mlr_reviewer_email
+        }
       };
 
-      console.log('Submitting to submissions table:', submissionData);
+      console.log('Submitting to submissions table (temporary fix):', submissionData);
 
       const { data, error: supabaseError } = await supabase
         .from('submissions')
@@ -663,7 +705,7 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
 
                 <div>
                   <label htmlFor="client_reviewer_name" className="block text-sm font-medium text-gray-700 mb-1">
-                    Client Contact Name <span className="text-red-500">*</span>
+                    Client Contact Name
                   </label>
                   <input
                     type="text"
@@ -671,7 +713,6 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
                     name="client_reviewer_name"
                     value={formData.client_reviewer_name}
                     onChange={handleChange}
-                    required
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Full name"
                   />
@@ -679,7 +720,7 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
 
                 <div>
                   <label htmlFor="client_reviewer_email" className="block text-sm font-medium text-gray-700 mb-1">
-                    Client Contact Email <span className="text-red-500">*</span>
+                    Client Contact Email
                   </label>
                   <input
                     type="email"
@@ -687,7 +728,6 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
                     name="client_reviewer_email"
                     value={formData.client_reviewer_email}
                     onChange={handleChange}
-                    required
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="email@company.com"
                   />
@@ -695,7 +735,7 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
 
                 <div>
                   <label htmlFor="mlr_reviewer_name" className="block text-sm font-medium text-gray-700 mb-1">
-                    MLR Reviewer Name <span className="text-red-500">*</span>
+                    MLR Reviewer Name
                   </label>
                   <input
                     type="text"
@@ -703,7 +743,6 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
                     name="mlr_reviewer_name"
                     value={formData.mlr_reviewer_name}
                     onChange={handleChange}
-                    required
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Full name"
                   />
@@ -711,7 +750,7 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
 
                 <div>
                   <label htmlFor="mlr_reviewer_email" className="block text-sm font-medium text-gray-700 mb-1">
-                    MLR Reviewer Email <span className="text-red-500">*</span>
+                    MLR Reviewer Email
                   </label>
                   <input
                     type="email"
@@ -719,7 +758,6 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
                     name="mlr_reviewer_email"
                     value={formData.mlr_reviewer_email}
                     onChange={handleChange}
-                    required
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="email@company.com"
                   />
