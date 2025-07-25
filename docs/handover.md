@@ -1,11 +1,11 @@
 # 3Cubed SEO Project Status & Handover
 
 ## Current State
-- [Date/Time] 2025-07-25 23:30 UTC
+- [Date/Time] 2025-07-26 00:00 UTC
 - Active branch: main
 - Last deployment: Pending (build successful)
 - **APP STATUS**: ✅ Running locally on port 3000
-- **FORM STATUS**: ✅ 4-section redesign implemented with progress bar
+- **FORM STATUS**: ✅ 4-section form with reordered sections and updated geographic markets
 - **DATABASE STATUS**: ⚠️ Migration required - missing new fields
 - **N8N STATUS**: ✅ FULLY OPERATIONAL - Webhook URL identified, workflow active
 - **SYSTEM STATE**: ⚠️ Form submission blocked until DB migration executed
@@ -26,19 +26,19 @@
 - Product Name*, Generic/INN Name*, Indication*, Therapeutic Area*
 - **Progress**: 65% data accuracy
 
-#### **Section 2: Team & Review Assignment** (Required) 
+#### **Section 2: Clinical Context** (Optional)
+- NCT Number, Sponsor, Development Stage, Line of Therapy, Patient Population
+- **Progress**: +20% accuracy (85% total)
+
+#### **Section 3: Advanced Optimization** (Optional)
+- Route, Combinations, Endpoints, Markets (USA/Canada/EU/UK/Global), Biomarkers, Age Groups
+- **Progress**: +10% accuracy (95% total)
+
+#### **Section 4: Team & Review Assignment** (Required) 
 - SEO Reviewer (Name*, Email*)
 - Client Contact (Name*, Email*)  
 - MLR Reviewer (Name*, Email*)
 - **Progress**: Workflow routing
-
-#### **Section 3: Clinical Context** (Optional)
-- NCT Number, Sponsor, Development Stage, Line of Therapy, Patient Population
-- **Progress**: +20% accuracy (85% total)
-
-#### **Section 4: Advanced Optimization** (Optional)
-- Route, Combinations, Endpoints, Markets, Biomarkers, Age Groups
-- **Progress**: +10% accuracy (95% total)
 
 ### **Progress Bar Features**:
 ```
@@ -105,6 +105,7 @@ const calculateProgress = (formData) => {
 ```
 
 ## Recent Changes
+- Change 21: **Reordered form sections and updated geographic markets** - Section order now 1→2→3→4 is Product→Clinical→Advanced→Team. Geographic markets reduced to USA, Canada, EU, UK, Global [2025-07-26 00:00] ✅
 - Change 20: **App running locally on port 3000** - Form with progress bar functional, awaiting DB migration [2025-07-25 23:30] ✅
 - Change 19: **Created database migration instructions** - Manual SQL execution required for new fields [2025-07-25 23:25] ⚠️
 - Change 18: **Implemented 4-section form redesign** - Form now has progress bar and includes generic_name field [2025-07-25 23:15] ✅
@@ -132,10 +133,11 @@ const calculateProgress = (formData) => {
 - **+ Advanced Fields**: 95% coverage (Route, Combinations, Endpoints, Markets)
 
 ## Debug Log
-- Form redesign implemented successfully
+- Form sections reordered successfully
+- Geographic markets updated to USA/Canada/EU/UK/Global only
 - Build successful: `dist/index.html` generated
 - App running on http://localhost:3000/
 - Database migration pending - blocking form submission
 
-Date: 2025-07-25 23:30 UTC
-Status: Form redesign complete, awaiting database migration
+Date: 2025-07-26 00:00 UTC
+Status: Form updates complete, awaiting database migration
