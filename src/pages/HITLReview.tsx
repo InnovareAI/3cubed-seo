@@ -19,10 +19,13 @@ export default function HITLReview() {
       const { data, error } = await supabase
         .from('submissions')
         .select('*')
-        .eq('langchain_status', 'needs_review')
+        .eq('ai_status', 'needs_processing')
         .order('created_at', { ascending: false })
       
-      if (error) throw error
+      if (error) {
+        console.error('Error fetching pending reviews:', error)
+        throw error
+      }
       return data as Submission[]
     }
   })
@@ -32,9 +35,10 @@ export default function HITLReview() {
       const { error } = await supabase
         .from('submissions')
         .update({ 
-          langchain_status: status,
-          workflow_stage: status === 'seo_approved' ? 'Client_Review' : 'Revision_Requested',
-          updated_at: new Date().toISOString()
+          ai_status: status,
+          workflow_stage: status === 'processed' ? 'seo_review' : 'draft',
+          updated_at: new Date().toISOString(),
+          last_updated: new Date().toISOString()
         })
         .eq('id', id)
       
@@ -47,11 +51,11 @@ export default function HITLReview() {
   })
 
   const handleApprove = (id: string) => {
-    updateStatus.mutate({ id, status: 'seo_approved' })
+    updateStatus.mutate({ id, status: 'processed' })
   }
 
   const handleReject = (id: string) => {
-    updateStatus.mutate({ id, status: 'rejected' })
+    updateStatus.mutate({ id, status: 'failed' })
   }
 
   if (isLoading) {
@@ -147,7 +151,7 @@ export default function HITLReview() {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <h4 className="text-sm font-medium text-gray-900">Indication</h4>
-                        <p className="mt-1 text-sm text-gray-600">{submission.raw_input_content}</p>
+                        <p className="mt-1 text-sm text-gray-600">{submission.indication || submission.raw_input_content}</p>
                       </div>
                       <div>
                         <h4 className="text-sm font-medium text-gray-900">Priority</h4>
@@ -166,10 +170,10 @@ export default function HITLReview() {
                       </div>
                     </div>
 
-                    {submission.langchain_error && (
+                    {submission.error_message && (
                       <div className="bg-red-50 rounded-lg p-4">
                         <h4 className="text-sm font-medium text-red-900">Processing Error</h4>
-                        <p className="mt-1 text-sm text-red-700">{submission.langchain_error}</p>
+                        <p className="mt-1 text-sm text-red-700">{submission.error_message}</p>
                       </div>
                     )}
                   </div>
