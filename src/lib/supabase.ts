@@ -52,42 +52,45 @@ export interface Submission {
   submitter_email: string
   submitter_company?: string
   product_name: string
-  therapeutic_area: string
+  therapeutic_area?: string | any
   stage: string
-  priority_level: 'High' | 'Medium' | 'Low'
+  priority_level: string
   raw_input_content: string
   ai_output?: any
-  langchain_status: string
+  ai_status?: string
+  ai_processing_status?: string
   workflow_stage: string
-  langchain_phase?: string
-  langchain_error?: string
-  langchain_retry_count: number
-  langchain_last_retry?: string
-  review_notes?: string
-  rejection_stage?: string
-  rejection_reason?: string
-  rejected_by?: string
-  rejected_at?: string
-  completed_at?: string
+  ai_phase?: string
+  ai_retry_count?: number
+  ai_last_retry?: string
+  error_message?: string | any
+  review_notes?: string | any
+  rejection_stage?: string | any
+  rejection_reason?: string | any
+  rejected_by?: string | any
+  rejected_at?: string | any
+  completed_at?: string | any
   created_at: string
   updated_at: string
+  last_updated?: string
   // SEO fields
-  seo_keywords?: string[]
-  long_tail_keywords?: string[]
-  consumer_questions?: string[]
-  h1_tag?: string
-  meta_title?: string
-  meta_description?: string
+  seo_keywords?: string[] | any
+  long_tail_keywords?: string[] | any
+  consumer_questions?: string[] | any
+  h1_tag?: string | any
+  meta_title?: string | any
+  meta_description?: string | any
   // Additional fields for client review
-  target_audience?: string[]
-  medical_indication?: string
-  dosage_form?: string
-  competitors?: string[]
-  positioning?: string
-  key_differentiators?: string[]
-  mechanism_of_action?: string
-  geography?: string[]
-  client_name?: string
+  target_audience?: string[] | any
+  medical_indication?: string | any
+  indication?: string | any
+  dosage_form?: string | any
+  competitors?: string[] | any
+  positioning?: string | any
+  key_differentiators?: string[] | any
+  mechanism_of_action?: string | any
+  geography?: string[] | any
+  client_name?: string | any
   client_review_responses?: any
   client_review_comments?: any
   client_reviewed_at?: string
@@ -100,20 +103,26 @@ export interface Submission {
   seo_internal_notes?: string
   seo_client_feedback?: string
   // AI-generated SEO fields
-  seo_title?: string // AI-generated SEO title (50-60 chars)
-  geo_event_tags?: string[] // AI-generated GEO event tags
-  geo_optimization?: GeoOptimization // AI-generated GEO optimization
-  seo_strategy_outline?: string // AI-generated SEO strategy
-  h2_tags?: string[] // AI-generated H2 tags from content
+  seo_title?: string | any
+  geo_event_tags?: string[] | any
+  geo_optimization?: GeoOptimization | any
+  seo_strategy_outline?: string | any
+  h2_tags?: string[] | any
   // Review tracking fields
-  reviewer_emails?: any // JSONB array of reviewer emails
-  competitive_analysis?: any // JSONB competitive analysis data
-  seo_enhancements?: any // JSONB SEO enhancement data
+  reviewer_emails?: any
+  competitive_analysis?: any
+  seo_enhancements?: any
   // GEO optimization fields
-  geo_optimization_score?: number
-  geo_readability_score?: number
+  geo_optimization_score?: number | any
+  geo_readability_score?: number | any
   geo_featured_snippet_potential?: boolean
   sponsor_name?: string
+  // Legacy fields (for backward compatibility)
+  langchain_status?: string
+  langchain_phase?: string
+  langchain_error?: string
+  langchain_retry_count?: number
+  langchain_last_retry?: string
 }
 
 export interface AuditLog {
