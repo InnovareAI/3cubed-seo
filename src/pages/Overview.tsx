@@ -1,14 +1,37 @@
 import { useQuery } from '@tanstack/react-query'
-import { FileText, Clock, TrendingUp, AlertCircle, Search, Users, Shield } from 'lucide-react'
+import { FileText, Clock, TrendingUp, AlertCircle, Search, Users, Shield, Sparkles } from 'lucide-react'
 import MetricCard from '@/components/MetricCard'
 import StatusDistributionChart from '@/components/StatusDistributionChart'
 import ProcessingQueue from '@/components/ProcessingQueue'
+import SEOProcessingQueue from '@/components/SEOProcessingQueue'
 import { useContentPieces } from '@/hooks/useContentPieces'
-import { ContentStatus } from '@/lib/supabase'
+import { ContentStatus, supabase } from '@/lib/supabase'
 
 export default function Overview() {
   // Fetch content pieces
   const { data: contentPieces, isLoading } = useContentPieces()
+  
+  // Fetch SEO generation statistics
+  const { data: seoStats } = useQuery({
+    queryKey: ['seo-stats'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('submissions')
+        .select('ai_processing_status')
+      
+      if (error) throw error
+      
+      const stats = {
+        total: data.length,
+        completed: data.filter(s => s.ai_processing_status === 'completed').length,
+        pending: data.filter(s => s.ai_processing_status === 'pending' || !s.ai_processing_status).length,
+        processing: data.filter(s => s.ai_processing_status === 'processing').length,
+        error: data.filter(s => s.ai_processing_status === 'error').length
+      }
+      
+      return stats
+    }
+  })
   
   // Fetch overview statistics
   const { data: stats } = useQuery({
@@ -75,39 +98,70 @@ export default function Overview() {
     <div className="p-6 max-w-7xl mx-auto">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">3cubed SEO Platform</h1>
-        <p className="text-gray-600 mt-2">Three-stage approval workflow for pharmaceutical content</p>
+        <p className="text-gray-600 mt-2">AI-powered pharmaceutical SEO content generation & approval workflow</p>
       </div>
       
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <MetricCard
-          title="Total Content"
-          value={stats?.totalContent || 0}
+          title="Total Submissions"
+          value={seoStats?.total || 0}
           icon={<FileText className="h-6 w-6" />}
           iconColor="text-blue-600"
           iconBgColor="bg-blue-100"
         />
         <MetricCard
-          title="In Review"
-          value={stats?.inReview || 0}
+          title="SEO Generated"
+          value={seoStats?.completed || 0}
+          icon={<Sparkles className="h-6 w-6" />}
+          iconColor="text-green-600"
+          iconBgColor="bg-green-100"
+        />
+        <MetricCard
+          title="In Pipeline"
+          value={(seoStats?.pending || 0) + (seoStats?.processing || 0)}
           icon={<Clock className="h-6 w-6" />}
           iconColor="text-yellow-600"
           iconBgColor="bg-yellow-100"
         />
         <MetricCard
-          title="Needs Revision"
-          value={stats?.needsRevision || 0}
-          icon={<AlertCircle className="h-6 w-6" />}
-          iconColor="text-red-600"
-          iconBgColor="bg-red-100"
-        />
-        <MetricCard
-          title="Completion Rate"
-          value={`${stats?.completionRate || 0}%`}
+          title="Success Rate"
+          value={seoStats?.total > 0 ? `${Math.round((seoStats.completed / seoStats.total) * 100)}%` : '0%'}
           icon={<TrendingUp className="h-6 w-6" />}
-          iconColor="text-green-600"
-          iconBgColor="bg-green-100"
+          iconColor="text-indigo-600"
+          iconBgColor="bg-indigo-100"
         />
+      </div>
+      
+      {/* SEO Generation Pipeline */}
+      <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
+        <h2 className="text-xl font-semibold mb-6">SEO Content Generation Pipeline</h2>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="text-center">
+            <div className="bg-yellow-100 text-yellow-600 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-2">
+              <span className="text-2xl font-bold">{seoStats?.pending || 0}</span>
+            </div>
+            <p className="text-sm font-medium">Pending</p>
+          </div>
+          <div className="text-center">
+            <div className="bg-blue-100 text-blue-600 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-2">
+              <span className="text-2xl font-bold">{seoStats?.processing || 0}</span>
+            </div>
+            <p className="text-sm font-medium">Processing</p>
+          </div>
+          <div className="text-center">
+            <div className="bg-green-100 text-green-600 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-2">
+              <span className="text-2xl font-bold">{seoStats?.completed || 0}</span>
+            </div>
+            <p className="text-sm font-medium">Completed</p>
+          </div>
+          <div className="text-center">
+            <div className="bg-red-100 text-red-600 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-2">
+              <span className="text-2xl font-bold">{seoStats?.error || 0}</span>
+            </div>
+            <p className="text-sm font-medium">Failed</p>
+          </div>
+        </div>
       </div>
       
       {/* Three-Stage Workflow Progress */}
@@ -131,10 +185,10 @@ export default function Overview() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Status Distribution */}
+        {/* SEO Processing Queue */}
         <div className="bg-white rounded-xl shadow-sm p-6">
-          <h2 className="text-xl font-semibold mb-4">Content Status Distribution</h2>
-          <StatusDistributionChart data={stats?.statusCounts || {}} />
+          <h2 className="text-xl font-semibold mb-4">SEO Content Generation</h2>
+          <SEOProcessingQueue />
         </div>
         
         {/* Recent Activity */}
