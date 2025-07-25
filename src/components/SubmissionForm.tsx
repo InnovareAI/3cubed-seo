@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { THERAPEUTIC_AREAS } from '../constants/therapeuticAreas';
 
+// Version 2.0 - Fixed table name to use 'submissions' instead of 'seo_requests'
+// Last updated: 2025-07-25
+
 interface SubmissionFormProps {
   onSuccess?: () => void;
   onClose?: () => void;
@@ -205,9 +208,9 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         last_updated: new Date().toISOString()
       };
 
-      console.log('Submitting data:', submissionData);
+      console.log('Submitting to submissions table:', submissionData);
 
-      // Use the correct table name: submissions (not seo_requests)
+      // IMPORTANT: Using the correct table name - 'submissions' (not 'seo_requests')
       const { data, error: supabaseError } = await supabase
         .from('submissions')
         .insert([submissionData])
