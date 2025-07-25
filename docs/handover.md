@@ -73,12 +73,19 @@
 6. **n8n workflow needs to generate PDF file** [HIGH/pending]
 7. **Connect Slack for error messages** [MEDIUM/pending]
 8. **Set up automated triggers for new submissions** [MEDIUM/pending]
+9. **🚨 CRITICAL: Integrate FDA & Clinical Trial Databases** [HIGHEST/pending]
+   - FDA Orange Book API integration
+   - ClinicalTrials.gov API connection
+   - FAERS safety database access
+   - PubMed/MEDLINE integration
+   - See "TODO: FDA & Clinical Trial Database Integration" artifact
 
 ## Known Issues
 - ~~Issue 1: n8n workflow using wrong table name 'pharma_seo_submissions' instead of 'submissions'~~ [RESOLVED ✅]
 - ~~Issue 2: All n8n executions failing with "Submission not found in database" error~~ [RESOLVED ✅]
 - ~~Issue 3: Business logic validation errors (not blocking - normal workflow)~~ [RESOLVED ✅]
 - Issue 4: Webhook trigger function hardcoded to old URL (workflows.innovareai.com) [WORKAROUND: Direct API calls]
+- Issue 5: **NOT accessing FDA/Clinical databases - using generic web search only** [CRITICAL - Key differentiator missing]
 
 ## Next Steps
 - Immediate: Process remaining submissions in queue through working n8n workflow
