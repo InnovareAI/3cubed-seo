@@ -1,13 +1,13 @@
 # 3Cubed SEO Project Status & Handover
 
 ## Current State
-- [Date/Time] 2025-07-25 06:00 UTC
+- [Date/Time] 2025-07-25 07:35 UTC
 - Active branch: main
 - Last deployment: Success (commit 4448b395)
 - **APP STATUS**: Form submission working - new submissions confirmed in database
 - **Recent Activity**: New test submission created at 14:15 UTC (ID: 68b0f633-dccb-4fa8-9988-ae5fa060dfce)
-- **N8N INVESTIGATION**: [2025-07-25 05:04] Comprehensive n8n workflow analysis completed - root cause identified
-- **CRITICAL FIX COMPLETED**: n8n workflow table name issue RESOLVED ✅
+- **N8N INVESTIGATION**: [2025-07-25 07:35] Webhook URL mismatch issue discovered - trigger function using old URL
+- **CRITICAL ISSUE**: Webhook trigger function appears hardcoded to old URL despite config updates
 
 ## Recent Changes
 - Change 1: Configured missing 3cubed-seo-webhook in n8n_webhooks table [2025-07-25 05:03:24]
@@ -88,15 +88,14 @@
 - **Test Entry**: GitHub PAT authentication working correctly
 - **Next**: Ready for collaborative investigation updates
 
-### [2025-07-25 06:00 UTC] - n8n Workflow Table Name Fix
-- **Finding 1**: Workflow was querying 'pharma_seo_submissions' instead of 'submissions'
-- **Finding 2**: All SQL queries updated to use correct table name
-- **Finding 3**: Workflow now successfully finding submissions in database
-- **Error Log**: Previous: "Submission not found in database"
-- **Root Cause**: Table name mismatch in all SQL nodes
-- **Status**: COMPLETED ✅
-- **Result**: ALL SEO CONTENT GENERATION UNBLOCKED
-- **Recommendation**: Process all pending submissions immediately
+### [2025-07-25 07:35 UTC] - Webhook Configuration Investigation
+- **Finding 1**: Database webhook configuration table has OLD URL hardcoded in trigger function
+- **Finding 2**: Updated n8n_webhooks table but trigger function still uses old URL
+- **Finding 3**: Cannot update webhook URL through standard configuration methods
+- **Error Log**: Webhook triggers going to old URL: workflows.innovareai.com instead of innovareai.app.n8n.cloud
+- **Root Cause**: Database function `trigger_n8n_webhook` appears hardcoded
+- **Status**: BLOCKED - requires database function update
+- **Recommendation**: Need to update database function or use direct HTTP calls to new n8n instance
 
 ### Instructions for Deep Agent
 When adding your findings to this document:
