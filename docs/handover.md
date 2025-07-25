@@ -6,6 +6,7 @@
 - Last deployment: Success (commit 4448b395)
 - **APP STATUS**: Form submission working - new submissions confirmed in database
 - **Recent Activity**: New test submission created at 14:15 UTC (ID: 68b0f633-dccb-4fa8-9988-ae5fa060dfce)
+- **N8N INVESTIGATION**: [2025-07-25 05:04] Comprehensive n8n workflow analysis completed - root cause identified
 
 ## Recent Changes
 - Fixed priority_level constraint: Changed from 'Medium' to 'medium' (commit b8b4c300)
@@ -37,8 +38,9 @@
   - Fixed column references: using `ai_status` and `ai_processing_status` instead of `langchain_status`
 
 ## Workflows
-- Active workflows: 
-- Recent fixes:
+- Active workflows: 3Cubed SEO (ID: 2o3DxEeLInnYV1Se) - FAILING at submission lookup
+- Recent investigation: [2025-07-25] Comprehensive n8n workflow analysis completed
+- Root cause: Data reference format issue in "Get Submission" database node
 
 ## Tests & Results
 ### Completed Tests
@@ -50,6 +52,16 @@
 - New submission verification: ✓ Confirmed (ID: 68b0f633-dccb-4fa8-9988-ae5fa060dfce)
 - Previous submission from tl@innovareai.com: ✓ Found (ID: a39f3fd6-c5e0-4253-b147-cc481e1cb411)
 - Test data prepared: ✓ Complete Phase III submission data ready
+
+### n8n Workflow Investigation [2025-07-25]
+- Webhook endpoint: ✓ Accessible (200 OK) at https://workflows.innovareai.com/webhook/3cubed-seo-webhook
+- Workflow activation: ✓ Active and receiving calls
+- Database credentials: ✓ Functional  
+- Data lookup: ❌ Failing due to incorrect reference format
+- Test submission ID: ec6a8407-2446-4217-8a93-6ced6cfe5de5 ❌ Not found in database
+- Execution #324: ❌ Failed in 950ms with "Submission not found" error
+- SQL Query: SELECT * FROM pharma_seo_submissions WHERE id = $1::uuid
+- Issue: Node references {{ $json.body.submission_id }} but webhook sends {{ $json.submission_id }}
 
 ### Failed Tests
 - n8n workflow list: Response too large (API connected but need to query specific workflows)
@@ -63,7 +75,7 @@
 1. **Fix form submission to Supabase** [HIGH/COMPLETED] ✓
 2. **Connect all CTA buttons to functions** [HIGH/pending] - Need to identify which buttons need functionality
 3. **Verify Supabase tables if needs cleanup** [MEDIUM/in-progress] - Table schema verified, test record created
-4. **Verify n8n workflow** [HIGH/pending] - Need specific workflow ID to query
+4. **Fix n8n workflow data reference** [HIGH/URGENT] - Change `{{ $json.body.submission_id }}` to `{{ $json.submission_id }}` in "Get Submission" node
 5. **Connect workflow output to dashboard** [HIGH/pending]
 6. **n8n workflow needs to generate PDF file** [HIGH/pending]
 7. **Connect Slack for error messages** [MEDIUM/pending]
@@ -73,7 +85,9 @@
 - **RESOLVED**: HITLReview page fixed - now using correct column `ai_status`
 - **RESOLVED**: TypeScript build errors fixed - Submission interface updated
 - **RESOLVED**: DashboardLayout was querying wrong column - now fixed
-- **n8n Workflow Integration**: Unable to access n8n workflow (ID: 2o3DxEeLInnYV1Se) to verify if field changes impact automation
+- **n8n Workflow Data Reference Bug**: "Get Submission" node using incorrect data reference `{{ $json.body.submission_id }}` instead of `{{ $json.submission_id }}` - causing "Submission not found in database" errors
+- **Workflow Execution Failing**: Recent execution #324 failed in 950ms at database lookup stage  
+- **Root Cause Identified**: Data reference format preventing submission lookup in workflow
 
 ## Next Steps
 - Immediate: Check form submission functionality and fix any issues
@@ -96,6 +110,10 @@
 - Success 1: [2025-07-25 14:17] Test submission created successfully in database
 - Error 6: [2025-07-25 14:23] Form submission "malformed array literal" - RESOLVED (commit 4448b395)
 - Success 2: [2025-07-25 14:30] Created comprehensive Phase III test data artifact for form testing
+- Investigation 1: [2025-07-25 05:04] n8n workflow comprehensive analysis completed
+- Error 7: [2025-07-25 05:04] n8n execution #324 failed - "Submission not found in database"  
+- Root Cause: [2025-07-25 05:04] Data reference format mismatch in "Get Submission" node
+- Solution: [2025-07-25 05:04] Change {{ $json.body.submission_id }} to {{ $json.submission_id }}
 
 ## Test Data References
 - **Form Test Data**: See "Complete Form Test Data - Field by Field" artifact for realistic Phase III submission data
