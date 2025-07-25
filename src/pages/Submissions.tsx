@@ -81,9 +81,9 @@ export default function Submissions() {
     const matchesSearch = searchTerm === '' || 
       submission.product_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       submission.compliance_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      submission.therapeutic_area.toLowerCase().includes(searchTerm.toLowerCase())
+      (submission.therapeutic_area && submission.therapeutic_area.toLowerCase().includes(searchTerm.toLowerCase()))
     
-    const matchesStatus = statusFilter === 'all' || submission.langchain_status === statusFilter
+    const matchesStatus = statusFilter === 'all' || submission.ai_status === statusFilter
     
     return matchesSearch && matchesStatus
   })
@@ -185,15 +185,15 @@ export default function Submissions() {
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {submission.therapeutic_area}
+                  {submission.therapeutic_area || 'Not specified'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {getWorkflowStageLabel(submission.workflow_stage)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeClass(submission.langchain_status)}`}>
-                    {getStatusIcon(submission.langchain_status)}
-                    {submission.langchain_status.replace(/_/g, ' ')}
+                  <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeClass(submission.ai_status || 'unknown')}`}>
+                    {getStatusIcon(submission.ai_status || 'unknown')}
+                    {(submission.ai_status || 'unknown').replace(/_/g, ' ')}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">

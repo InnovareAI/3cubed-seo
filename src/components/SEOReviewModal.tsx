@@ -318,7 +318,7 @@ export default function SEOReviewModal({ isOpen, onClose, content }: SEOReviewMo
                       <div>
                         <h4 className="text-sm font-medium text-gray-500 mb-2">Target Keywords</h4>
                         <div className="flex flex-wrap gap-2">
-                          {content.seo_keywords?.map((keyword, idx) => (
+                          {content.seo_keywords?.map((keyword: string, idx: number) => (
                             <div key={idx} className="flex items-center">
                               <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
                                 <Target className="h-3 w-3 mr-1" />
@@ -340,7 +340,7 @@ export default function SEOReviewModal({ isOpen, onClose, content }: SEOReviewMo
                         <div>
                           <h4 className="text-sm font-medium text-gray-500 mb-2">Long-tail Keywords</h4>
                           <div className="flex flex-wrap gap-2">
-                            {content.long_tail_keywords.map((keyword, idx) => (
+                            {content.long_tail_keywords.map((keyword: string, idx: number) => (
                               <span key={idx} className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
                                 {keyword}
                               </span>
@@ -354,7 +354,7 @@ export default function SEOReviewModal({ isOpen, onClose, content }: SEOReviewMo
                         <div>
                           <h4 className="text-sm font-medium text-gray-500 mb-2">Consumer Questions Addressed</h4>
                           <ul className="space-y-2">
-                            {content.consumer_questions.map((question, idx) => (
+                            {content.consumer_questions.map((question: string, idx: number) => (
                               <li key={idx} className="flex items-start">
                                 <span className="text-green-600 mr-2">•</span>
                                 <span className="text-sm text-gray-700">{question}</span>
