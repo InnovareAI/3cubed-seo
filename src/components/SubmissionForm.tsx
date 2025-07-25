@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import { THERAPEUTIC_AREAS } from '../constants/therapeuticAreas';
 
-// Version 4.0 - 4-section design with progress bar
+// Version 4.1 - Reordered sections with updated geographic markets
 // Last updated: 2025-07-25
 
 interface SubmissionFormProps {
@@ -17,28 +17,28 @@ interface FormData {
   indication: string;
   therapeutic_area: string;
   
-  // Section 2: Team & Review Assignment (Required)
-  seo_reviewer_name: string;
-  seo_reviewer_email: string;
-  client_reviewer_name: string;
-  client_reviewer_email: string;
-  mlr_reviewer_name: string;
-  mlr_reviewer_email: string;
-  
-  // Section 3: Clinical Context (Optional)
+  // Section 2: Clinical Context (Optional) - MOVED FROM SECTION 3
   nct_number: string;
   sponsor: string;
   development_stage: string;
   line_of_therapy: string;
   patient_population: string[];
   
-  // Section 4: Advanced Optimization (Optional)
+  // Section 3: Advanced Optimization (Optional) - MOVED FROM SECTION 4
   route_of_administration: string;
   combination_partners: string[];
   primary_endpoints: string[];
   geographic_markets: string[];
   key_biomarkers: string[];
   target_age_groups: string[];
+  
+  // Section 4: Team & Review Assignment (Required) - MOVED FROM SECTION 2
+  seo_reviewer_name: string;
+  seo_reviewer_email: string;
+  client_reviewer_name: string;
+  client_reviewer_email: string;
+  mlr_reviewer_name: string;
+  mlr_reviewer_email: string;
   
   // Legacy fields (hidden but still submitted)
   submitter_email: string;
@@ -53,28 +53,28 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
     indication: '',
     therapeutic_area: '',
     
-    // Section 2
-    seo_reviewer_name: '',
-    seo_reviewer_email: '',
-    client_reviewer_name: '',
-    client_reviewer_email: '',
-    mlr_reviewer_name: '',
-    mlr_reviewer_email: '',
-    
-    // Section 3
+    // Section 2 (formerly Section 3)
     nct_number: '',
     sponsor: '',
     development_stage: '',
     line_of_therapy: '',
     patient_population: [],
     
-    // Section 4
+    // Section 3 (formerly Section 4)
     route_of_administration: '',
     combination_partners: [],
     primary_endpoints: [],
     geographic_markets: [],
     key_biomarkers: [],
     target_age_groups: [],
+    
+    // Section 4 (formerly Section 2)
+    seo_reviewer_name: '',
+    seo_reviewer_email: '',
+    client_reviewer_name: '',
+    client_reviewer_email: '',
+    mlr_reviewer_name: '',
+    mlr_reviewer_email: '',
     
     // Legacy
     submitter_email: '',
@@ -85,9 +85,9 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
   const [error, setError] = useState<string | null>(null);
   const [expandedSections, setExpandedSections] = useState({
     section1: true,
-    section2: true,
+    section2: false,
     section3: false,
-    section4: false
+    section4: true
   });
 
   // Calculate progress based on filled fields
@@ -99,23 +99,23 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
     const section1Filled = section1Fields.every(field => formData[field as keyof FormData]);
     if (section1Filled) score += 65;
     
-    // Section 3: Clinical Context (+20%)
-    const section3Fields = ['nct_number', 'sponsor', 'development_stage', 'line_of_therapy'];
-    const section3Filled = section3Fields.filter(field => formData[field as keyof FormData]).length >= 2;
-    const section3ArraysFilled = formData.patient_population.length > 0;
-    if (section3Filled || section3ArraysFilled) score += 20;
+    // Section 2: Clinical Context (+20%) - formerly Section 3
+    const section2Fields = ['nct_number', 'sponsor', 'development_stage', 'line_of_therapy'];
+    const section2Filled = section2Fields.filter(field => formData[field as keyof FormData]).length >= 2;
+    const section2ArraysFilled = formData.patient_population.length > 0;
+    if (section2Filled || section2ArraysFilled) score += 20;
     
-    // Section 4: Advanced Optimization (+10%)
-    const section4Fields = ['route_of_administration'];
-    const section4Filled = section4Fields.some(field => formData[field as keyof FormData]);
-    const section4ArraysFilled = [
+    // Section 3: Advanced Optimization (+10%) - formerly Section 4
+    const section3Fields = ['route_of_administration'];
+    const section3Filled = section3Fields.some(field => formData[field as keyof FormData]);
+    const section3ArraysFilled = [
       formData.combination_partners,
       formData.primary_endpoints,
       formData.geographic_markets,
       formData.key_biomarkers,
       formData.target_age_groups
     ].some(arr => arr.length > 0);
-    if (section4Filled || section4ArraysFilled) score += 10;
+    if (section3Filled || section3ArraysFilled) score += 10;
     
     return Math.min(score, 95);
   }, [formData]);
@@ -370,16 +370,16 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         )}
       </div>
 
-      {/* Section 2: Team & Review Assignment */}
-      <div className="bg-white rounded-lg border-2 border-blue-500 overflow-hidden">
+      {/* Section 2: Clinical Context (formerly Section 3) */}
+      <div className="bg-white rounded-lg border border-gray-300 overflow-hidden">
         <button
           type="button"
           onClick={() => toggleSection('section2')}
-          className="w-full px-6 py-4 bg-blue-50 hover:bg-blue-100 transition-colors flex items-center justify-between"
+          className="w-full px-6 py-4 bg-gray-50 hover:bg-gray-100 transition-colors flex items-center justify-between"
         >
           <div className="flex items-center">
-            <span className="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm font-bold">2</span>
-            <h3 className="text-lg font-semibold text-gray-900">Team & Review Assignment (Required)</h3>
+            <span className="bg-green-500 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm font-bold">2</span>
+            <h3 className="text-lg font-semibold text-gray-900">Clinical Context (Optional - +20% Accuracy)</h3>
           </div>
           <svg className={`w-5 h-5 text-gray-600 transition-transform ${expandedSections.section2 ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -387,125 +387,6 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         </button>
         
         {expandedSections.section2 && (
-          <div className="p-6 space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="seo_reviewer_name" className="block text-sm font-medium text-gray-700 mb-1">
-                  SEO Reviewer Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  id="seo_reviewer_name"
-                  name="seo_reviewer_name"
-                  value={formData.seo_reviewer_name}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Full name"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="seo_reviewer_email" className="block text-sm font-medium text-gray-700 mb-1">
-                  SEO Reviewer Email <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="email"
-                  id="seo_reviewer_email"
-                  name="seo_reviewer_email"
-                  value={formData.seo_reviewer_email}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="email@company.com"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="client_reviewer_name" className="block text-sm font-medium text-gray-700 mb-1">
-                  Client Contact Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  id="client_reviewer_name"
-                  name="client_reviewer_name"
-                  value={formData.client_reviewer_name}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Full name"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="client_reviewer_email" className="block text-sm font-medium text-gray-700 mb-1">
-                  Client Contact Email <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="email"
-                  id="client_reviewer_email"
-                  name="client_reviewer_email"
-                  value={formData.client_reviewer_email}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="email@company.com"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="mlr_reviewer_name" className="block text-sm font-medium text-gray-700 mb-1">
-                  MLR Reviewer Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  id="mlr_reviewer_name"
-                  name="mlr_reviewer_name"
-                  value={formData.mlr_reviewer_name}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Full name"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="mlr_reviewer_email" className="block text-sm font-medium text-gray-700 mb-1">
-                  MLR Reviewer Email <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="email"
-                  id="mlr_reviewer_email"
-                  name="mlr_reviewer_email"
-                  value={formData.mlr_reviewer_email}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="email@company.com"
-                />
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Section 3: Clinical Context */}
-      <div className="bg-white rounded-lg border border-gray-300 overflow-hidden">
-        <button
-          type="button"
-          onClick={() => toggleSection('section3')}
-          className="w-full px-6 py-4 bg-gray-50 hover:bg-gray-100 transition-colors flex items-center justify-between"
-        >
-          <div className="flex items-center">
-            <span className="bg-green-500 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm font-bold">3</span>
-            <h3 className="text-lg font-semibold text-gray-900">Clinical Context (Optional - +20% Accuracy)</h3>
-          </div>
-          <svg className={`w-5 h-5 text-gray-600 transition-transform ${expandedSections.section3 ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
-        
-        {expandedSections.section3 && (
           <div className="p-6 space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -615,23 +496,23 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         )}
       </div>
 
-      {/* Section 4: Advanced Optimization */}
+      {/* Section 3: Advanced Optimization (formerly Section 4) */}
       <div className="bg-white rounded-lg border border-gray-300 overflow-hidden">
         <button
           type="button"
-          onClick={() => toggleSection('section4')}
+          onClick={() => toggleSection('section3')}
           className="w-full px-6 py-4 bg-gray-50 hover:bg-gray-100 transition-colors flex items-center justify-between"
         >
           <div className="flex items-center">
-            <span className="bg-purple-500 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm font-bold">4</span>
+            <span className="bg-purple-500 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm font-bold">3</span>
             <h3 className="text-lg font-semibold text-gray-900">Advanced Optimization (Optional - +10% Accuracy)</h3>
           </div>
-          <svg className={`w-5 h-5 text-gray-600 transition-transform ${expandedSections.section4 ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className={`w-5 h-5 text-gray-600 transition-transform ${expandedSections.section3 ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
         </button>
         
-        {expandedSections.section4 && (
+        {expandedSections.section3 && (
           <div className="p-6 space-y-4">
             <div>
               <label htmlFor="route_of_administration" className="block text-sm font-medium text-gray-700 mb-1">
@@ -692,15 +573,11 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
               </label>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                 {[
-                  'United States',
-                  'European Union',
-                  'United Kingdom',
-                  'Japan',
-                  'China',
+                  'USA',
                   'Canada',
-                  'Australia',
-                  'Brazil',
-                  'India'
+                  'EU',
+                  'UK',
+                  'Global'
                 ].map(market => (
                   <label key={market} className="flex items-center">
                     <input
@@ -714,6 +591,125 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
                     <span className="text-sm">{market}</span>
                   </label>
                 ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Section 4: Team & Review Assignment (formerly Section 2) */}
+      <div className="bg-white rounded-lg border-2 border-blue-500 overflow-hidden">
+        <button
+          type="button"
+          onClick={() => toggleSection('section4')}
+          className="w-full px-6 py-4 bg-blue-50 hover:bg-blue-100 transition-colors flex items-center justify-between"
+        >
+          <div className="flex items-center">
+            <span className="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm font-bold">4</span>
+            <h3 className="text-lg font-semibold text-gray-900">Team & Review Assignment (Required)</h3>
+          </div>
+          <svg className={`w-5 h-5 text-gray-600 transition-transform ${expandedSections.section4 ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        
+        {expandedSections.section4 && (
+          <div className="p-6 space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="seo_reviewer_name" className="block text-sm font-medium text-gray-700 mb-1">
+                  SEO Reviewer Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="seo_reviewer_name"
+                  name="seo_reviewer_name"
+                  value={formData.seo_reviewer_name}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Full name"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="seo_reviewer_email" className="block text-sm font-medium text-gray-700 mb-1">
+                  SEO Reviewer Email <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="email"
+                  id="seo_reviewer_email"
+                  name="seo_reviewer_email"
+                  value={formData.seo_reviewer_email}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="email@company.com"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="client_reviewer_name" className="block text-sm font-medium text-gray-700 mb-1">
+                  Client Contact Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="client_reviewer_name"
+                  name="client_reviewer_name"
+                  value={formData.client_reviewer_name}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Full name"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="client_reviewer_email" className="block text-sm font-medium text-gray-700 mb-1">
+                  Client Contact Email <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="email"
+                  id="client_reviewer_email"
+                  name="client_reviewer_email"
+                  value={formData.client_reviewer_email}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="email@company.com"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="mlr_reviewer_name" className="block text-sm font-medium text-gray-700 mb-1">
+                  MLR Reviewer Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="mlr_reviewer_name"
+                  name="mlr_reviewer_name"
+                  value={formData.mlr_reviewer_name}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Full name"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="mlr_reviewer_email" className="block text-sm font-medium text-gray-700 mb-1">
+                  MLR Reviewer Email <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="email"
+                  id="mlr_reviewer_email"
+                  name="mlr_reviewer_email"
+                  value={formData.mlr_reviewer_email}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="email@company.com"
+                />
               </div>
             </div>
           </div>
