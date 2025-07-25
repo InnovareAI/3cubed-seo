@@ -53,7 +53,7 @@ export default function DashboardLayout() {
         const { count, error } = await supabase
           .from('submissions')
           .select('*', { count: 'exact', head: true })
-          .eq('langchain_status', 'needs_review')
+          .eq('ai_status', 'needs_processing')
         
         if (error) {
           console.error('Error fetching pending reviews:', error)
