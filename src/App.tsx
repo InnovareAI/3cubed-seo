@@ -20,6 +20,9 @@ import SEOReviewPageDetail from './pages/SEOReviewPageDetail'
 import ClientReviewDetail from './pages/ClientReviewDetail'
 import MLRReviewDetail from './pages/MLRReviewDetail'
 
+// Cache buster - updated 2025-07-25 03:20 UTC
+const VERSION = '2.0.1'
+
 // Temporary placeholder component for missing pages
 function ComingSoon({ title }: { title: string }) {
   return (
@@ -33,7 +36,7 @@ function ComingSoon({ title }: { title: string }) {
 }
 
 function App() {
-  console.log('App component rendered')
+  console.log(`App component rendered - Version ${VERSION}`)
   console.log('Env mode:', import.meta.env.MODE)
   console.log('All env vars:', Object.keys(import.meta.env))
   console.log('Supabase URL exists:', !!import.meta.env.VITE_SUPABASE_URL)
