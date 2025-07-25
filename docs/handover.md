@@ -1,15 +1,19 @@
 # 3Cubed SEO Project Status & Handover
 
 ## Current State
-- [2025-07-24 21:30 UTC]
+- [2025-07-25 UTC]
 - Active branch: main
 - Last deployment: Auto-deploy triggered from commits
+- **CRITICAL**: Form trying to insert into wrong table (`seo_requests` instead of `submissions`)
 
 ## Recent Changes
 - Fixed priority_level constraint: Changed from 'Medium' to 'medium' (commit b8b4c300)
 - Fixed workflow_stage constraint: Changed from 'Form_Submitted' to 'draft' (commit 0720d8c0)
 - Fixed form submission table name: Changed from 'pharma_seo_submissions' to 'seo_requests' (commit d3def159)
 - Fixed form reset bug: treatment_settings array type (commit 7ea7fa8e)
+- **CRITICAL FIX**: Form was using wrong table name - updated to use 'submissions' table (commit 83ad7dba)
+- Added version cache buster to force browser reload (commit b64023f1)
+- **Fixed HITLReview page**: Changed from `langchain_status` to `ai_status` column (commit 520aa0fb)
 - **Form submission now working** - all database constraint issues resolved
 
 ## MCP Connections
@@ -18,10 +22,11 @@
 - GitHub: ✓ Connected (InnovareAI/3cubed-seo)
 
 ## Database Schema
-- Tables: seo_requests (main submission table)
+- Tables: submissions (main submission table)
 - Recent modifications:
   - priority_level: Now accepts lowercase values only ('low', 'medium', 'high')
   - workflow_stage: Now accepts lowercase values ('draft', 'seo_review', etc.)
+  - Fixed column references: using `ai_status` and `ai_processing_status` instead of `langchain_status`
 
 ## Workflows
 - Active workflows:
@@ -46,12 +51,13 @@
 2. Task [priority/status]
 
 ## Known Issues
+- **RESOLVED**: Form submission errors fixed by correcting table name to 'submissions'
+- **RESOLVED**: HITLReview page fixed - now using correct column `ai_status`
+- **Browser Cache Issue**: If form still tries to submit to 'seo_requests', user needs to:
+  1. Hard refresh (Ctrl+F5 or Cmd+Shift+R)
+  2. Clear browser cache
+  3. Check console for version: should show "Version 2.0.1"
 - **n8n Workflow Integration**: Unable to access n8n workflow (ID: 2o3DxEeLInnYV1Se) to verify if field changes impact automation
-- Field mappings that changed:
-  - priority_level: 'Medium' → 'medium'
-  - workflow_stage: 'Form_Submitted' → 'draft'
-- Need to verify webhook triggers still work
-- **RESOLVED**: Form submission errors fixed by correcting table name and constraint values
 
 ## Next Steps
 - Immediate: Test form submission to verify workflow triggers
@@ -59,5 +65,5 @@
 - Long-term: Document workflow dependencies
 
 ## Debug Log
-- Error 1: [timestamp/error/resolution]
-- Error 2: [timestamp/error/resolution]
+- Error 1: [2025-07-25] Form submission 400 error - table name mismatch - RESOLVED
+- Error 2: [2025-07-25] HITLReview 400 error - column name mismatch - RESOLVED
