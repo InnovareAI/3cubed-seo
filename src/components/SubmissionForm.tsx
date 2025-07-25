@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import { THERAPEUTIC_AREAS } from '../constants/therapeuticAreas';
 
-// Version 3.0 - Simplified form with only 3 mandatory fields + email
+// Version 4.0 - 4-section design with progress bar
 // Last updated: 2025-07-25
 
 interface SubmissionFormProps {
@@ -11,89 +11,121 @@ interface SubmissionFormProps {
 }
 
 interface FormData {
-  // Essential Fields (3 + email)
+  // Section 1: Product Information (Required)
   product_name: string;
+  generic_name: string;
   indication: string;
   therapeutic_area: string;
-  submitter_email: string;
   
-  // All other fields are optional
-  submitter_name: string;
-  stage: string;
-  client_name: string;
+  // Section 2: Team & Review Assignment (Required)
+  seo_reviewer_name: string;
+  seo_reviewer_email: string;
   client_reviewer_name: string;
   client_reviewer_email: string;
   mlr_reviewer_name: string;
   mlr_reviewer_email: string;
-  product_code: string;
-  target_audience: string[];
-  geography: string[];
-  key_advantages: string;
-  competitor_names: string;
-  competitor_urls: string;
-  problem_solved: string;
-  treatment_settings: string[];
-  mechanism_of_action: string;
-  clinical_trials: string;
-  key_results: string;
-  safety_info: string;
-  dosing_info: string;
-  patient_population: string;
-  regulatory_status: string;
-  patient_numbers: string;
-  industry_keywords: string;
-  avoid_keywords: string;
-  website_url: string;
-  unique_value_prop: string;
-  conference_data: string;
-  kol_names: string;
-  special_considerations: string;
+  
+  // Section 3: Clinical Context (Optional)
+  nct_number: string;
+  sponsor: string;
+  development_stage: string;
+  line_of_therapy: string;
+  patient_population: string[];
+  
+  // Section 4: Advanced Optimization (Optional)
+  route_of_administration: string;
+  combination_partners: string[];
+  primary_endpoints: string[];
+  geographic_markets: string[];
+  key_biomarkers: string[];
+  target_age_groups: string[];
+  
+  // Legacy fields (hidden but still submitted)
+  submitter_email: string;
+  submitter_name: string;
 }
 
 export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClose }) => {
   const [formData, setFormData] = useState<FormData>({
-    // Essential fields
+    // Section 1
     product_name: '',
+    generic_name: '',
     indication: '',
     therapeutic_area: '',
-    submitter_email: '',
     
-    // Optional fields
-    submitter_name: '',
-    stage: '',
-    client_name: '',
+    // Section 2
+    seo_reviewer_name: '',
+    seo_reviewer_email: '',
     client_reviewer_name: '',
     client_reviewer_email: '',
     mlr_reviewer_name: '',
     mlr_reviewer_email: '',
-    product_code: '',
-    target_audience: [],
-    geography: [],
-    key_advantages: '',
-    competitor_names: '',
-    competitor_urls: '',
-    problem_solved: '',
-    treatment_settings: [],
-    mechanism_of_action: '',
-    clinical_trials: '',
-    key_results: '',
-    safety_info: '',
-    dosing_info: '',
-    patient_population: '',
-    regulatory_status: '',
-    patient_numbers: '',
-    industry_keywords: '',
-    avoid_keywords: '',
-    website_url: '',
-    unique_value_prop: '',
-    conference_data: '',
-    kol_names: '',
-    special_considerations: ''
+    
+    // Section 3
+    nct_number: '',
+    sponsor: '',
+    development_stage: '',
+    line_of_therapy: '',
+    patient_population: [],
+    
+    // Section 4
+    route_of_administration: '',
+    combination_partners: [],
+    primary_endpoints: [],
+    geographic_markets: [],
+    key_biomarkers: [],
+    target_age_groups: [],
+    
+    // Legacy
+    submitter_email: '',
+    submitter_name: ''
   });
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showOptionalFields, setShowOptionalFields] = useState(false);
+  const [expandedSections, setExpandedSections] = useState({
+    section1: true,
+    section2: true,
+    section3: false,
+    section4: false
+  });
+
+  // Calculate progress based on filled fields
+  const progress = useMemo(() => {
+    let score = 0;
+    
+    // Section 1: Product Information (65%)
+    const section1Fields = ['product_name', 'generic_name', 'indication', 'therapeutic_area'];
+    const section1Filled = section1Fields.every(field => formData[field as keyof FormData]);
+    if (section1Filled) score += 65;
+    
+    // Section 3: Clinical Context (+20%)
+    const section3Fields = ['nct_number', 'sponsor', 'development_stage', 'line_of_therapy'];
+    const section3Filled = section3Fields.filter(field => formData[field as keyof FormData]).length >= 2;
+    const section3ArraysFilled = formData.patient_population.length > 0;
+    if (section3Filled || section3ArraysFilled) score += 20;
+    
+    // Section 4: Advanced Optimization (+10%)
+    const section4Fields = ['route_of_administration'];
+    const section4Filled = section4Fields.some(field => formData[field as keyof FormData]);
+    const section4ArraysFilled = [
+      formData.combination_partners,
+      formData.primary_endpoints,
+      formData.geographic_markets,
+      formData.key_biomarkers,
+      formData.target_age_groups
+    ].some(arr => arr.length > 0);
+    if (section4Filled || section4ArraysFilled) score += 10;
+    
+    return Math.min(score, 95);
+  }, [formData]);
+
+  const progressMessage = useMemo(() => {
+    if (progress >= 95) return "Maximum optimization - competitive intelligence included";
+    if (progress >= 85) return "Comprehensive database coverage achieved";
+    if (progress >= 65) return "Ready to generate basic SEO content";
+    return "Fill in product information to begin";
+  }, [progress]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -102,7 +134,7 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
       const checkbox = e.target as HTMLInputElement;
       const fieldName = name as keyof FormData;
       
-      if (fieldName === 'target_audience' || fieldName === 'geography' || fieldName === 'treatment_settings') {
+      if (['patient_population', 'combination_partners', 'primary_endpoints', 'geographic_markets', 'key_biomarkers', 'target_age_groups'].includes(fieldName)) {
         const currentValues = formData[fieldName] as string[];
         if (checkbox.checked) {
           setFormData(prev => ({
@@ -121,58 +153,24 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
     }
   };
 
+  const toggleSection = (section: keyof typeof expandedSections) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
 
     try {
+      // Copy reviewer email to submitter_email for backward compatibility
       const submissionData = {
-        // Essential fields
-        product_name: formData.product_name,
-        indication: formData.indication,
-        therapeutic_area: formData.therapeutic_area,
-        submitter_email: formData.submitter_email,
-        
-        // Optional fields - only include if filled
-        submitter_name: formData.submitter_name || null,
-        stage: formData.stage || null,
-        mechanism_of_action: formData.mechanism_of_action || null,
-        key_differentiators: formData.key_advantages || null,
-        
-        // Array fields - send empty arrays if not filled
-        target_audience: formData.target_audience.length > 0 ? formData.target_audience : [],
-        geography: formData.geography.length > 0 ? formData.geography : [],
-        treatment_setting: formData.treatment_settings.length > 0 ? formData.treatment_settings : [],
-        
-        // Store additional data in appropriate fields
-        client_name: formData.client_name || null,
-        client_reviewer_name: formData.client_reviewer_name || null,
-        client_reviewer_email: formData.client_reviewer_email || null,
-        mlr_reviewer_name: formData.mlr_reviewer_name || null,
-        mlr_reviewer_email: formData.mlr_reviewer_email || null,
-        
-        // Store competitor info
-        competitor_products: formData.competitor_names ? formData.competitor_names.split(',').map(s => s.trim()) : [],
-        competitive_positioning: formData.problem_solved || null,
-        
-        // Store clinical data
-        clinical_trial_details: formData.clinical_trials || null,
-        primary_endpoints: formData.key_results || null,
-        safety_profile: formData.safety_info || null,
-        dosing_information: formData.dosing_info || null,
-        patient_population: formData.patient_population || null,
-        regulatory_status: formData.regulatory_status ? [formData.regulatory_status] : [],
-        market_size: formData.patient_numbers || null,
-        
-        // Store additional keywords and info
-        additional_keywords: formData.industry_keywords || null,
-        content_restrictions: formData.avoid_keywords ? formData.avoid_keywords.split(',').map(s => s.trim()) : [],
-        existing_digital_assets: formData.website_url || null,
-        unmet_medical_need: formData.unique_value_prop || null,
-        conference_presence: formData.conference_data ? [formData.conference_data] : [],
-        key_opinion_leaders: formData.kol_names ? formData.kol_names.split(',').map(s => s.trim()) : [],
-        special_considerations: formData.special_considerations || null,
+        ...formData,
+        submitter_email: formData.seo_reviewer_email,
+        submitter_name: formData.seo_reviewer_name,
         
         // Store all form data as JSON for reference
         raw_input_content: JSON.stringify(formData),
@@ -184,7 +182,11 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         compliance_id: `COMP-${Date.now()}`,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        last_updated: new Date().toISOString()
+        last_updated: new Date().toISOString(),
+        
+        // Map array fields that already exist in DB
+        geography: formData.geographic_markets,
+        target_audience: ['Specialist Physicians'] // Default for now
       };
 
       console.log('Submitting to submissions table:', submissionData);
@@ -204,39 +206,28 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
       // Reset form
       setFormData({
         product_name: '',
+        generic_name: '',
         indication: '',
         therapeutic_area: '',
-        submitter_email: '',
-        submitter_name: '',
-        stage: '',
-        client_name: '',
+        seo_reviewer_name: '',
+        seo_reviewer_email: '',
         client_reviewer_name: '',
         client_reviewer_email: '',
         mlr_reviewer_name: '',
         mlr_reviewer_email: '',
-        product_code: '',
-        target_audience: [],
-        geography: [],
-        key_advantages: '',
-        competitor_names: '',
-        competitor_urls: '',
-        problem_solved: '',
-        treatment_settings: [],
-        mechanism_of_action: '',
-        clinical_trials: '',
-        key_results: '',
-        safety_info: '',
-        dosing_info: '',
-        patient_population: '',
-        regulatory_status: '',
-        patient_numbers: '',
-        industry_keywords: '',
-        avoid_keywords: '',
-        website_url: '',
-        unique_value_prop: '',
-        conference_data: '',
-        kol_names: '',
-        special_considerations: ''
+        nct_number: '',
+        sponsor: '',
+        development_stage: '',
+        line_of_therapy: '',
+        patient_population: [],
+        route_of_administration: '',
+        combination_partners: [],
+        primary_endpoints: [],
+        geographic_markets: [],
+        key_biomarkers: [],
+        target_age_groups: [],
+        submitter_email: '',
+        submitter_name: ''
       });
       
       // Show success message
@@ -266,345 +257,471 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
+    <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
         <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm">
           {error}
         </div>
       )}
 
-      {/* Quick Submit Notice */}
-      <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-        <h3 className="text-lg font-semibold text-green-900 mb-2">✨ Quick Submit - Only 4 Required Fields!</h3>
-        <p className="text-sm text-green-700">
-          Submit your SEO request in 30 seconds. Our AI will automatically pull clinical trial data, 
-          FDA approvals, and published research from medical databases.
-        </p>
-      </div>
-
-      {/* Essential Fields Section */}
-      <div className="bg-white p-6 rounded-lg border-2 border-blue-500 shadow-sm">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-          <span className="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center mr-2 text-sm">1</span>
-          Essential Information (Required)
-        </h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="product_name" className="block text-sm font-medium text-gray-700 mb-1">
-              Product Name <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              id="product_name"
-              name="product_name"
-              value={formData.product_name}
-              onChange={handleChange}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="e.g., Keytruda, Carvykti, Opdivo"
-            />
-            <p className="text-xs text-gray-500 mt-1">The actual drug name (NOT the development stage)</p>
-          </div>
-
-          <div>
-            <label htmlFor="submitter_email" className="block text-sm font-medium text-gray-700 mb-1">
-              Your Email <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="email"
-              id="submitter_email"
-              name="submitter_email"
-              value={formData.submitter_email}
-              onChange={handleChange}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="your.email@company.com"
-            />
-            <p className="text-xs text-gray-500 mt-1">For delivery notifications</p>
-          </div>
-
-          <div>
-            <label htmlFor="indication" className="block text-sm font-medium text-gray-700 mb-1">
-              Medical Indication <span className="text-red-500">*</span>
-            </label>
-            <textarea
-              id="indication"
-              name="indication"
-              value={formData.indication}
-              onChange={handleChange}
-              required
-              rows={2}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="e.g., Non-small cell lung cancer, Multiple myeloma, Rheumatoid arthritis"
-            />
-            <p className="text-xs text-gray-500 mt-1">What condition does this treat?</p>
-          </div>
-
-          <div>
-            <label htmlFor="therapeutic_area" className="block text-sm font-medium text-gray-700 mb-1">
-              Therapeutic Area <span className="text-red-500">*</span>
-            </label>
-            <select
-              id="therapeutic_area"
-              name="therapeutic_area"
-              value={formData.therapeutic_area}
-              onChange={handleChange}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Select Therapeutic Area</option>
-              {THERAPEUTIC_AREAS.map(area => (
-                <option key={area} value={area}>{area}</option>
-              ))}
-            </select>
-            <p className="text-xs text-gray-500 mt-1">Medical specialty category</p>
-          </div>
+      {/* Progress Bar */}
+      <div className="bg-white p-4 rounded-lg border border-gray-200">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-sm font-semibold text-gray-700">Data Accuracy</h3>
+          <span className="text-sm font-bold text-blue-600">{progress}%</span>
         </div>
+        <div className="w-full bg-gray-200 rounded-full h-3 mb-2">
+          <div 
+            className="bg-gradient-to-r from-blue-500 to-blue-600 h-3 rounded-full transition-all duration-500"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+        <p className="text-xs text-gray-600">{progressMessage}</p>
       </div>
 
-      {/* Optional Fields Toggle */}
-      <div className="text-center">
+      {/* Section 1: Product Information */}
+      <div className="bg-white rounded-lg border-2 border-blue-500 overflow-hidden">
         <button
           type="button"
-          onClick={() => setShowOptionalFields(!showOptionalFields)}
-          className="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-md hover:bg-blue-100 transition-colors"
+          onClick={() => toggleSection('section1')}
+          className="w-full px-6 py-4 bg-blue-50 hover:bg-blue-100 transition-colors flex items-center justify-between"
         >
-          {showOptionalFields ? (
-            <>
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-              </svg>
-              Hide Optional Fields
-            </>
-          ) : (
-            <>
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-              Add More Details (Optional - Enhances SEO Quality)
-            </>
-          )}
-        </button>
-      </div>
-
-      {/* Optional Fields */}
-      {showOptionalFields && (
-        <>
-          {/* Recommended Fields */}
-          <div className="bg-gray-50 p-6 rounded-lg">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <span className="bg-gray-500 text-white rounded-full w-8 h-8 flex items-center justify-center mr-2 text-sm">2</span>
-              Recommended Fields (Improves SEO Quality)
-            </h3>
-            
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="stage" className="block text-sm font-medium text-gray-700 mb-1">
-                  Development Stage
-                </label>
-                <select
-                  id="stage"
-                  name="stage"
-                  value={formData.stage}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">Select Stage</option>
-                  <option value="Phase III">Phase III</option>
-                  <option value="Market Shaping">Market Shaping</option>
-                  <option value="Market Launch">Market Launch</option>
-                </select>
-              </div>
-
-              <div>
-                <label htmlFor="key_advantages" className="block text-sm font-medium text-gray-700 mb-1">
-                  Key Product Advantages
-                </label>
-                <textarea
-                  id="key_advantages"
-                  name="key_advantages"
-                  value={formData.key_advantages}
-                  onChange={handleChange}
-                  rows={4}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="• Once daily dosing (vs. multiple daily doses)
-• Better safety profile (fewer side effects)
-• Oral medication (vs. injections)"
-                />
-                <p className="text-xs text-gray-500 mt-1">What makes your product better?</p>
-              </div>
-
-              <div>
-                <label htmlFor="competitor_names" className="block text-sm font-medium text-gray-700 mb-1">
-                  Competitor Products
-                </label>
-                <textarea
-                  id="competitor_names"
-                  name="competitor_names"
-                  value={formData.competitor_names}
-                  onChange={handleChange}
-                  rows={2}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="e.g., Humira, Enbrel, Remicade"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Target Markets (Select up to 3)
-                </label>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                  {[
-                    { id: 'geo_usa', value: 'United States', label: 'United States' },
-                    { id: 'geo_eu', value: 'European Union', label: 'European Union' },
-                    { id: 'geo_uk', value: 'United Kingdom', label: 'United Kingdom' },
-                    { id: 'geo_canada', value: 'Canada', label: 'Canada' },
-                    { id: 'geo_japan', value: 'Japan', label: 'Japan' },
-                    { id: 'geo_global', value: 'Global', label: 'Global' }
-                  ].map(option => (
-                    <div key={option.id} className="flex items-center">
-                      <input
-                        type="checkbox"
-                        id={option.id}
-                        name="geography"
-                        value={option.value}
-                        checked={formData.geography.includes(option.value)}
-                        onChange={handleChange}
-                        disabled={formData.geography.length >= 3 && !formData.geography.includes(option.value)}
-                        className="mr-2"
-                      />
-                      <label htmlFor={option.id} className="text-sm">{option.label}</label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Target Audience
-                </label>
-                <div className="space-y-2">
-                  {[
-                    { id: 'ta_specialists', value: 'Specialist Physicians', label: 'Specialist Physicians' },
-                    { id: 'ta_pcp', value: 'Primary Care Physicians', label: 'Primary Care Physicians' },
-                    { id: 'ta_patients', value: 'Patients', label: 'Patients' },
-                    { id: 'ta_caregivers', value: 'Caregivers', label: 'Caregivers' }
-                  ].map(option => (
-                    <div key={option.id} className="flex items-center">
-                      <input
-                        type="checkbox"
-                        id={option.id}
-                        name="target_audience"
-                        value={option.value}
-                        checked={formData.target_audience.includes(option.value)}
-                        onChange={handleChange}
-                        className="mr-2"
-                      />
-                      <label htmlFor={option.id} className="text-sm">{option.label}</label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
+          <div className="flex items-center">
+            <span className="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm font-bold">1</span>
+            <h3 className="text-lg font-semibold text-gray-900">Product Information (Required)</h3>
           </div>
-
-          {/* Additional Optional Fields */}
-          <div className="bg-gray-50 p-6 rounded-lg">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <span className="bg-gray-400 text-white rounded-full w-8 h-8 flex items-center justify-center mr-2 text-sm">3</span>
-              Additional Details (Further Enhances SEO)
-            </h3>
-            
+          <svg className={`w-5 h-5 text-gray-600 transition-transform ${expandedSections.section1 ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        
+        {expandedSections.section1 && (
+          <div className="p-6 space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="submitter_name" className="block text-sm font-medium text-gray-700 mb-1">
-                  Your Name
+                <label htmlFor="product_name" className="block text-sm font-medium text-gray-700 mb-1">
+                  Product Name <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
-                  id="submitter_name"
-                  name="submitter_name"
-                  value={formData.submitter_name}
+                  id="product_name"
+                  name="product_name"
+                  value={formData.product_name}
                   onChange={handleChange}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="e.g., Keytruda, Carvykti"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="generic_name" className="block text-sm font-medium text-gray-700 mb-1">
+                  Generic/INN Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="generic_name"
+                  name="generic_name"
+                  value={formData.generic_name}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="e.g., pembrolizumab"
+                />
+                <p className="text-xs text-gray-500 mt-1">International nonproprietary name</p>
+              </div>
+
+              <div>
+                <label htmlFor="indication" className="block text-sm font-medium text-gray-700 mb-1">
+                  Medical Indication <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  id="indication"
+                  name="indication"
+                  value={formData.indication}
+                  onChange={handleChange}
+                  required
+                  rows={2}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="e.g., Non-small cell lung cancer"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="therapeutic_area" className="block text-sm font-medium text-gray-700 mb-1">
+                  Therapeutic Area <span className="text-red-500">*</span>
+                </label>
+                <select
+                  id="therapeutic_area"
+                  name="therapeutic_area"
+                  value={formData.therapeutic_area}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Select Therapeutic Area</option>
+                  {THERAPEUTIC_AREAS.map(area => (
+                    <option key={area} value={area}>{area}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Section 2: Team & Review Assignment */}
+      <div className="bg-white rounded-lg border-2 border-blue-500 overflow-hidden">
+        <button
+          type="button"
+          onClick={() => toggleSection('section2')}
+          className="w-full px-6 py-4 bg-blue-50 hover:bg-blue-100 transition-colors flex items-center justify-between"
+        >
+          <div className="flex items-center">
+            <span className="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm font-bold">2</span>
+            <h3 className="text-lg font-semibold text-gray-900">Team & Review Assignment (Required)</h3>
+          </div>
+          <svg className={`w-5 h-5 text-gray-600 transition-transform ${expandedSections.section2 ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        
+        {expandedSections.section2 && (
+          <div className="p-6 space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="seo_reviewer_name" className="block text-sm font-medium text-gray-700 mb-1">
+                  SEO Reviewer Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="seo_reviewer_name"
+                  name="seo_reviewer_name"
+                  value={formData.seo_reviewer_name}
+                  onChange={handleChange}
+                  required
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Full name"
                 />
               </div>
 
               <div>
-                <label htmlFor="client_name" className="block text-sm font-medium text-gray-700 mb-1">
-                  Client/Company Name
+                <label htmlFor="seo_reviewer_email" className="block text-sm font-medium text-gray-700 mb-1">
+                  SEO Reviewer Email <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="email"
+                  id="seo_reviewer_email"
+                  name="seo_reviewer_email"
+                  value={formData.seo_reviewer_email}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="email@company.com"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="client_reviewer_name" className="block text-sm font-medium text-gray-700 mb-1">
+                  Client Contact Name <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
-                  id="client_name"
-                  name="client_name"
-                  value={formData.client_name}
+                  id="client_reviewer_name"
+                  name="client_reviewer_name"
+                  value={formData.client_reviewer_name}
                   onChange={handleChange}
+                  required
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Company name"
+                  placeholder="Full name"
                 />
               </div>
 
               <div>
-                <label htmlFor="mechanism_of_action" className="block text-sm font-medium text-gray-700 mb-1">
-                  How It Works (Mechanism)
+                <label htmlFor="client_reviewer_email" className="block text-sm font-medium text-gray-700 mb-1">
+                  Client Contact Email <span className="text-red-500">*</span>
                 </label>
-                <textarea
-                  id="mechanism_of_action"
-                  name="mechanism_of_action"
-                  value={formData.mechanism_of_action}
+                <input
+                  type="email"
+                  id="client_reviewer_email"
+                  name="client_reviewer_email"
+                  value={formData.client_reviewer_email}
                   onChange={handleChange}
-                  rows={2}
+                  required
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="e.g., PD-1 inhibitor, JAK inhibitor, CAR-T therapy"
+                  placeholder="email@company.com"
                 />
               </div>
 
               <div>
-                <label htmlFor="clinical_trials" className="block text-sm font-medium text-gray-700 mb-1">
-                  Clinical Trial Names
+                <label htmlFor="mlr_reviewer_name" className="block text-sm font-medium text-gray-700 mb-1">
+                  MLR Reviewer Name <span className="text-red-500">*</span>
                 </label>
-                <textarea
-                  id="clinical_trials"
-                  name="clinical_trials"
-                  value={formData.clinical_trials}
+                <input
+                  type="text"
+                  id="mlr_reviewer_name"
+                  name="mlr_reviewer_name"
+                  value={formData.mlr_reviewer_name}
                   onChange={handleChange}
-                  rows={2}
+                  required
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="e.g., KEYNOTE-189, CheckMate-227"
+                  placeholder="Full name"
                 />
               </div>
 
               <div>
-                <label htmlFor="special_considerations" className="block text-sm font-medium text-gray-700 mb-1">
-                  Special Notes
+                <label htmlFor="mlr_reviewer_email" className="block text-sm font-medium text-gray-700 mb-1">
+                  MLR Reviewer Email <span className="text-red-500">*</span>
                 </label>
-                <textarea
-                  id="special_considerations"
-                  name="special_considerations"
-                  value={formData.special_considerations}
+                <input
+                  type="email"
+                  id="mlr_reviewer_email"
+                  name="mlr_reviewer_email"
+                  value={formData.mlr_reviewer_email}
                   onChange={handleChange}
-                  rows={3}
+                  required
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Any other important information..."
+                  placeholder="email@company.com"
                 />
               </div>
             </div>
           </div>
-        </>
-      )}
+        )}
+      </div>
 
-      {/* Processing Time Notice */}
-      <div className="bg-blue-50 p-4 rounded-md">
-        <p className="text-sm text-blue-800">
-          <strong>Processing Time:</strong> Within 60 minutes. We'll automatically pull clinical data from FDA, ClinicalTrials.gov, and PubMed.
-        </p>
+      {/* Section 3: Clinical Context */}
+      <div className="bg-white rounded-lg border border-gray-300 overflow-hidden">
+        <button
+          type="button"
+          onClick={() => toggleSection('section3')}
+          className="w-full px-6 py-4 bg-gray-50 hover:bg-gray-100 transition-colors flex items-center justify-between"
+        >
+          <div className="flex items-center">
+            <span className="bg-green-500 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm font-bold">3</span>
+            <h3 className="text-lg font-semibold text-gray-900">Clinical Context (Optional - +20% Accuracy)</h3>
+          </div>
+          <svg className={`w-5 h-5 text-gray-600 transition-transform ${expandedSections.section3 ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        
+        {expandedSections.section3 && (
+          <div className="p-6 space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="nct_number" className="block text-sm font-medium text-gray-700 mb-1">
+                  NCT Number
+                </label>
+                <input
+                  type="text"
+                  id="nct_number"
+                  name="nct_number"
+                  value={formData.nct_number}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="e.g., NCT03425643"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="sponsor" className="block text-sm font-medium text-gray-700 mb-1">
+                  Sponsor
+                </label>
+                <input
+                  type="text"
+                  id="sponsor"
+                  name="sponsor"
+                  value={formData.sponsor}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="e.g., Merck, Pfizer"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="development_stage" className="block text-sm font-medium text-gray-700 mb-1">
+                  Development Stage
+                </label>
+                <select
+                  id="development_stage"
+                  name="development_stage"
+                  value={formData.development_stage}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Select Stage</option>
+                  <option value="Phase I">Phase I</option>
+                  <option value="Phase II">Phase II</option>
+                  <option value="Phase III">Phase III</option>
+                  <option value="FDA Approved">FDA Approved</option>
+                  <option value="EMA Approved">EMA Approved</option>
+                  <option value="Market Launch">Market Launch</option>
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="line_of_therapy" className="block text-sm font-medium text-gray-700 mb-1">
+                  Line of Therapy
+                </label>
+                <select
+                  id="line_of_therapy"
+                  name="line_of_therapy"
+                  value={formData.line_of_therapy}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Select Line</option>
+                  <option value="First-line">First-line</option>
+                  <option value="Second-line">Second-line</option>
+                  <option value="Third-line">Third-line</option>
+                  <option value="Fourth-line+">Fourth-line+</option>
+                  <option value="Maintenance">Maintenance</option>
+                  <option value="Adjuvant">Adjuvant</option>
+                  <option value="Neoadjuvant">Neoadjuvant</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Patient Population
+              </label>
+              <div className="space-y-2">
+                {[
+                  'Pediatric',
+                  'Adult',
+                  'Elderly (65+)',
+                  'Treatment-naïve',
+                  'Previously treated',
+                  'Refractory',
+                  'High-risk',
+                  'Low-risk'
+                ].map(pop => (
+                  <label key={pop} className="flex items-center">
+                    <input
+                      type="checkbox"
+                      name="patient_population"
+                      value={pop}
+                      checked={formData.patient_population.includes(pop)}
+                      onChange={handleChange}
+                      className="mr-2"
+                    />
+                    <span className="text-sm">{pop}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Section 4: Advanced Optimization */}
+      <div className="bg-white rounded-lg border border-gray-300 overflow-hidden">
+        <button
+          type="button"
+          onClick={() => toggleSection('section4')}
+          className="w-full px-6 py-4 bg-gray-50 hover:bg-gray-100 transition-colors flex items-center justify-between"
+        >
+          <div className="flex items-center">
+            <span className="bg-purple-500 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm font-bold">4</span>
+            <h3 className="text-lg font-semibold text-gray-900">Advanced Optimization (Optional - +10% Accuracy)</h3>
+          </div>
+          <svg className={`w-5 h-5 text-gray-600 transition-transform ${expandedSections.section4 ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        
+        {expandedSections.section4 && (
+          <div className="p-6 space-y-4">
+            <div>
+              <label htmlFor="route_of_administration" className="block text-sm font-medium text-gray-700 mb-1">
+                Route of Administration
+              </label>
+              <select
+                id="route_of_administration"
+                name="route_of_administration"
+                value={formData.route_of_administration}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Select Route</option>
+                <option value="Oral">Oral</option>
+                <option value="IV Infusion">IV Infusion</option>
+                <option value="Subcutaneous">Subcutaneous</option>
+                <option value="Intramuscular">Intramuscular</option>
+                <option value="Topical">Topical</option>
+                <option value="Inhaled">Inhaled</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Combination Partners
+              </label>
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  placeholder="Add combination drug names, separated by commas"
+                  onBlur={(e) => {
+                    const values = e.target.value.split(',').map(v => v.trim()).filter(v => v);
+                    setFormData(prev => ({ ...prev, combination_partners: values }));
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Primary Endpoints
+              </label>
+              <textarea
+                placeholder="List primary endpoints (one per line)"
+                onChange={(e) => {
+                  const values = e.target.value.split('\n').map(v => v.trim()).filter(v => v);
+                  setFormData(prev => ({ ...prev, primary_endpoints: values }));
+                }}
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Geographic Markets
+              </label>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                {[
+                  'United States',
+                  'European Union',
+                  'United Kingdom',
+                  'Japan',
+                  'China',
+                  'Canada',
+                  'Australia',
+                  'Brazil',
+                  'India'
+                ].map(market => (
+                  <label key={market} className="flex items-center">
+                    <input
+                      type="checkbox"
+                      name="geographic_markets"
+                      value={market}
+                      checked={formData.geographic_markets.includes(market)}
+                      onChange={handleChange}
+                      className="mr-2"
+                    />
+                    <span className="text-sm">{market}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Submit Button */}
-      <div className="flex justify-end space-x-3 pt-6">
+      <div className="flex justify-end space-x-3 pt-4">
         {onClose && (
           <button
             type="button"
@@ -616,7 +733,7 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         )}
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isSubmitting || progress < 65}
           className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSubmitting ? 'Submitting...' : 'Submit SEO Request'}
