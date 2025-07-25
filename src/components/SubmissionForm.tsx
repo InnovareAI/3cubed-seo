@@ -2,8 +2,8 @@ import React, { useState, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import { THERAPEUTIC_AREAS } from '../constants/therapeuticAreas';
 
-// Version 4.1 - Reordered sections with updated geographic markets
-// Last updated: 2025-07-25
+// Version 4.2 - Added accuracy percentage to tabs and React success modal
+// Last updated: 2025-07-26
 
 interface SubmissionFormProps {
   onSuccess?: () => void;
@@ -83,6 +83,7 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [expandedSections, setExpandedSections] = useState({
     section1: true,
     section2: false,
@@ -90,14 +91,18 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
     section4: true
   });
 
+  // Calculate individual section completion
+  const section1Complete = useMemo(() => {
+    const fields = ['product_name', 'generic_name', 'indication', 'therapeutic_area'];
+    return fields.every(field => formData[field as keyof FormData]);
+  }, [formData]);
+
   // Calculate progress based on filled fields
   const progress = useMemo(() => {
     let score = 0;
     
     // Section 1: Product Information (65%)
-    const section1Fields = ['product_name', 'generic_name', 'indication', 'therapeutic_area'];
-    const section1Filled = section1Fields.every(field => formData[field as keyof FormData]);
-    if (section1Filled) score += 65;
+    if (section1Complete) score += 65;
     
     // Section 2: Clinical Context (+20%) - formerly Section 3
     const section2Fields = ['nct_number', 'sponsor', 'development_stage', 'line_of_therapy'];
@@ -118,7 +123,7 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
     if (section3Filled || section3ArraysFilled) score += 10;
     
     return Math.min(score, 95);
-  }, [formData]);
+  }, [formData, section1Complete]);
 
   const progressMessage = useMemo(() => {
     if (progress >= 95) return "Maximum optimization - competitive intelligence included";
@@ -203,38 +208,42 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
 
       console.log('Submission successful:', data);
 
-      // Reset form
-      setFormData({
-        product_name: '',
-        generic_name: '',
-        indication: '',
-        therapeutic_area: '',
-        seo_reviewer_name: '',
-        seo_reviewer_email: '',
-        client_reviewer_name: '',
-        client_reviewer_email: '',
-        mlr_reviewer_name: '',
-        mlr_reviewer_email: '',
-        nct_number: '',
-        sponsor: '',
-        development_stage: '',
-        line_of_therapy: '',
-        patient_population: [],
-        route_of_administration: '',
-        combination_partners: [],
-        primary_endpoints: [],
-        geographic_markets: [],
-        key_biomarkers: [],
-        target_age_groups: [],
-        submitter_email: '',
-        submitter_name: ''
-      });
+      // Show success modal
+      setShowSuccessModal(true);
       
-      // Show success message
-      alert('SEO Content Request submitted successfully!');
+      // Reset form after a delay
+      setTimeout(() => {
+        setFormData({
+          product_name: '',
+          generic_name: '',
+          indication: '',
+          therapeutic_area: '',
+          seo_reviewer_name: '',
+          seo_reviewer_email: '',
+          client_reviewer_name: '',
+          client_reviewer_email: '',
+          mlr_reviewer_name: '',
+          mlr_reviewer_email: '',
+          nct_number: '',
+          sponsor: '',
+          development_stage: '',
+          line_of_therapy: '',
+          patient_population: [],
+          route_of_administration: '',
+          combination_partners: [],
+          primary_endpoints: [],
+          geographic_markets: [],
+          key_biomarkers: [],
+          target_age_groups: [],
+          submitter_email: '',
+          submitter_name: ''
+        });
+        
+        setShowSuccessModal(false);
+        if (onSuccess) onSuccess();
+        if (onClose) onClose();
+      }, 3000);
       
-      if (onSuccess) onSuccess();
-      if (onClose) onClose();
     } catch (err: any) {
       console.error('Error submitting form:', err);
       
@@ -257,484 +266,517 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {error && (
-        <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm">
-          {error}
+    <>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {error && (
+          <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm">
+            {error}
+          </div>
+        )}
+
+        {/* Progress Bar */}
+        <div className="bg-white p-4 rounded-lg border border-gray-200">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-semibold text-gray-700">Data Accuracy</h3>
+            <span className="text-sm font-bold text-blue-600">{progress}%</span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-3 mb-2">
+            <div 
+              className="bg-gradient-to-r from-blue-500 to-blue-600 h-3 rounded-full transition-all duration-500"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          <p className="text-xs text-gray-600">{progressMessage}</p>
         </div>
-      )}
 
-      {/* Progress Bar */}
-      <div className="bg-white p-4 rounded-lg border border-gray-200">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-semibold text-gray-700">Data Accuracy</h3>
-          <span className="text-sm font-bold text-blue-600">{progress}%</span>
-        </div>
-        <div className="w-full bg-gray-200 rounded-full h-3 mb-2">
-          <div 
-            className="bg-gradient-to-r from-blue-500 to-blue-600 h-3 rounded-full transition-all duration-500"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-        <p className="text-xs text-gray-600">{progressMessage}</p>
-      </div>
-
-      {/* Section 1: Product Information */}
-      <div className="bg-white rounded-lg border-2 border-blue-500 overflow-hidden">
-        <button
-          type="button"
-          onClick={() => toggleSection('section1')}
-          className="w-full px-6 py-4 bg-blue-50 hover:bg-blue-100 transition-colors flex items-center justify-between"
-        >
-          <div className="flex items-center">
-            <span className="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm font-bold">1</span>
-            <h3 className="text-lg font-semibold text-gray-900">Product Information (Required)</h3>
-          </div>
-          <svg className={`w-5 h-5 text-gray-600 transition-transform ${expandedSections.section1 ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
-        
-        {expandedSections.section1 && (
-          <div className="p-6 space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="product_name" className="block text-sm font-medium text-gray-700 mb-1">
-                  Product Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  id="product_name"
-                  name="product_name"
-                  value={formData.product_name}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="e.g., Keytruda, Carvykti"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="generic_name" className="block text-sm font-medium text-gray-700 mb-1">
-                  Generic/INN Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  id="generic_name"
-                  name="generic_name"
-                  value={formData.generic_name}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="e.g., pembrolizumab"
-                />
-                <p className="text-xs text-gray-500 mt-1">International nonproprietary name</p>
-              </div>
-
-              <div>
-                <label htmlFor="indication" className="block text-sm font-medium text-gray-700 mb-1">
-                  Medical Indication <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  id="indication"
-                  name="indication"
-                  value={formData.indication}
-                  onChange={handleChange}
-                  required
-                  rows={2}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="e.g., Non-small cell lung cancer"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="therapeutic_area" className="block text-sm font-medium text-gray-700 mb-1">
-                  Therapeutic Area <span className="text-red-500">*</span>
-                </label>
-                <select
-                  id="therapeutic_area"
-                  name="therapeutic_area"
-                  value={formData.therapeutic_area}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">Select Therapeutic Area</option>
-                  {THERAPEUTIC_AREAS.map(area => (
-                    <option key={area} value={area}>{area}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Section 2: Clinical Context (formerly Section 3) */}
-      <div className="bg-white rounded-lg border border-gray-300 overflow-hidden">
-        <button
-          type="button"
-          onClick={() => toggleSection('section2')}
-          className="w-full px-6 py-4 bg-gray-50 hover:bg-gray-100 transition-colors flex items-center justify-between"
-        >
-          <div className="flex items-center">
-            <span className="bg-green-500 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm font-bold">2</span>
-            <h3 className="text-lg font-semibold text-gray-900">Clinical Context (Optional - +20% Accuracy)</h3>
-          </div>
-          <svg className={`w-5 h-5 text-gray-600 transition-transform ${expandedSections.section2 ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
-        
-        {expandedSections.section2 && (
-          <div className="p-6 space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="nct_number" className="block text-sm font-medium text-gray-700 mb-1">
-                  NCT Number
-                </label>
-                <input
-                  type="text"
-                  id="nct_number"
-                  name="nct_number"
-                  value={formData.nct_number}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="e.g., NCT03425643"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="sponsor" className="block text-sm font-medium text-gray-700 mb-1">
-                  Sponsor
-                </label>
-                <input
-                  type="text"
-                  id="sponsor"
-                  name="sponsor"
-                  value={formData.sponsor}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="e.g., Merck, Pfizer"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="development_stage" className="block text-sm font-medium text-gray-700 mb-1">
-                  Development Stage
-                </label>
-                <select
-                  id="development_stage"
-                  name="development_stage"
-                  value={formData.development_stage}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">Select Stage</option>
-                  <option value="Phase I">Phase I</option>
-                  <option value="Phase II">Phase II</option>
-                  <option value="Phase III">Phase III</option>
-                  <option value="FDA Approved">FDA Approved</option>
-                  <option value="EMA Approved">EMA Approved</option>
-                  <option value="Market Launch">Market Launch</option>
-                </select>
-              </div>
-
-              <div>
-                <label htmlFor="line_of_therapy" className="block text-sm font-medium text-gray-700 mb-1">
-                  Line of Therapy
-                </label>
-                <select
-                  id="line_of_therapy"
-                  name="line_of_therapy"
-                  value={formData.line_of_therapy}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">Select Line</option>
-                  <option value="First-line">First-line</option>
-                  <option value="Second-line">Second-line</option>
-                  <option value="Third-line">Third-line</option>
-                  <option value="Fourth-line+">Fourth-line+</option>
-                  <option value="Maintenance">Maintenance</option>
-                  <option value="Adjuvant">Adjuvant</option>
-                  <option value="Neoadjuvant">Neoadjuvant</option>
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Patient Population
-              </label>
-              <div className="space-y-2">
-                {[
-                  'Pediatric',
-                  'Adult',
-                  'Elderly (65+)',
-                  'Treatment-naïve',
-                  'Previously treated',
-                  'Refractory',
-                  'High-risk',
-                  'Low-risk'
-                ].map(pop => (
-                  <label key={pop} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      name="patient_population"
-                      value={pop}
-                      checked={formData.patient_population.includes(pop)}
-                      onChange={handleChange}
-                      className="mr-2"
-                    />
-                    <span className="text-sm">{pop}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Section 3: Advanced Optimization (formerly Section 4) */}
-      <div className="bg-white rounded-lg border border-gray-300 overflow-hidden">
-        <button
-          type="button"
-          onClick={() => toggleSection('section3')}
-          className="w-full px-6 py-4 bg-gray-50 hover:bg-gray-100 transition-colors flex items-center justify-between"
-        >
-          <div className="flex items-center">
-            <span className="bg-purple-500 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm font-bold">3</span>
-            <h3 className="text-lg font-semibold text-gray-900">Advanced Optimization (Optional - +10% Accuracy)</h3>
-          </div>
-          <svg className={`w-5 h-5 text-gray-600 transition-transform ${expandedSections.section3 ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
-        
-        {expandedSections.section3 && (
-          <div className="p-6 space-y-4">
-            <div>
-              <label htmlFor="route_of_administration" className="block text-sm font-medium text-gray-700 mb-1">
-                Route of Administration
-              </label>
-              <select
-                id="route_of_administration"
-                name="route_of_administration"
-                value={formData.route_of_administration}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Select Route</option>
-                <option value="Oral">Oral</option>
-                <option value="IV Infusion">IV Infusion</option>
-                <option value="Subcutaneous">Subcutaneous</option>
-                <option value="Intramuscular">Intramuscular</option>
-                <option value="Topical">Topical</option>
-                <option value="Inhaled">Inhaled</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Combination Partners
-              </label>
-              <div className="space-y-2">
-                <input
-                  type="text"
-                  placeholder="Add combination drug names, separated by commas"
-                  onBlur={(e) => {
-                    const values = e.target.value.split(',').map(v => v.trim()).filter(v => v);
-                    setFormData(prev => ({ ...prev, combination_partners: values }));
-                  }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Primary Endpoints
-              </label>
-              <textarea
-                placeholder="List primary endpoints (one per line)"
-                onChange={(e) => {
-                  const values = e.target.value.split('\n').map(v => v.trim()).filter(v => v);
-                  setFormData(prev => ({ ...prev, primary_endpoints: values }));
-                }}
-                rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Geographic Markets
-              </label>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                {[
-                  'USA',
-                  'Canada',
-                  'EU',
-                  'UK',
-                  'Global'
-                ].map(market => (
-                  <label key={market} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      name="geographic_markets"
-                      value={market}
-                      checked={formData.geographic_markets.includes(market)}
-                      onChange={handleChange}
-                      className="mr-2"
-                    />
-                    <span className="text-sm">{market}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Section 4: Team & Review Assignment (formerly Section 2) */}
-      <div className="bg-white rounded-lg border-2 border-blue-500 overflow-hidden">
-        <button
-          type="button"
-          onClick={() => toggleSection('section4')}
-          className="w-full px-6 py-4 bg-blue-50 hover:bg-blue-100 transition-colors flex items-center justify-between"
-        >
-          <div className="flex items-center">
-            <span className="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm font-bold">4</span>
-            <h3 className="text-lg font-semibold text-gray-900">Team & Review Assignment (Required)</h3>
-          </div>
-          <svg className={`w-5 h-5 text-gray-600 transition-transform ${expandedSections.section4 ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
-        
-        {expandedSections.section4 && (
-          <div className="p-6 space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="seo_reviewer_name" className="block text-sm font-medium text-gray-700 mb-1">
-                  SEO Reviewer Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  id="seo_reviewer_name"
-                  name="seo_reviewer_name"
-                  value={formData.seo_reviewer_name}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Full name"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="seo_reviewer_email" className="block text-sm font-medium text-gray-700 mb-1">
-                  SEO Reviewer Email <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="email"
-                  id="seo_reviewer_email"
-                  name="seo_reviewer_email"
-                  value={formData.seo_reviewer_email}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="email@company.com"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="client_reviewer_name" className="block text-sm font-medium text-gray-700 mb-1">
-                  Client Contact Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  id="client_reviewer_name"
-                  name="client_reviewer_name"
-                  value={formData.client_reviewer_name}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Full name"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="client_reviewer_email" className="block text-sm font-medium text-gray-700 mb-1">
-                  Client Contact Email <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="email"
-                  id="client_reviewer_email"
-                  name="client_reviewer_email"
-                  value={formData.client_reviewer_email}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="email@company.com"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="mlr_reviewer_name" className="block text-sm font-medium text-gray-700 mb-1">
-                  MLR Reviewer Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  id="mlr_reviewer_name"
-                  name="mlr_reviewer_name"
-                  value={formData.mlr_reviewer_name}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Full name"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="mlr_reviewer_email" className="block text-sm font-medium text-gray-700 mb-1">
-                  MLR Reviewer Email <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="email"
-                  id="mlr_reviewer_email"
-                  name="mlr_reviewer_email"
-                  value={formData.mlr_reviewer_email}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="email@company.com"
-                />
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Submit Button */}
-      <div className="flex justify-end space-x-3 pt-4">
-        {onClose && (
+        {/* Section 1: Product Information */}
+        <div className="bg-white rounded-lg border-2 border-blue-500 overflow-hidden">
           <button
             type="button"
-            onClick={onClose}
-            className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors"
+            onClick={() => toggleSection('section1')}
+            className="w-full px-6 py-4 bg-blue-50 hover:bg-blue-100 transition-colors flex items-center justify-between"
           >
-            Cancel
+            <div className="flex items-center">
+              <span className="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm font-bold">1</span>
+              <h3 className="text-lg font-semibold text-gray-900">Product Information (Required)</h3>
+              {section1Complete && (
+                <span className="ml-3 text-sm font-medium text-blue-600 bg-blue-100 px-2 py-1 rounded">65% Accuracy</span>
+              )}
+            </div>
+            <svg className={`w-5 h-5 text-gray-600 transition-transform ${expandedSections.section1 ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
           </button>
-        )}
-        <button
-          type="submit"
-          disabled={isSubmitting || progress < 65}
-          className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isSubmitting ? 'Submitting...' : 'Submit SEO Request'}
-        </button>
-      </div>
-    </form>
+          
+          {expandedSections.section1 && (
+            <div className="p-6 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="product_name" className="block text-sm font-medium text-gray-700 mb-1">
+                    Product Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="product_name"
+                    name="product_name"
+                    value={formData.product_name}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="e.g., Keytruda, Carvykti"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="generic_name" className="block text-sm font-medium text-gray-700 mb-1">
+                    Generic/INN Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="generic_name"
+                    name="generic_name"
+                    value={formData.generic_name}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="e.g., pembrolizumab"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">International nonproprietary name</p>
+                </div>
+
+                <div>
+                  <label htmlFor="indication" className="block text-sm font-medium text-gray-700 mb-1">
+                    Medical Indication <span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    id="indication"
+                    name="indication"
+                    value={formData.indication}
+                    onChange={handleChange}
+                    required
+                    rows={2}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="e.g., Non-small cell lung cancer"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="therapeutic_area" className="block text-sm font-medium text-gray-700 mb-1">
+                    Therapeutic Area <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    id="therapeutic_area"
+                    name="therapeutic_area"
+                    value={formData.therapeutic_area}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Select Therapeutic Area</option>
+                    {THERAPEUTIC_AREAS.map(area => (
+                      <option key={area} value={area}>{area}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Section 2: Clinical Context (formerly Section 3) */}
+        <div className="bg-white rounded-lg border border-gray-300 overflow-hidden">
+          <button
+            type="button"
+            onClick={() => toggleSection('section2')}
+            className="w-full px-6 py-4 bg-gray-50 hover:bg-gray-100 transition-colors flex items-center justify-between"
+          >
+            <div className="flex items-center">
+              <span className="bg-green-500 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm font-bold">2</span>
+              <h3 className="text-lg font-semibold text-gray-900">Clinical Context (Optional - +20% Accuracy)</h3>
+            </div>
+            <svg className={`w-5 h-5 text-gray-600 transition-transform ${expandedSections.section2 ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          
+          {expandedSections.section2 && (
+            <div className="p-6 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="nct_number" className="block text-sm font-medium text-gray-700 mb-1">
+                    NCT Number
+                  </label>
+                  <input
+                    type="text"
+                    id="nct_number"
+                    name="nct_number"
+                    value={formData.nct_number}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="e.g., NCT03425643"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="sponsor" className="block text-sm font-medium text-gray-700 mb-1">
+                    Sponsor
+                  </label>
+                  <input
+                    type="text"
+                    id="sponsor"
+                    name="sponsor"
+                    value={formData.sponsor}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="e.g., Merck, Pfizer"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="development_stage" className="block text-sm font-medium text-gray-700 mb-1">
+                    Development Stage
+                  </label>
+                  <select
+                    id="development_stage"
+                    name="development_stage"
+                    value={formData.development_stage}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Select Stage</option>
+                    <option value="Phase I">Phase I</option>
+                    <option value="Phase II">Phase II</option>
+                    <option value="Phase III">Phase III</option>
+                    <option value="FDA Approved">FDA Approved</option>
+                    <option value="EMA Approved">EMA Approved</option>
+                    <option value="Market Launch">Market Launch</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="line_of_therapy" className="block text-sm font-medium text-gray-700 mb-1">
+                    Line of Therapy
+                  </label>
+                  <select
+                    id="line_of_therapy"
+                    name="line_of_therapy"
+                    value={formData.line_of_therapy}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Select Line</option>
+                    <option value="First-line">First-line</option>
+                    <option value="Second-line">Second-line</option>
+                    <option value="Third-line">Third-line</option>
+                    <option value="Fourth-line+">Fourth-line+</option>
+                    <option value="Maintenance">Maintenance</option>
+                    <option value="Adjuvant">Adjuvant</option>
+                    <option value="Neoadjuvant">Neoadjuvant</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Patient Population
+                </label>
+                <div className="space-y-2">
+                  {[
+                    'Pediatric',
+                    'Adult',
+                    'Elderly (65+)',
+                    'Treatment-naïve',
+                    'Previously treated',
+                    'Refractory',
+                    'High-risk',
+                    'Low-risk'
+                  ].map(pop => (
+                    <label key={pop} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        name="patient_population"
+                        value={pop}
+                        checked={formData.patient_population.includes(pop)}
+                        onChange={handleChange}
+                        className="mr-2"
+                      />
+                      <span className="text-sm">{pop}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Section 3: Advanced Optimization (formerly Section 4) */}
+        <div className="bg-white rounded-lg border border-gray-300 overflow-hidden">
+          <button
+            type="button"
+            onClick={() => toggleSection('section3')}
+            className="w-full px-6 py-4 bg-gray-50 hover:bg-gray-100 transition-colors flex items-center justify-between"
+          >
+            <div className="flex items-center">
+              <span className="bg-purple-500 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm font-bold">3</span>
+              <h3 className="text-lg font-semibold text-gray-900">Advanced Optimization (Optional - +10% Accuracy)</h3>
+            </div>
+            <svg className={`w-5 h-5 text-gray-600 transition-transform ${expandedSections.section3 ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          
+          {expandedSections.section3 && (
+            <div className="p-6 space-y-4">
+              <div>
+                <label htmlFor="route_of_administration" className="block text-sm font-medium text-gray-700 mb-1">
+                  Route of Administration
+                </label>
+                <select
+                  id="route_of_administration"
+                  name="route_of_administration"
+                  value={formData.route_of_administration}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Select Route</option>
+                  <option value="Oral">Oral</option>
+                  <option value="IV Infusion">IV Infusion</option>
+                  <option value="Subcutaneous">Subcutaneous</option>
+                  <option value="Intramuscular">Intramuscular</option>
+                  <option value="Topical">Topical</option>
+                  <option value="Inhaled">Inhaled</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Combination Partners
+                </label>
+                <div className="space-y-2">
+                  <input
+                    type="text"
+                    placeholder="Add combination drug names, separated by commas"
+                    onBlur={(e) => {
+                      const values = e.target.value.split(',').map(v => v.trim()).filter(v => v);
+                      setFormData(prev => ({ ...prev, combination_partners: values }));
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Primary Endpoints
+                </label>
+                <textarea
+                  placeholder="List primary endpoints (one per line)"
+                  onChange={(e) => {
+                    const values = e.target.value.split('\n').map(v => v.trim()).filter(v => v);
+                    setFormData(prev => ({ ...prev, primary_endpoints: values }));
+                  }}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Geographic Markets
+                </label>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                  {[
+                    'USA',
+                    'Canada',
+                    'EU',
+                    'UK',
+                    'Global'
+                  ].map(market => (
+                    <label key={market} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        name="geographic_markets"
+                        value={market}
+                        checked={formData.geographic_markets.includes(market)}
+                        onChange={handleChange}
+                        className="mr-2"
+                      />
+                      <span className="text-sm">{market}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Section 4: Team & Review Assignment (formerly Section 2) */}
+        <div className="bg-white rounded-lg border-2 border-blue-500 overflow-hidden">
+          <button
+            type="button"
+            onClick={() => toggleSection('section4')}
+            className="w-full px-6 py-4 bg-blue-50 hover:bg-blue-100 transition-colors flex items-center justify-between"
+          >
+            <div className="flex items-center">
+              <span className="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm font-bold">4</span>
+              <h3 className="text-lg font-semibold text-gray-900">Team & Review Assignment (Required)</h3>
+            </div>
+            <svg className={`w-5 h-5 text-gray-600 transition-transform ${expandedSections.section4 ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          
+          {expandedSections.section4 && (
+            <div className="p-6 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="seo_reviewer_name" className="block text-sm font-medium text-gray-700 mb-1">
+                    SEO Reviewer Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="seo_reviewer_name"
+                    name="seo_reviewer_name"
+                    value={formData.seo_reviewer_name}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Full name"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="seo_reviewer_email" className="block text-sm font-medium text-gray-700 mb-1">
+                    SEO Reviewer Email <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    id="seo_reviewer_email"
+                    name="seo_reviewer_email"
+                    value={formData.seo_reviewer_email}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="email@company.com"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="client_reviewer_name" className="block text-sm font-medium text-gray-700 mb-1">
+                    Client Contact Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="client_reviewer_name"
+                    name="client_reviewer_name"
+                    value={formData.client_reviewer_name}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Full name"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="client_reviewer_email" className="block text-sm font-medium text-gray-700 mb-1">
+                    Client Contact Email <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    id="client_reviewer_email"
+                    name="client_reviewer_email"
+                    value={formData.client_reviewer_email}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="email@company.com"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="mlr_reviewer_name" className="block text-sm font-medium text-gray-700 mb-1">
+                    MLR Reviewer Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="mlr_reviewer_name"
+                    name="mlr_reviewer_name"
+                    value={formData.mlr_reviewer_name}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Full name"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="mlr_reviewer_email" className="block text-sm font-medium text-gray-700 mb-1">
+                    MLR Reviewer Email <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    id="mlr_reviewer_email"
+                    name="mlr_reviewer_email"
+                    value={formData.mlr_reviewer_email}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="email@company.com"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Submit Button */}
+        <div className="flex justify-end space-x-3 pt-4">
+          {onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors"
+            >
+              Cancel
+            </button>
+          )}
+          <button
+            type="submit"
+            disabled={isSubmitting || progress < 65}
+            className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isSubmitting ? 'Submitting...' : 'Submit SEO Request'}
+          </button>
+        </div>
+      </form>
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4 transform transition-all animate-fade-in-up">
+            <div className="text-center">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+                <svg className="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Success!</h3>
+              <p className="text-sm text-gray-500 mb-4">
+                SEO Content Request submitted successfully! The content will be processed and sent to reviewers.
+              </p>
+              <div className="mt-5">
+                <div className="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md">
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Processing...
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
