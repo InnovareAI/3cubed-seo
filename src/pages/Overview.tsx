@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
-import { FileText, Clock, TrendingUp, AlertCircle, Search, Users, Shield, Sparkles } from 'lucide-react'
+import { FileText, Clock, TrendingUp, Search, Users, Shield, Sparkles } from 'lucide-react'
 import MetricCard from '@/components/MetricCard'
-import StatusDistributionChart from '@/components/StatusDistributionChart'
 import ProcessingQueue from '@/components/ProcessingQueue'
 import SEOProcessingQueue from '@/components/SEOProcessingQueue'
 import { useContentPieces } from '@/hooks/useContentPieces'
@@ -94,6 +93,11 @@ export default function Overview() {
     }
   ]
 
+  // Calculate success rate safely
+  const successRate = seoStats && seoStats.total > 0 
+    ? `${Math.round((seoStats.completed / seoStats.total) * 100)}%` 
+    : '0%'
+
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="mb-8">
@@ -126,7 +130,7 @@ export default function Overview() {
         />
         <MetricCard
           title="Success Rate"
-          value={seoStats?.total > 0 ? `${Math.round((seoStats.completed / seoStats.total) * 100)}%` : '0%'}
+          value={successRate}
           icon={<TrendingUp className="h-6 w-6" />}
           iconColor="text-indigo-600"
           iconBgColor="bg-indigo-100"
