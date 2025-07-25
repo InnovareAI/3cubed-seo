@@ -1,58 +1,43 @@
 # 3Cubed SEO Project Status & Handover
 
 ## Current State
-- [2025-07-25 14:30 UTC]
+- [Date/Time] 2025-07-25 05:50 UTC
 - Active branch: main
-- Last deployment: Success (commit 4448b395)
-- **APP STATUS**: Form submission working - new submissions confirmed in database
-- **Recent Activity**: New test submission created at 14:15 UTC (ID: 68b0f633-dccb-4fa8-9988-ae5fa060dfce)
+- Last deployment: Success
 
 ## Recent Changes
-- Fixed priority_level constraint: Changed from 'Medium' to 'medium' (commit b8b4c300)
-- Fixed workflow_stage constraint: Changed from 'Form_Submitted' to 'draft' (commit 0720d8c0)
-- Fixed form submission table name: Changed from 'pharma_seo_submissions' to 'seo_requests' (commit d3def159)
-- Fixed form reset bug: treatment_settings array type (commit 7ea7fa8e)
-- **CRITICAL FIX**: Form was using wrong table name - updated to use 'submissions' table (commit 83ad7dba)
-- Added version cache buster to force browser reload (commit b64023f1)
-- **Fixed HITLReview page**: Changed from `langchain_status` to `ai_status` column (commit 520aa0fb)
-- **Form submission now working** - all database constraint issues resolved
-- **Fixed TypeScript build errors**: Updated Submission interface to match database schema (commit 3868ea36)
-- **Fixed remaining TypeScript errors**: Added type annotations and null checks (commit 3b61ae06)
-- **Fixed DashboardLayout**: Changed `langchain_status` to `ai_status` (commit e289f079)
-- **Fixed array submission error**: Database expects arrays, not joined strings (commit 4448b395)
-- **Updated system prompt**: Added critical handover document instructions to prevent duplicates (commit 91578360)
+- Change 1: Configured missing 3cubed-seo-webhook in n8n_webhooks table [2025-07-25 05:03:24]
+- Change 2: Verified database schema - all array columns properly typed, no NULL issues [2025-07-25]
+- Change 3: Created detailed n8n investigation instructions for Deep Agent [2025-07-25]
+- Change 4: ROOT CAUSE FOUND: n8n querying wrong table 'pharma_seo_submissions' instead of 'submissions' [2025-07-25 05:36]
+- Change 5: Updated all GitHub docs to reference new n8n URL: https://innovareai.app.n8n.cloud/workflow/BNKl1IJoWxTCKUak [2025-07-25 05:49]
 
 ## MCP Connections
-- Supabase: ✓ Connected (ktchrfgkbpaixbiwbieg)
-- n8n: ✓ API Connected (workflow: https://innovareai.app.n8n.cloud/workflow/BNKl1IJoWxTCKUak)
+- Supabase: ✓ Connected (3cubed-seo)
+- n8n: ✓ Connected (workflow: https://innovareai.app.n8n.cloud/workflow/BNKl1IJoWxTCKUak)
 - GitHub: ✓ Connected (InnovareAI/3cubed-seo)
-- Warp Bridge: ✓ Ready
-- Netlify: ✓ Connected (3cubed-seo)
 
 ## Database Schema
-- Tables: submissions (main submission table)
+- Tables: submissions, clients, projects, n8n_webhooks, n8n_webhook_executions
 - Recent modifications:
-  - priority_level: Now accepts lowercase values only ('low', 'medium', 'high')
-  - workflow_stage: Now accepts lowercase values ('draft', 'seo_review', etc.)
-  - Fixed column references: using `ai_status` and `ai_processing_status` instead of `langchain_status`
+  - Fixed: 3cubed-seo-webhook configuration (was missing)
+  - Verified: All array columns properly initialized (no NULL issues)
+  - Schema: 129 columns in submissions table, all properly typed
 
 ## Workflows
-- Active workflows: https://innovareai.app.n8n.cloud/workflow/BNKl1IJoWxTCKUak
-- Recent fixes:
+- Active workflows: https://innovareai.app.n8n.cloud/workflow/BNKl1IJoWxTCKUak (NEW INSTANCE)
+- Recent fixes: Updated all documentation to reference new n8n instance
+- OLD WORKFLOW (OUTDATED): https://workflows.innovareai.com/workflow/2o3DxEeLInnYV1Se
 
 ## Tests & Results
 ### Completed Tests
-- Database connection: ✓ Connected
-- Supabase project access: ✓ Verified
-- Form submission test: ✓ Successfully created test record
-- Netlify deployment: ✓ App live at https://3cubed-seo.netlify.app
-- Database queries: ✓ Working correctly
-- New submission verification: ✓ Confirmed (ID: 68b0f633-dccb-4fa8-9988-ae5fa060dfce)
-- Previous submission from tl@innovareai.com: ✓ Found (ID: a39f3fd6-c5e0-4253-b147-cc481e1cb411)
-- Test data prepared: ✓ Complete Phase III submission data ready
+- Test 1: Database schema verification [2025-07-25/PASS/All tables accessible]
+- Test 2: Array column check [2025-07-25/PASS/Empty arrays [] not NULL]
+- Test 3: Webhook configuration [2025-07-25/FIXED/3cubed-seo-webhook added]
 
 ### Failed Tests
-- n8n workflow list: Response too large (API connected but need to query specific workflows)
+- Test: n8n workflow execution [pending Deep Agent investigation]
+- Retry needed: yes
 
 ### Performance Metrics
 - API response times:
@@ -60,44 +45,42 @@
 - Workflow execution times:
 
 ## Pending Tasks
-1. **Fix form submission to Supabase** [HIGH/COMPLETED] ✓
-2. **Connect all CTA buttons to functions** [HIGH/pending] - Need to identify which buttons need functionality
-3. **Verify Supabase tables if needs cleanup** [MEDIUM/in-progress] - Table schema verified, test record created
-4. **Verify n8n workflow** [HIGH/pending] - Workflow URL: https://innovareai.app.n8n.cloud/workflow/BNKl1IJoWxTCKUak
-5. **Connect workflow output to dashboard** [HIGH/pending]
-6. **n8n workflow needs to generate PDF file** [HIGH/pending]
-7. **Connect Slack for error messages** [MEDIUM/pending]
+1. Await Deep Agent's n8n workflow investigation [HIGH/blocked]
+2. Test webhook trigger after investigation [HIGH/waiting]
+3. Process Keytruda submission ID: 12182ddd-c266-4d4a-9f79-13dca5bbaf7a [HIGH/blocked]
 
 ## Known Issues
-- **RESOLVED**: Form submission errors fixed by correcting table name to 'submissions'
-- **RESOLVED**: HITLReview page fixed - now using correct column `ai_status`
-- **RESOLVED**: TypeScript build errors fixed - Submission interface updated
-- **RESOLVED**: DashboardLayout was querying wrong column - now fixed
-- **n8n Workflow Integration**: Using new workflow at https://innovareai.app.n8n.cloud/workflow/BNKl1IJoWxTCKUak (old workflow 2o3DxEeLInnYV1Se is outdated)
+- Issue 1: n8n workflow using wrong table name 'pharma_seo_submissions' instead of 'submissions' [CRITICAL]
+- Issue 2: All n8n executions failing with "Submission not found in database" error
+- Issue 3: Webhook fires successfully but workflow fails at first database query
 
 ## Next Steps
-- Immediate: Check form submission functionality and fix any issues
-- Short-term: Connect CTA buttons, verify n8n workflow integration
-- Long-term: Implement PDF generation, Slack error notifications
-- **Testing**: Use the "Complete Form Test Data - Field by Field" artifact for testing form submissions with realistic Phase III data
+- Immediate: Update n8n_webhooks table to use new webhook URL
+- Short-term: Test workflow with new n8n instance
+- Long-term: Process all pending submissions
 
-## Key Documentation References
-- **Database Schema**: See `/docs/schema-map.md` for complete field mappings and SQL queries
-- **App Architecture**: See `/docs/react-app-analysis.md` for component structure and workflow
-- **System Prompt**: See `/docs/system-prompt.md` for assistant configuration
-- **This Handover**: Primary source of truth - `/docs/handover.md`
+## Deep Agent Investigations
+### Instructions for Deep Agent
+When adding your findings to this document:
+1. Create a new subsection with date/time stamp
+2. Use format: `### [YYYY-MM-DD HH:MM UTC] - Investigation Topic`
+3. List findings with clear bullet points
+4. Mark status: COMPLETED/IN-PROGRESS/BLOCKED
+5. Include any error messages or logs
+6. Add recommendations at the end
+7. Update the main "Known Issues" or "Pending Tasks" sections if needed
+
+### Example Entry Format:
+```
+### [2025-07-25 06:00 UTC] - n8n Workflow Analysis
+- **Finding 1**: Workflow using incorrect table name
+- **Finding 2**: API credentials verified and working
+- **Error Log**: "Submission not found in database"
+- **Root Cause**: Table name mismatch
+- **Status**: COMPLETED
+- **Recommendation**: Update all SQL queries to use 'submissions' table
+```
 
 ## Debug Log
-- Error 1: [2025-07-25] Form submission 400 error - table name mismatch - RESOLVED
-- Error 2: [2025-07-25] HITLReview page fixed - column name mismatch - RESOLVED
-- Error 3: [2025-07-25 03:36] TypeScript build errors - Submission interface mismatch - RESOLVED
-- Error 4: [2025-07-25 03:39] Remaining TypeScript errors - missing type annotations - RESOLVED
-- Error 5: [2025-07-25 03:52] DashboardLayout querying wrong column - RESOLVED
-- Success 1: [2025-07-25 14:17] Test submission created successfully in database
-- Error 6: [2025-07-25 14:23] Form submission "malformed array literal" - RESOLVED (commit 4448b395)
-- Success 2: [2025-07-25 14:30] Created comprehensive Phase III test data artifact for form testing
-
-## Test Data References
-- **Form Test Data**: See "Complete Form Test Data - Field by Field" artifact for realistic Phase III submission data
-- **Multi-select Fields**: Target Audience, Geography, Treatment Settings require multiple selections
-- **Last Test Submission**: a39f3fd6-c5e0-4253-b147-cc481e1cb411 (tl@innovareai.com)
+- Error 1: [timestamp/error/resolution]
+- Error 2: [timestamp/error/resolution]
