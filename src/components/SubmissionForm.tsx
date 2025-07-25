@@ -207,9 +207,9 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
 
       console.log('Submitting data:', submissionData);
 
-      // Use the correct table name: seo_requests
+      // Use the correct table name: submissions (not seo_requests)
       const { data, error: supabaseError } = await supabase
-        .from('seo_requests')
+        .from('submissions')
         .insert([submissionData])
         .select();
 
