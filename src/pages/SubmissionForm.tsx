@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { THERAPEUTIC_AREAS } from '../constants/therapeuticAreas';
-import { Send, AlertCircle, Info, ChevronDown, ChevronUp, Sparkles, Database } from 'lucide-react';
+import { Send, AlertCircle, Info, ChevronDown, ChevronUp, Sparkles, Database, Users } from 'lucide-react';
 
 export default function SubmissionForm() {
   const [formData, setFormData] = useState({
@@ -13,11 +13,16 @@ export default function SubmissionForm() {
     submitter_email: '',
     submitter_name: '',
     
-    // Client & MLR Fields (Required)
+    // Client & MLR Fields (Now in Review Assignment)
     client_name: '',
+    client_reviewer_name: '',
     client_reviewer_email: '',
     mlr_reviewer_name: '',
     mlr_reviewer_email: '',
+    
+    // SEO Reviewer (Required)
+    seo_reviewer_name: '',
+    seo_reviewer_email: '',
     
     // High-Impact Fields (Recommended)
     sponsor_manufacturer: '',
@@ -73,7 +78,9 @@ export default function SubmissionForm() {
         // Ensure arrays are properly formatted
         target_audience: ['Healthcare Professionals'],
         key_differentiators: formData.key_differentiators.filter(d => d.trim()),
-        priority_markets: formData.priority_markets.length > 0 ? formData.priority_markets : ['United States']
+        priority_markets: formData.priority_markets.length > 0 ? formData.priority_markets : ['United States'],
+        // Map SEO reviewer to the expected field
+        seo_reviewer: formData.seo_reviewer_name
       };
 
       // Create submission in database
@@ -121,9 +128,12 @@ export default function SubmissionForm() {
         submitter_email: '',
         submitter_name: '',
         client_name: '',
+        client_reviewer_name: '',
         client_reviewer_email: '',
         mlr_reviewer_name: '',
         mlr_reviewer_email: '',
+        seo_reviewer_name: '',
+        seo_reviewer_email: '',
         sponsor_manufacturer: '',
         stage: 'Phase III',
         nct_number: '',
@@ -302,74 +312,20 @@ export default function SubmissionForm() {
                 placeholder="your.email@company.com"
               />
             </div>
-          </div>
-        </div>
 
-        {/* CLIENT & MLR REVIEW FIELDS */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Review Team Information</h2>
-          
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* Client Reviewer */}
-            <div className="space-y-4">
-              <h3 className="text-sm font-medium text-gray-900 border-b pb-2">Client Reviewer</h3>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Client Name *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.client_name}
-                  onChange={(e) => setFormData({ ...formData, client_name: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Client reviewer name"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Client Email *
-                </label>
-                <input
-                  type="email"
-                  required
-                  value={formData.client_reviewer_email}
-                  onChange={(e) => setFormData({ ...formData, client_reviewer_email: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="client@company.com"
-                />
-              </div>
-            </div>
-
-            {/* MLR Reviewer */}
-            <div className="space-y-4">
-              <h3 className="text-sm font-medium text-gray-900 border-b pb-2">MLR Reviewer</h3>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  MLR Reviewer Name *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.mlr_reviewer_name}
-                  onChange={(e) => setFormData({ ...formData, mlr_reviewer_name: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="MLR reviewer name"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  MLR Reviewer Email *
-                </label>
-                <input
-                  type="email"
-                  required
-                  value={formData.mlr_reviewer_email}
-                  onChange={(e) => setFormData({ ...formData, mlr_reviewer_email: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="mlr@company.com"
-                />
-              </div>
+            {/* Client Name */}
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Client/Company Name *
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.client_name}
+                onChange={(e) => setFormData({ ...formData, client_name: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="e.g., Pfizer, Merck, Johnson & Johnson"
+              />
             </div>
           </div>
         </div>
@@ -579,6 +535,117 @@ export default function SubmissionForm() {
               </div>
             </div>
           )}
+        </div>
+
+        {/* REVIEW ASSIGNMENT - NEW SECTION BEFORE CTA */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center mb-4">
+            <Users className="h-5 w-5 text-gray-700 mr-2" />
+            <h2 className="text-xl font-semibold text-gray-900">Review Assignment</h2>
+          </div>
+          
+          <div className="space-y-6">
+            {/* SEO Reviewer - REQUIRED */}
+            <div className="border-b pb-4">
+              <h3 className="text-sm font-medium text-gray-900 mb-3">
+                SEO Reviewer <span className="text-red-600">* Required</span>
+              </h3>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    SEO Reviewer Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.seo_reviewer_name}
+                    onChange={(e) => setFormData({ ...formData, seo_reviewer_name: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="SEO team member name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    SEO Reviewer Email *
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={formData.seo_reviewer_email}
+                    onChange={(e) => setFormData({ ...formData, seo_reviewer_email: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="seo@3cubed.com"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Client Reviewer - OPTIONAL */}
+            <div className="border-b pb-4">
+              <h3 className="text-sm font-medium text-gray-900 mb-3">
+                Client Reviewer <span className="text-gray-500">(Optional)</span>
+              </h3>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Client Reviewer Name
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.client_reviewer_name}
+                    onChange={(e) => setFormData({ ...formData, client_reviewer_name: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Client team member name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Client Reviewer Email
+                  </label>
+                  <input
+                    type="email"
+                    value={formData.client_reviewer_email}
+                    onChange={(e) => setFormData({ ...formData, client_reviewer_email: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="reviewer@client.com"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* MLR Reviewer - OPTIONAL */}
+            <div>
+              <h3 className="text-sm font-medium text-gray-900 mb-3">
+                MLR Reviewer <span className="text-gray-500">(Optional)</span>
+              </h3>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    MLR Reviewer Name
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.mlr_reviewer_name}
+                    onChange={(e) => setFormData({ ...formData, mlr_reviewer_name: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="MLR team member name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    MLR Reviewer Email
+                  </label>
+                  <input
+                    type="email"
+                    value={formData.mlr_reviewer_email}
+                    onChange={(e) => setFormData({ ...formData, mlr_reviewer_email: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="mlr@company.com"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Submit Button */}
