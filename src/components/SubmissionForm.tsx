@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import { THERAPEUTIC_AREAS } from '../constants/therapeuticAreas';
 
-// Version 4.3 - TEMPORARY FIX: Removed generic_name from submission to fix database error
+// Version 4.4 - TEMPORARY FIX: Removed all missing columns from submission
 // Last updated: 2025-07-26
 
 interface SubmissionFormProps {
@@ -179,6 +179,7 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         development_stage: formDevelopmentStage,
         line_of_therapy,
         route_of_administration,
+        geographic_markets,  // Also exclude this as it doesn't exist
         key_biomarkers,
         target_age_groups,
         seo_reviewer_name,
@@ -190,11 +191,9 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         ...submittableData 
       } = formData;
 
-      // Store full form data including generic_name in raw_input_content
+      // Store ALL form data including missing fields in raw_input_content
       const fullFormData = {
-        ...formData,
-        // Include generic_name here so it's preserved
-        generic_name: formData.generic_name
+        ...formData
       };
 
       const submissionData = {
@@ -202,7 +201,7 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         submitter_email: formData.seo_reviewer_email,
         submitter_name: formData.seo_reviewer_name,
         
-        // Store ALL form data including generic_name as JSON
+        // Store ALL form data including generic_name and geographic_markets as JSON
         raw_input_content: JSON.stringify(fullFormData),
         
         // Default values for new submissions
@@ -214,7 +213,7 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         updated_at: new Date().toISOString(),
         last_updated: new Date().toISOString(),
         
-        // Map array fields that already exist in DB
+        // Map geographic_markets to existing geography column
         geography: formData.geographic_markets,
         target_audience: ['Specialist Physicians'], // Default for now
         
@@ -236,7 +235,7 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         }
       };
 
-      console.log('Submitting to submissions table (temporary fix):', submissionData);
+      console.log('Submitting to submissions table (temporary fix v2):', submissionData);
 
       const { data, error: supabaseError } = await supabase
         .from('submissions')
