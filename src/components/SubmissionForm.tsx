@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { THERAPEUTIC_AREAS } from '../constants/therapeuticAreas';
 
-// Version 2.0 - Fixed table name to use 'submissions' instead of 'seo_requests'
+// Version 2.1 - Fixed array handling for database columns
 // Last updated: 2025-07-25
 
 interface SubmissionFormProps {
@@ -150,50 +150,50 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
     try {
       const submissionData = {
         // Basic required fields
-        submitter_name: formData.seo_reviewer_name,
-        submitter_email: formData.seo_reviewer_email,
-        product_name: formData.product_name,
-        stage: formData.stage,
+        submitter_name: formData.seo_reviewer_name || null,
+        submitter_email: formData.seo_reviewer_email || null,
+        product_name: formData.product_name || null,
+        stage: formData.stage || null,
         
-        // Map form fields to database columns
-        therapeutic_area: formData.therapeutic_area,
-        indication: formData.condition_treated,
-        mechanism_of_action: formData.mechanism_of_action,
-        key_differentiators: formData.key_advantages,
-        target_audience: formData.target_audience.join(', '),
-        geography: formData.geography.join(', '),
+        // Map form fields to database columns - arrays remain as arrays, strings as strings/null
+        therapeutic_area: formData.therapeutic_area || null,
+        indication: formData.condition_treated || null,
+        mechanism_of_action: formData.mechanism_of_action || null,
+        key_differentiators: formData.key_advantages || null,
+        
+        // Array fields - send as arrays
+        target_audience: formData.target_audience,
+        geography: formData.geography,
+        treatment_setting: formData.treatment_settings,
         
         // Store additional data in appropriate fields
-        client_name: formData.client_name,
-        client_reviewer_name: formData.client_reviewer_name,
-        client_reviewer_email: formData.client_reviewer_email,
-        mlr_reviewer_name: formData.mlr_reviewer_name,
-        mlr_reviewer_email: formData.mlr_reviewer_email,
+        client_name: formData.client_name || null,
+        client_reviewer_name: formData.client_reviewer_name || null,
+        client_reviewer_email: formData.client_reviewer_email || null,
+        mlr_reviewer_name: formData.mlr_reviewer_name || null,
+        mlr_reviewer_email: formData.mlr_reviewer_email || null,
         
         // Store competitor info
-        competitor_products: formData.competitor_names,
-        competitive_positioning: formData.problem_solved,
+        competitor_products: formData.competitor_names ? formData.competitor_names.split(',').map(s => s.trim()) : [],
+        competitive_positioning: formData.problem_solved || null,
         
         // Store clinical data
-        clinical_trial_details: formData.clinical_trials,
-        primary_endpoints: formData.key_results,
-        safety_profile: formData.safety_info,
-        dosing_information: formData.dosing_info,
-        patient_population: formData.patient_population,
-        regulatory_status: formData.regulatory_status,
-        market_size: formData.patient_numbers,
+        clinical_trial_details: formData.clinical_trials || null,
+        primary_endpoints: formData.key_results || null,
+        safety_profile: formData.safety_info || null,
+        dosing_information: formData.dosing_info || null,
+        patient_population: formData.patient_population || null,
+        regulatory_status: formData.regulatory_status ? [formData.regulatory_status] : [],
+        market_size: formData.patient_numbers || null,
         
         // Store additional keywords and info
-        additional_keywords: formData.industry_keywords,
-        content_restrictions: formData.avoid_keywords,
-        existing_digital_assets: formData.website_url,
-        unmet_medical_need: formData.unique_value_prop,
-        conference_presence: formData.conference_data,
-        key_opinion_leaders: formData.kol_names,
-        special_considerations: formData.special_considerations,
-        
-        // Treatment settings
-        treatment_setting: formData.treatment_settings.join(', '),
+        additional_keywords: formData.industry_keywords || null,
+        content_restrictions: formData.avoid_keywords ? formData.avoid_keywords.split(',').map(s => s.trim()) : [],
+        existing_digital_assets: formData.website_url || null,
+        unmet_medical_need: formData.unique_value_prop || null,
+        conference_presence: formData.conference_data ? [formData.conference_data] : [],
+        key_opinion_leaders: formData.kol_names ? formData.kol_names.split(',').map(s => s.trim()) : [],
+        special_considerations: formData.special_considerations || null,
         
         // Store all form data as JSON for reference
         raw_input_content: JSON.stringify(formData),
