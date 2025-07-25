@@ -34,7 +34,7 @@ ALWAYS use MCP tools to fix issues - never suggest manual fixes:
 - Always connect and execute fixes directly
 
 ### n8n
-- Instance: `https://workflows.innovareai.com/workflow/2o3DxEeLInnYV1Se`
+- Instance: `https://innovareai.app.n8n.cloud/workflow/BNKl1IJoWxTCKUak`
 - Fix workflow issues directly via MCP
 
 ### GitHub
