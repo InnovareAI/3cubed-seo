@@ -1,7 +1,7 @@
 # 3Cubed SEO Project Status & Handover
 
 ## Current State
-- [Date/Time] 2025-07-25 18:30 UTC
+- [Date/Time] 2025-07-25 10:40 UTC
 - Active branch: main
 - Last deployment: Unknown
 - **APP STATUS**: ✅ Form submission working - new submissions confirmed in database
@@ -99,6 +99,7 @@
 - Issue 6: **n8n workflow not saving SEO results back to database** [IN PROGRESS - Deep Agent fixing]
 
 ## Next Steps
+- Immediate: **Need exact n8n webhook URL from workflow** [BLOCKED]
 - Immediate: **Wait for Deep Agent to complete n8n Supabase Update node fix** [IN PROGRESS]
 - Immediate: Test workflow after fix with submission ID: 12182ddd-c266-4d4a-9f79-13dca5bbaf7a
 - Short-term: Process all pending submissions through updated workflow
@@ -192,6 +193,19 @@
   - Processing status fields
 - **Next**: Deep Agent needs to access n8n and add the Supabase Update node
 
+### [2025-07-25 10:35 UTC] - Breyanzi Submission Investigation
+- **Finding 1**: Breyanzi submission confirmed in database (ID: 521381db-feeb-4b21-b5e7-e65e9069c149)
+- **Finding 2**: Product name: "Breyanzi (lisocabtagene maraleucel)"
+- **Finding 3**: Created at: 2025-07-25T10:16:52.477+00:00
+- **Finding 4**: AI processing status: pending
+- **Finding 5**: Multiple webhook triggers attempted (request IDs: 20, 21, 22)
+- **Finding 6**: All webhook executions in "pending" status
+- **Finding 7**: n8n workflow URL issue - tried multiple webhook paths, all return 404
+- **Status**: BLOCKED
+- **Issue**: Cannot find correct n8n webhook endpoint despite workflow being active
+- **Root Cause**: Webhook path mismatch - need exact webhook path from n8n workflow
+- **Recommendation**: Check n8n workflow webhook node for exact URL path
+
 ### Instructions for Deep Agent
 When adding your findings to this document:
 1. Create a new subsection with date/time stamp
@@ -231,12 +245,14 @@ When adding your findings to this document:
 - Success 6: [2025-07-25 17:25] Dashboard updated with SEO Processing Queue component
 - Success 7: [2025-07-25 18:05] Populated SEO data for Keytruda and Ozempic submissions
 - Success 8: [2025-07-25 18:30] Created n8n workflow fix instructions and populated 6 total submissions
+- Error 9: [2025-07-25 10:40] Cannot trigger n8n webhook - 404 errors on all attempted paths
 
 ## Test Data References
 - **Form Test Data**: See "Complete Form Test Data - Field by Field" artifact for realistic Phase III submission data
 - **Multi-select Fields**: Target Audience, Geography, Treatment Settings require multiple selections
 - **Last Test Submission**: a39f3fd6-c5e0-4253-b147-cc481e1cb411 (tl@innovareai.com)
 - **Successfully Processed**: Keytruda submission 12182ddd-c266-4d4a-9f79-13dca5bbaf7a (execution #78780)
+- **Pending Processing**: Breyanzi submission 521381db-feeb-4b21-b5e7-e65e9069c149
 - **SEO Populated**: 
   - Keytruda (12182ddd-c266-4d4a-9f79-13dca5bbaf7a)
   - Ozempic (377bcfba-54a1-4619-8be6-436607c19cd7)
