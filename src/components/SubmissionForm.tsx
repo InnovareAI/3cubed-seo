@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import { THERAPEUTIC_AREAS } from '../constants/therapeuticAreas';
 
-// Version 4.4 - TEMPORARY FIX: Removed all missing columns from submission
+// Version 4.5 - Blue submit button + OK button in success modal
 // Last updated: 2025-07-26
 
 interface SubmissionFormProps {
@@ -165,6 +165,40 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
     }));
   };
 
+  const handleSuccessClose = () => {
+    setShowSuccessModal(false);
+    
+    // Reset form
+    setFormData({
+      product_name: '',
+      generic_name: '',
+      indication: '',
+      therapeutic_area: '',
+      seo_reviewer_name: '',
+      seo_reviewer_email: '',
+      client_reviewer_name: '',
+      client_reviewer_email: '',
+      mlr_reviewer_name: '',
+      mlr_reviewer_email: '',
+      nct_number: '',
+      sponsor: '',
+      development_stage: '',
+      line_of_therapy: '',
+      patient_population: [],
+      route_of_administration: '',
+      combination_partners: [],
+      primary_endpoints: [],
+      geographic_markets: [],
+      key_biomarkers: [],
+      target_age_groups: [],
+      submitter_email: '',
+      submitter_name: ''
+    });
+    
+    if (onSuccess) onSuccess();
+    if (onClose) onClose();
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -251,39 +285,6 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
 
       // Show success modal
       setShowSuccessModal(true);
-      
-      // Reset form after a delay
-      setTimeout(() => {
-        setFormData({
-          product_name: '',
-          generic_name: '',
-          indication: '',
-          therapeutic_area: '',
-          seo_reviewer_name: '',
-          seo_reviewer_email: '',
-          client_reviewer_name: '',
-          client_reviewer_email: '',
-          mlr_reviewer_name: '',
-          mlr_reviewer_email: '',
-          nct_number: '',
-          sponsor: '',
-          development_stage: '',
-          line_of_therapy: '',
-          patient_population: [],
-          route_of_administration: '',
-          combination_partners: [],
-          primary_endpoints: [],
-          geographic_markets: [],
-          key_biomarkers: [],
-          target_age_groups: [],
-          submitter_email: '',
-          submitter_name: ''
-        });
-        
-        setShowSuccessModal(false);
-        if (onSuccess) onSuccess();
-        if (onClose) onClose();
-      }, 3000);
       
     } catch (err: any) {
       console.error('Error submitting form:', err);
@@ -766,7 +767,7 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
           )}
         </div>
 
-        {/* Submit Button */}
+        {/* Submit Button - NOW BLUE */}
         <div className="flex justify-end space-x-3 pt-4">
           {onClose && (
             <button
@@ -780,14 +781,14 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
           <button
             type="submit"
             disabled={isSubmitting || progress < 65}
-            className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
           >
             {isSubmitting ? 'Submitting...' : 'Submit SEO Request'}
           </button>
         </div>
       </form>
 
-      {/* Success Modal */}
+      {/* Success Modal - NOW WITH OK BUTTON */}
       {showSuccessModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4 transform transition-all animate-fade-in-up">
@@ -798,18 +799,15 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
                 </svg>
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">Success!</h3>
-              <p className="text-sm text-gray-500 mb-4">
+              <p className="text-sm text-gray-500 mb-6">
                 SEO Content Request submitted successfully! The content will be processed and sent to reviewers.
               </p>
-              <div className="mt-5">
-                <div className="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md">
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Processing...
-                </div>
-              </div>
+              <button
+                onClick={handleSuccessClose}
+                className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition-colors shadow-md"
+              >
+                OK
+              </button>
             </div>
           </div>
         </div>
