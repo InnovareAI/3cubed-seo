@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import { THERAPEUTIC_AREAS } from '../constants/therapeuticAreas';
 
-// Version 4.5 - Blue submit button + OK button in success modal
+// Version 4.6 - All database columns now exist - removed temporary workaround
 // Last updated: 2025-07-26
 
 interface SubmissionFormProps {
@@ -205,38 +205,43 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
     setError(null);
 
     try {
-      // TEMPORARY: Remove fields that don't exist in database yet
-      const { 
-        generic_name,
-        nct_number,
-        sponsor,
-        development_stage: formDevelopmentStage,
-        line_of_therapy,
-        route_of_administration,
-        geographic_markets,  // Also exclude this as it doesn't exist
-        key_biomarkers,
-        target_age_groups,
-        seo_reviewer_name,
-        seo_reviewer_email,
-        client_reviewer_name,
-        client_reviewer_email,
-        mlr_reviewer_name,
-        mlr_reviewer_email,
-        ...submittableData 
-      } = formData;
-
-      // Store ALL form data including missing fields in raw_input_content
-      const fullFormData = {
-        ...formData
-      };
-
+      // All columns now exist in the database
       const submissionData = {
-        ...submittableData,
+        // Section 1: Product Information
+        product_name: formData.product_name,
+        generic_name: formData.generic_name,
+        indication: formData.indication,
+        therapeutic_area: formData.therapeutic_area,
+        
+        // Section 2: Clinical Context
+        nct_number: formData.nct_number || null,
+        sponsor: formData.sponsor || null,
+        development_stage: formData.development_stage || null,
+        line_of_therapy: formData.line_of_therapy || null,
+        patient_population: formData.patient_population,
+        
+        // Section 3: Advanced Optimization
+        route_of_administration: formData.route_of_administration || null,
+        combination_partners: formData.combination_partners,
+        primary_endpoints: formData.primary_endpoints,
+        geography: formData.geographic_markets, // Maps to geography column
+        key_biomarkers: formData.key_biomarkers,
+        target_age_groups: formData.target_age_groups,
+        
+        // Section 4: Team & Review Assignment
+        seo_reviewer_name: formData.seo_reviewer_name,
+        seo_reviewer_email: formData.seo_reviewer_email,
+        client_reviewer_name: formData.client_reviewer_name || null,
+        client_reviewer_email: formData.client_reviewer_email || null,
+        mlr_reviewer_name: formData.mlr_reviewer_name || null,
+        mlr_reviewer_email: formData.mlr_reviewer_email || null,
+        
+        // Legacy fields for compatibility
         submitter_email: formData.seo_reviewer_email,
         submitter_name: formData.seo_reviewer_name,
         
-        // Store ALL form data including generic_name and geographic_markets as JSON
-        raw_input_content: JSON.stringify(fullFormData),
+        // Store full form data for reference
+        raw_input_content: JSON.stringify(formData),
         
         // Default values for new submissions
         priority_level: 'medium',
@@ -246,15 +251,9 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         last_updated: new Date().toISOString(),
-        
-        // Map geographic_markets to existing geography column
-        geography: formData.geographic_markets,
         target_audience: ['Specialist Physicians'], // Default for now
         
-        // Map development_stage to existing column (if it exists)
-        development_stage: formDevelopmentStage || null,
-        
-        // Store reviewer info in existing columns
+        // Store reviewer info in JSON columns too
         seo_reviewer: {
           name: formData.seo_reviewer_name,
           email: formData.seo_reviewer_email
@@ -269,7 +268,7 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         }
       };
 
-      console.log('Submitting to submissions table (temporary fix v2):', submissionData);
+      console.log('Submitting to submissions table with all columns:', submissionData);
 
       const { data, error: supabaseError } = await supabase
         .from('submissions')
