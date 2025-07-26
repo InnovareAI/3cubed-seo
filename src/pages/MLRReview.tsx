@@ -17,7 +17,8 @@ import {
   ArrowRight,
   Eye,
   CheckCircle,
-  Scale
+  Scale,
+  XCircle
 } from 'lucide-react'
 import { format } from 'date-fns'
 
@@ -67,6 +68,38 @@ export default function MLRReview() {
     refetchInterval: 30000
   })
 
+  // Fetch submission statistics - same as Overview and ClientReview
+  const { data: submissionStats } = useQuery({
+    queryKey: ['mlr-submission-stats'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('submissions')
+        .select('workflow_stage, ai_processing_status')
+      
+      if (error) throw error
+      
+      const stats = {
+        total: data.length,
+        processed: data.filter(s => 
+          s.ai_processing_status === 'completed' || 
+          s.workflow_stage === 'seo_review' || 
+          s.workflow_stage === 'client_review' || 
+          s.workflow_stage === 'mlr_review' ||
+          s.workflow_stage === 'revision_requested' ||
+          s.workflow_stage === 'approved' ||
+          s.workflow_stage === 'completed'
+        ).length,
+        approved: data.filter(s => 
+          s.workflow_stage === 'approved' || 
+          s.workflow_stage === 'completed'
+        ).length,
+        rejected: data.filter(s => s.workflow_stage === 'rejected').length
+      }
+      
+      return stats
+    }
+  })
+
   const filteredSubmissions = submissions?.filter(submission => {
     if (searchTerm && !submission.product_name.toLowerCase().includes(searchTerm.toLowerCase()) &&
         !submission.therapeutic_area.toLowerCase().includes(searchTerm.toLowerCase())) {
@@ -98,18 +131,6 @@ export default function MLRReview() {
     }
   }
 
-  // Calculate stats for the cards
-  const stats = {
-    total: filteredSubmissions?.length || 0,
-    highPriority: filteredSubmissions?.filter(s => s.priority_level?.toLowerCase() === 'high').length || 0,
-    clientApproved: filteredSubmissions?.filter(s => s.client_review_responses?.roiConfidence).length || 0,
-    todaySubmissions: filteredSubmissions?.filter(s => {
-      const today = new Date()
-      const submissionDate = new Date(s.created_at)
-      return submissionDate.toDateString() === today.toDateString()
-    }).length || 0
-  }
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -131,28 +152,16 @@ export default function MLRReview() {
         </CTAButton>
       </div>
 
-      {/* Stats Cards */}
+      {/* Stats Cards - Updated to match Overview format */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Total for Review</p>
-              <p className="text-2xl font-semibold text-gray-900 mt-1">{stats.total}</p>
+              <p className="text-sm font-medium text-gray-600">Total</p>
+              <p className="text-2xl font-semibold text-gray-900 mt-1">{submissionStats?.total || 0}</p>
             </div>
-            <div className="p-3 bg-purple-100 rounded-lg">
-              <Shield className="h-6 w-6 text-purple-600" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">High Priority</p>
-              <p className="text-2xl font-semibold text-red-600 mt-1">{stats.highPriority}</p>
-            </div>
-            <div className="p-3 bg-red-100 rounded-lg">
-              <AlertCircle className="h-6 w-6 text-red-600" />
+            <div className="p-3 bg-blue-100 rounded-lg">
+              <FileText className="h-6 w-6 text-blue-600" />
             </div>
           </div>
         </div>
@@ -160,11 +169,11 @@ export default function MLRReview() {
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Client Approved</p>
-              <p className="text-2xl font-semibold text-green-600 mt-1">{stats.clientApproved}</p>
+              <p className="text-sm font-medium text-gray-600">Processed</p>
+              <p className="text-2xl font-semibold text-green-600 mt-1">{submissionStats?.processed || 0}</p>
             </div>
             <div className="p-3 bg-green-100 rounded-lg">
-              <CheckCircle className="h-6 w-6 text-green-600" />
+              <Clock className="h-6 w-6 text-green-600" />
             </div>
           </div>
         </div>
@@ -172,11 +181,23 @@ export default function MLRReview() {
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Today's Submissions</p>
-              <p className="text-2xl font-semibold text-gray-900 mt-1">{stats.todaySubmissions}</p>
+              <p className="text-sm font-medium text-gray-600">Approved</p>
+              <p className="text-2xl font-semibold text-indigo-600 mt-1">{submissionStats?.approved || 0}</p>
             </div>
-            <div className="p-3 bg-gray-100 rounded-lg">
-              <Clock className="h-6 w-6 text-gray-600" />
+            <div className="p-3 bg-indigo-100 rounded-lg">
+              <CheckCircle className="h-6 w-6 text-indigo-600" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Rejected</p>
+              <p className="text-2xl font-semibold text-red-600 mt-1">{submissionStats?.rejected || 0}</p>
+            </div>
+            <div className="p-3 bg-red-100 rounded-lg">
+              <XCircle className="h-6 w-6 text-red-600" />
             </div>
           </div>
         </div>
