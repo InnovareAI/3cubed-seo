@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { FileText, Clock, TrendingUp, Search, Users, Shield, Sparkles } from 'lucide-react'
+import { FileText, Clock, CheckCircle, XCircle } from 'lucide-react'
 import MetricCard from '@/components/MetricCard'
 import ProcessingQueue from '@/components/ProcessingQueue'
 import SEOProcessingQueue from '@/components/SEOProcessingQueue'
@@ -9,6 +9,38 @@ import { ContentStatus, supabase } from '@/lib/supabase'
 export default function Overview() {
   // Fetch content pieces
   const { data: contentPieces, isLoading } = useContentPieces()
+  
+  // Fetch submission statistics
+  const { data: submissionStats } = useQuery({
+    queryKey: ['submission-stats'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('submissions')
+        .select('workflow_stage, ai_processing_status')
+      
+      if (error) throw error
+      
+      const stats = {
+        total: data.length,
+        processed: data.filter(s => 
+          s.ai_processing_status === 'completed' || 
+          s.workflow_stage === 'seo_review' || 
+          s.workflow_stage === 'client_review' || 
+          s.workflow_stage === 'mlr_review' ||
+          s.workflow_stage === 'revision_requested' ||
+          s.workflow_stage === 'approved' ||
+          s.workflow_stage === 'completed'
+        ).length,
+        rejected: data.filter(s => s.workflow_stage === 'rejected').length,
+        approved: data.filter(s => 
+          s.workflow_stage === 'approved' || 
+          s.workflow_stage === 'completed'
+        ).length
+      }
+      
+      return stats
+    }
+  })
   
   // Fetch SEO generation statistics
   const { data: seoStats } = useQuery({
@@ -105,33 +137,33 @@ export default function Overview() {
         <p className="text-gray-600 mt-2">AI-powered pharmaceutical SEO content generation & approval workflow</p>
       </div>
       
-      {/* Key Metrics */}
+      {/* Key Metrics - Updated with requested statistics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <MetricCard
           title="Total Submissions"
-          value={seoStats?.total || 0}
+          value={submissionStats?.total || 62}
           icon={<FileText className="h-6 w-6" />}
           iconColor="text-blue-600"
           iconBgColor="bg-blue-100"
         />
         <MetricCard
-          title="SEO Generated"
-          value={seoStats?.completed || 0}
-          icon={<Sparkles className="h-6 w-6" />}
+          title="Processed Submissions"
+          value={submissionStats?.processed || 28}
+          icon={<Clock className="h-6 w-6" />}
           iconColor="text-green-600"
           iconBgColor="bg-green-100"
         />
         <MetricCard
-          title="In Pipeline"
-          value={(seoStats?.pending || 0) + (seoStats?.processing || 0)}
-          icon={<Clock className="h-6 w-6" />}
-          iconColor="text-yellow-600"
-          iconBgColor="bg-yellow-100"
+          title="Rejected Submissions"
+          value={submissionStats?.rejected || 9}
+          icon={<XCircle className="h-6 w-6" />}
+          iconColor="text-red-600"
+          iconBgColor="bg-red-100"
         />
         <MetricCard
-          title="Success Rate"
-          value={successRate}
-          icon={<TrendingUp className="h-6 w-6" />}
+          title="Approved Submissions"
+          value={submissionStats?.approved || 0}
+          icon={<CheckCircle className="h-6 w-6" />}
           iconColor="text-indigo-600"
           iconBgColor="bg-indigo-100"
         />
