@@ -2,7 +2,6 @@ import { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { mockMLRReviews } from '../data/mockMLRReviews'
 import CTAButton from '../components/CTAButton'
 import { THERAPEUTIC_AREAS } from '../constants/therapeuticAreas'
 import { 
@@ -52,9 +51,8 @@ export default function MLRReview() {
   const [searchTerm, setSearchTerm] = useState('')
   const [priorityFilter, setPriorityFilter] = useState<string>('all')
   const [therapeuticAreaFilter, setTherapeuticAreaFilter] = useState<string>('all')
-  const [useDummyData, setUseDummyData] = useState(true)
 
-  const { data: dbSubmissions, isLoading } = useQuery({
+  const { data: submissions, isLoading } = useQuery({
     queryKey: ['mlr-review-queue'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -66,15 +64,8 @@ export default function MLRReview() {
       if (error) throw error
       return data as Submission[]
     },
-    refetchInterval: 30000,
-    enabled: !useDummyData
+    refetchInterval: 30000
   })
-
-  // Use dummy data or live data based on toggle
-  const submissions = useMemo(() => {
-    if (useDummyData) return mockMLRReviews
-    return dbSubmissions || []
-  }, [useDummyData, dbSubmissions])
 
   const filteredSubmissions = submissions?.filter(submission => {
     if (searchTerm && !submission.product_name.toLowerCase().includes(searchTerm.toLowerCase()) &&
@@ -119,7 +110,7 @@ export default function MLRReview() {
     }).length || 0
   }
 
-  if (!useDummyData && isLoading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
@@ -135,21 +126,9 @@ export default function MLRReview() {
           <h1 className="text-2xl font-bold text-gray-900">MLR Review</h1>
           <p className="text-sm text-gray-600 mt-1">Medical legal compliance review before publication</p>
         </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setUseDummyData(!useDummyData)}
-            className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
-              useDummyData 
-                ? 'bg-amber-100 text-amber-700' 
-                : 'bg-green-100 text-green-700'
-            }`}
-          >
-            {useDummyData ? 'Demo Data' : 'Live Data'}
-          </button>
-          <CTAButton variant="primary" icon={<FileText className="h-4 w-4" />}>
-            Export Report
-          </CTAButton>
-        </div>
+        <CTAButton variant="primary" icon={<FileText className="h-4 w-4" />}>
+          Export Report
+        </CTAButton>
       </div>
 
       {/* Stats Cards */}
