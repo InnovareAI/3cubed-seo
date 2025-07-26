@@ -28,6 +28,7 @@ interface MockSubmission {
   seo_strategy_outline?: string
   geo_optimization?: any
   geo_optimization_score?: number
+  ai_processing_status?: string
   ai_output?: any
   seo_strategy?: any
 }
@@ -98,6 +99,7 @@ export const mockSEOReviews: MockSubmission[] = [
       ],
       ai_citations: 'Clinical trials: FOURIER (27,564 patients), OSLER (4,465 patients)'
     },
+    ai_processing_status: 'completed',
     ai_output: {
       compliance_status: 'compliant',
       compliance_flags: []
@@ -201,6 +203,7 @@ export const mockSEOReviews: MockSubmission[] = [
       ],
       ai_citations: 'Phase III CLARITY trial (n=2,100), Phase II MINDFUL study (n=850)'
     },
+    ai_processing_status: 'completed',
     ai_output: {
       compliance_status: 'pending',
       compliance_flags: ['Ensure Phase III completion disclosure is accurate', 'Include appropriate disclaimers for investigational therapy']
@@ -308,6 +311,7 @@ export const mockSEOReviews: MockSubmission[] = [
       ],
       ai_citations: 'SHIELD-RA trials (n=3,200), SELECT-RA study (n=1,800)'
     },
+    ai_processing_status: 'completed',
     ai_output: {
       compliance_status: 'compliant',
       compliance_flags: ['Include safety comparison disclaimers', 'Ensure FDA approval status is clear']
