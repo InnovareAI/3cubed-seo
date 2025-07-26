@@ -1,7 +1,7 @@
 # 3Cubed SEO Project Status & Handover
 
 ## Current State
-- [2025-07-26 03:20 UTC]
+- [2025-07-26 07:55 UTC]
 - Active branch: main
 - Last deployment: Pending (form update committed)
 - **PLATFORM STATUS: FULLY OPERATIONAL** 🎉
@@ -55,10 +55,24 @@
 - Test 4: Perplexity API integration (2025-07-26 03:00) - PASSED - Content generation working
 - Test 5: Claude QA review (2025-07-26 03:00) - PASSED - Fixed message role issue
 - Test 6: End-to-end workflow (2025-07-26 03:15) - PASSED - Full pipeline operational
-- Test 7: New form submission test (2025-07-26 03:20) - IN PROGRESS
+
+### [2025-07-26 07:55 UTC] - Form Submission Test - IN PROGRESS
+- **Objective**: Test form submission process end-to-end
+- **Complexity**: Simple (<5 steps)
+- **Plan**:
+  1. Create test submission record in database
+  2. Monitor webhook trigger
+  3. Check n8n workflow execution
+  4. Verify AI processing completion
+  5. Confirm data updates in database
+- **Current Status**: Database insertion issues - investigating
+- **Context Window Protection**: 
+  - Last test IDs: 0bfff265-ef32-43b3-94b9-6344d18c11a0, 7cbb4023-1967-4174-9ec6-cc6e2bcc8434
+  - Workflow ID: BNKl1IJoWxTCKUak
+  - Issue: Array field constraints
 
 ### Failed Tests
-- None currently
+- Test 7: Form submission (2025-07-26 07:55) - FAILED - Database constraint errors on array fields
 
 ### Performance Metrics
 - Form submission time: < 2s
@@ -73,7 +87,11 @@
 4. Consider implementing retry logic for API failures [LOW]
 
 ## Known Issues
-- All critical issues resolved ✅
+- **URGENT**: n8n workflow parsing errors:
+  1. Perplexity response not extracted correctly (empty content)
+  2. submission_id undefined in database update
+  3. Claude node referencing wrong node name
+- Workflow needs immediate fixes to Parse Perplexity Response node
 
 ## Previous Issues (Now Fixed)
 - ✅ Issue 1: Webhook URL configuration - FIXED with correct URL
@@ -111,28 +129,90 @@
 ---
 
 ## Deep Agent Work Reports Section
-**Instructions for Deep Agent:**
-Please add your work reports, technical findings, and issue discoveries below this line. Include:
+### Instructions for Deep Agent:
+Please add your work reports below. Include:
 - Date/Time of work performed
 - Tasks completed
 - Technical issues discovered
 - Code changes made
-- Test results
+- Test results with actual data
 - Performance observations
 - Any anomalies or concerns
 
-**Format your entries as:**
+### Report Format:
 ```
-### [Date/Time] - [Task/Issue Title]
-- **Status**: [Completed/In Progress/Failed]
-- **Details**: [What was done/discovered]
-- **Technical Notes**: [Any code changes, errors, or technical details]
-- **Next Steps**: [If applicable]
+### [Date/Time] - [Task/Issue Title] - [STATUS]
+- **Status**: [STARTED/IN PROGRESS/COMPLETED/FAILED]
+- **Objective**: [Clear statement of what needs to be done]
+- **Plan**: [For STARTED status - detailed steps]
+  1. [Specific action with exact command/query]
+  2. [Next step with details]
+  3. [Continue numbering...]
+- **Progress**: [For IN PROGRESS - what's been done, what's left]
+- **Details**: [Results/findings/issues]
+- **Technical Notes**: [Code changes, errors, important IDs/values]
+- **Context Preservation**: [Critical data for continuation if context lost]
+  - Submission ID: xxx
+  - Workflow ID: xxx
+  - Error at step: X
+  - Last successful action: xxx
+- **Next Steps**: [Specific actions if task incomplete]
 ```
 
-**IMPORTANT**: The DevOps Engineer will review your reports and integrate significant findings into the main sections above.
+### IMPORTANT: Completed Task Archival
+- Once DevOps Engineer reviews and integrates a report
+- Completed tasks will be moved to `/docs/completed-tasks.md`
+- Mark integrated reports with [INTEGRATED] before moving
+- Keep only active/pending items in handover.md
 
 ### Deep Agent Reports:
 <!-- Add new reports below this line -->
 
 <!-- End of Deep Agent Reports -->
+
+---
+
+## Warp Agent Command Line Reports Section
+### Instructions for Warp Agent:
+The Warp Agent handles all command-line operations. Please document:
+- Terminal commands executed
+- Output/results obtained
+- Error messages encountered
+- File system changes made
+- Process statuses checked
+- Environment configurations
+
+### Command Report Format:
+```
+### [Date/Time] - [Command Task] - [STATUS]
+- **Objective**: [What CLI task needs accomplishing]
+- **Working Directory**: [Full path where commands executed]
+- **Commands Executed**:
+  ```bash
+  $ command 1
+  [output]
+  
+  $ command 2  
+  [output]
+  ```
+- **Results**: [Summary of what happened]
+- **Files Modified**: [List any files created/modified/deleted]
+- **Environment**: [Any env vars or configs that matter]
+- **Errors**: [Full error messages if any]
+- **Next CLI Steps**: [What commands to run next if incomplete]
+```
+
+### Common Warp Agent Tasks:
+- npm install/build/test operations
+- Git operations (status, commit, push)
+- File system navigation and manipulation
+- Process management (start/stop servers)
+- Log file analysis (tail, grep, etc)
+- Database CLI operations
+- Docker/container management
+- Network diagnostics
+
+### Warp Agent Reports:
+<!-- Add new command reports below this line -->
+
+<!-- End of Warp Agent Reports -->
