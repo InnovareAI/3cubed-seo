@@ -125,11 +125,6 @@ export default function Overview() {
     }
   ]
 
-  // Calculate success rate safely
-  const successRate = seoStats && seoStats.total > 0 
-    ? `${Math.round((seoStats.completed / seoStats.total) * 100)}%` 
-    : '0%'
-
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="mb-8">
