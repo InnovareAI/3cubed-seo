@@ -14,8 +14,6 @@ import {
   Activity,
   Users,
   FileCheck,
-  ChevronDown,
-  ChevronRight,
   LayoutDashboard
 } from 'lucide-react'
 
