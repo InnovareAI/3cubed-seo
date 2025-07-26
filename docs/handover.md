@@ -258,19 +258,21 @@
 
 ## Pending Tasks
 1. **[HIGH]** Test complete workflow with production submission
-2. **[MEDIUM]** Clean up old test data with NULL mandatory fields
-3. **[MEDIUM]** Run database migration to fix data types
-4. **[MEDIUM]** Monitor workflow executions for stability
-5. **[LOW]** Optimize processing speed
-6. **[LOW]** Update ai_processing_status when workflows complete
+2. **[HIGH]** Fix SEO Review page only showing 8 submissions instead of 50+
+3. **[MEDIUM]** Clean up old test data with NULL mandatory fields
+4. **[MEDIUM]** Run database migration to fix data types
+5. **[MEDIUM]** Monitor workflow executions for stability
+6. **[LOW]** Optimize processing speed
+7. **[LOW]** Update ai_processing_status when workflows complete
 
 ## Known Issues
+- **SEO Review Display**: Page only shows 8 submissions when database has 50+ records
 - **Old test data** - Many submissions from June/July have NULL mandatory fields (indication, therapeutic_area)
 - **Database schema issues** - Most fields stored as generic 'object' type instead of proper types
 - **Status updates** - ai_processing_status remains "pending" after workflow completion - needs update logic
 
 ## Next Steps
-- Immediate: Test complete workflow with production submission
+- Immediate: Fix SEO Review page display issue
 - Short-term: Clean up old test data and monitor executions
 - Long-term: Add better error handling and status update logic
 
@@ -329,6 +331,34 @@ Please add your work reports below. Include:
 
 ### Deep Agent Reports:
 <!-- Add new reports below this line -->
+
+### [2025-07-26 22:05] - Fix SEO Review Page Display Issue - STARTED
+- **Status**: STARTED
+- **Objective**: Fix SEO Review page showing only 8 submissions instead of all 50+ in database
+- **Plan**: 
+  1. Identify root cause of limited display
+  2. Check for any hidden pagination or filtering
+  3. Verify React query is fetching all data
+  4. Test with live data mode
+  5. Document fix and verify all submissions display
+- **Progress**: Initial investigation shows:
+  - Database has 50+ submissions
+  - SEOReview.tsx component has no limit in query
+  - SEOProcessingQueue.tsx has .limit(10) but that's a different component
+  - Mock data only has 3 items (not 8)
+  - Issue likely with React rendering or hidden state management
+- **Details**: User reports only 8 submissions showing when there should be 50+
+- **Technical Notes**: 
+  - Query in SEOReview.tsx: `.select('*').order('created_at', { ascending: false })`
+  - No explicit limit in the query
+  - Component defaults to live data mode now
+  - Need to check if issue is with React Query caching or component state
+- **Context Preservation**:
+  - Total submissions in DB: 50+
+  - Displayed submissions: 8 (per user report)
+  - Component file: src/pages/SEOReview.tsx
+  - No query limit found in code
+- **Next Steps**: Check browser console for errors, verify React Query cache
 
 ### [2025-07-26 21:50] - Visual Walkthrough Request - STARTED
 - **Status**: STARTED
