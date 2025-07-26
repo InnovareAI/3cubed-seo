@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { Outlet, NavLink, useLocation } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
-import { supabase } from '../lib/supabase'
+import { useReviewCounts } from '../hooks/useReviewCounts'
 import { 
   FileText, 
   Library, 
@@ -20,12 +19,21 @@ import {
   LayoutDashboard
 } from 'lucide-react'
 
-const navigation = [
+interface NavItem {
+  name: string
+  href: string
+  icon: any
+  showBadge?: boolean
+  badgeType?: 'seoReview' | 'clientReview' | 'mlrReview'
+  subItems?: NavItem[]
+}
+
+const navigation: NavItem[] = [
   { name: 'Current Projects', href: '/', icon: Building2 },
   { name: 'SEO Requests', href: '/seo-requests', icon: FileText },
-  { name: 'SEO Review', href: '/seo-review', icon: CheckSquare, showBadge: true },
-  { name: 'Client Review', href: '/client-review', icon: Users },
-  { name: 'MLR Review', href: '/mlr-review', icon: FileCheck },
+  { name: 'SEO Review', href: '/seo-review', icon: CheckSquare, showBadge: true, badgeType: 'seoReview' },
+  { name: 'Client Review', href: '/client-review', icon: Users, showBadge: true, badgeType: 'clientReview' },
+  { name: 'MLR Review', href: '/mlr-review', icon: FileCheck, showBadge: true, badgeType: 'mlrReview' },
   { name: 'Revisions', href: '/revisions', icon: LayoutDashboard },
   { name: 'Content Hub', href: '/content-hub', icon: Library },
   { name: 'Audit Trail', href: '/audit', icon: Activity },
@@ -45,34 +53,31 @@ export default function DashboardLayout() {
   const [adminExpanded, setAdminExpanded] = useState(false)
   const location = useLocation()
 
-  // Fetch pending review count with error handling
-  const { data: pendingCount } = useQuery({
-    queryKey: ['pending-reviews-count'],
-    queryFn: async () => {
-      try {
-        const { count, error } = await supabase
-          .from('submissions')
-          .select('*', { count: 'exact', head: true })
-          .eq('ai_status', 'needs_processing')
-        
-        if (error) {
-          console.error('Error fetching pending reviews:', error)
-          return 0
-        }
-        
-        return count || 0
-      } catch (err) {
-        console.error('Error in pending reviews query:', err)
-        return 0
-      }
-    },
-    refetchInterval: 30000,
-    retry: false
-  })
+  // Fetch review counts
+  const { data: reviewCounts } = useReviewCounts()
 
-  const renderNavItem = (item: any, isMobile = false) => {
+  const getCountForBadgeType = (badgeType?: string) => {
+    if (!badgeType || !reviewCounts) return 0
+    switch (badgeType) {
+      case 'seoReview':
+        return reviewCounts.seoReview
+      case 'clientReview':
+        return reviewCounts.clientReview
+      case 'mlrReview':
+        return reviewCounts.mlrReview
+      default:
+        return 0
+    }
+  }
+
+  const totalPendingCount = reviewCounts 
+    ? reviewCounts.seoReview + reviewCounts.clientReview + reviewCounts.mlrReview 
+    : 0
+
+  const renderNavItem = (item: NavItem, isMobile = false) => {
     const hasSubItems = item.subItems && item.subItems.length > 0
     const isAdminActive = location.pathname.startsWith('/admin')
+    const badgeCount = getCountForBadgeType(item.badgeType)
 
     if (hasSubItems) {
       return (
@@ -95,7 +100,7 @@ export default function DashboardLayout() {
           </button>
           {adminExpanded && (
             <div className="ml-8 mt-1 space-y-1">
-              {item.subItems.map((subItem: any) => (
+              {item.subItems.map((subItem: NavItem) => (
                 <NavLink
                   key={subItem.href}
                   to={subItem.href}
@@ -132,9 +137,9 @@ export default function DashboardLayout() {
       >
         <item.icon className="h-5 w-5" />
         <span className="flex-1">{item.name}</span>
-        {item.showBadge && (pendingCount || 0) > 0 && (
-          <span className="bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full">
-            {pendingCount}
+        {item.showBadge && badgeCount > 0 && (
+          <span className="bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full min-w-[20px] text-center">
+            {badgeCount}
           </span>
         )}
       </NavLink>
@@ -191,7 +196,7 @@ export default function DashboardLayout() {
           </div>
           {/* Version indicator - temporary for debugging */}
           <div className="px-4 pb-2">
-            <p className="text-xs text-gray-400">v2.1 - Complete Workflow</p>
+            <p className="text-xs text-gray-400">v2.2 - Review Counts</p>
           </div>
         </div>
       </div>
@@ -212,7 +217,7 @@ export default function DashboardLayout() {
             
             <button className="relative rounded-md p-2 text-gray-400 hover:text-gray-600">
               <Bell className="h-5 w-5" />
-              {(pendingCount || 0) > 0 && (
+              {totalPendingCount > 0 && (
                 <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-blue-600" />
               )}
             </button>
