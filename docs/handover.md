@@ -1,7 +1,7 @@
 # 3Cubed SEO Project Status & Handover
 
 ## Current State
-- [2025-07-26 00:55 UTC]
+- [2025-07-26 01:51 UTC]
 - Active branch: main
 - Last deployment: Pending (form update committed)
 
@@ -10,6 +10,9 @@
 - Created database trigger: notify_n8n_on_submission() fires after INSERT on submissions table
 - Created trigger: after_submission_insert to automatically webhook n8n on new submissions
 - All new database columns verified working: generic_name, seo_reviewer_email, etc.
+- **n8n Workflow Issue Found**: Current workflow uses wrong table names and webhook path
+- Created corrected workflow JSON: n8n-workflows/3cubed-seo-workflow-corrected.json (commit: 2a3e5db3)
+- Test submission created: ID 0bfff265-ef32-43b3-94b9-6344d18c11a0
 
 ## MCP Connections
 - Supabase: ✓ Connected (project: 3cubed-seo)
@@ -57,13 +60,16 @@
 - Issue 1: Two webhook configurations exist (3cubed-seo and 3cubed-seo-webhook) - needs consolidation
 - Issue 2: n8n MCP list operations returning results too large to process - use specific IDs or filters
 - Issue 3: Form was using temporary workaround storing data in raw_input_content - NOW FIXED
+- **Issue 4: n8n Workflow misconfigured - using wrong table name (pharma_seo_submissions instead of submissions), wrong webhook path**
+- **Issue 5: Database triggers may not be firing webhooks - needs investigation**
 
 ## Next Steps
-- Immediate: Test new submission to verify webhook trigger and n8n processing
-- Short-term: Consolidate webhook configurations, verify all UI components use new columns
+- Immediate: Import corrected workflow JSON into n8n, update webhook path, test with new submission
+- Short-term: Fix database triggers to properly call webhooks, consolidate webhook configurations
 - Long-term: Add more sophisticated webhook retry logic, implement webhook response handling
 
 ## Debug Log
 - Error 1: [2025-07-26 00:35] Form excluded new columns - Fixed by removing temporary workaround
 - Error 2: [2025-07-26 00:40] No webhook trigger for new submissions - Fixed by creating database trigger
 - Success: Database trigger created to automatically call n8n webhook on INSERT
+- Error 3: [2025-07-26 01:50] n8n workflow misconfigured - wrong table names and webhook path
