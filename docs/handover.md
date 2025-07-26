@@ -1,10 +1,10 @@
 # 3Cubed SEO Project Status & Handover
 
 ## Current State
-- [2025-07-26 12:15]
+- [2025-07-26 14:52]
 - Active branch: main
 - Last deployment: Automatic from GitHub
-- Platform Status: **OPERATIONAL - All critical issues resolved** ✅
+- Platform Status: **CRITICAL - Webhook payload extraction failing** ⚠️
 
 ## Emergency Recovery Completed - System Restored
 
@@ -28,7 +28,34 @@
 - **Resolution**: Enhanced parsing logic added to extract structured content
 - **Next Step**: Test with real submission to verify extraction
 
+### [2025-07-26 14:47] - Fix Webhook Trigger Issue - COMPLETED
+- **Objective**: Fix webhook not triggering n8n workflow
+- **Complexity**: Simple (<5 steps)
+- **Plan**:
+  1. [DONE] Check webhook configuration in n8n - webhook registered correctly
+  2. [DONE] Verify webhook URL in database trigger - URL is correct
+  3. [DONE] Test webhook connectivity - receiving but failing on submission_id
+  4. [DONE] Fix submission_id extraction - nested payload issue found
+  5. [FAILED] Multiple attempts to fix existing workflow
+- **Progress**: Original workflow has malformed filters, created new test workflow
+- **Details**: 
+  - Root cause: Nested payload structure (body.payload.payload.submission_id)
+  - Webhook is reaching n8n but submission_id extraction fails
+  - Created new workflow "3cubed SEO - Fixed Payload" (ID: I0YWnrs1wxErAwKY)
+  - Need to fix original workflow or update webhook URL
+- **Technical Notes**:
+  - Execution 80761 shows payload structure
+  - Webhook executions stored in database (IDs 67-71)
+  - New workflow path: /webhook/3cubed-seo-fixed
+- **Context Preservation**: 
+  - Original workflow ID: GSnGJbsgBMC93msr
+  - Original webhook ID: BNKl1IJoWxTCKUak  
+  - New workflow ID: I0YWnrs1wxErAwKY
+  - Test submission: 2479f01d-739c-430e-8deb-d9099e029a94
+- **Next Steps**: Need Deep Agent to manually fix workflow in n8n UI
+
 ## Recent Workflow Failures
+- **Execution 80761**: Failed at Fetch Submission Data - invalid UUID "undefined"
 - **Execution 80717**: Failed at QA Review - invalid API key
 - **Execution 80712**: Failed at QA Review - invalid API key
 - **All executions**: Showing `finished: false` status
@@ -48,7 +75,8 @@
 
 ## Workflows
 - Active workflows:
-  - 3cubed SEO (ID: GSnGJbsgBMC93msr) - **OPERATIONAL - fixes applied**
+  - 3cubed SEO (ID: GSnGJbsgBMC93msr) - **FAILING - webhook payload issue**
+  - 3cubed SEO - Fixed Payload (ID: I0YWnrs1wxErAwKY) - **NEW - testing alternative**
 - Recent fixes:
   - Perplexity API integration working (8-15 sec processing)
   - Two-step AI processing pipeline operational
@@ -58,31 +86,35 @@
 ## Tests & Results
 ### Completed Tests
 - Test 1: Mock submission processing - PARTIAL SUCCESS (failed at QA)
-- Test 2: Real submission webhook - FAILING (QA Review error)
+- Test 2: Real submission webhook - FAILING (submission_id extraction)
 
 ### Failed Tests
-- QA Review consistently failing with 401 authentication error
-- Template variable replacement not working
+- Webhook payload extraction consistently failing with nested structure
+- Template variable replacement not tested due to upstream failure
 
 ### Performance Metrics
 - API response times: Perplexity 8-15 seconds (working)
 - Query performance: Sub-second for database operations
-- Workflow execution times: Failing at ~11 seconds (QA step)
+- Workflow execution times: Failing at ~1 second (Fetch Submission Data)
 
 ## Pending Tasks
-1. **[HIGH]** Test complete workflow with real submission
-2. **[HIGH]** Verify structured content extraction works properly
-3. **[MEDIUM]** Monitor workflow executions for stability
-4. **[MEDIUM]** Validate QA scoring and feedback format
-5. **[LOW]** Optimize processing speed
+1. **[URGENT]** Fix webhook payload extraction in n8n workflow (see Deep Agent instructions)
+2. **[HIGH]** Test complete workflow with real submission after fix
+3. **[HIGH]** Verify structured content extraction works properly
+4. **[MEDIUM]** Monitor workflow executions for stability
+5. **[MEDIUM]** Validate QA scoring and feedback format
+6. **[LOW]** Optimize processing speed
 
 ## Known Issues
+- **Webhook payload extraction failing** - n8n workflow cannot extract submission_id from nested payload structure
+- Manual intervention required in n8n UI to fix filter expression
+- Alternative: Add code node to normalize payload structure
 - Structured content parsing needs verification with live data
 - Need to confirm all template variables are being replaced correctly
 
 ## Next Steps
-- Immediate: Trigger test submission to verify all fixes
-- Short-term: Monitor several workflow executions for consistency
+- Immediate: Fix webhook payload extraction in n8n UI (see Deep Agent instructions)
+- Short-term: Test complete workflow after fix
 - Long-term: Add better error handling and retry logic
 
 ## Debug Log
@@ -90,6 +122,7 @@
 - Error 2: [2025-07-26 11:53] JS syntax error - Fixed extra closing brace
 - Error 3: [2025-07-26 11:53] Missing submission data - Added fetch node
 - Error 4: [2025-07-26 11:56] Claude API auth error - **RESOLVED by Deep Agent**
+- Error 5: [2025-07-26 14:52] Webhook payload extraction - **PENDING manual fix**
 - Success 1: [2025-07-26 12:15] Emergency recovery completed - System operational
 
 ## Deep Agent Work Reports Section
@@ -132,7 +165,28 @@ Please add your work reports below. Include:
 ### Deep Agent Reports:
 <!-- Add new reports below this line -->
 
-### [2025-07-26 12:15] - Emergency System Recovery - COMPLETED
+### [2025-07-26 14:52] - Webhook Payload Extraction Fix Required - STARTED
+- **Status**: STARTED
+- **Objective**: Fix n8n workflow to properly extract submission_id from nested webhook payload
+- **Plan**: 
+  1. Open n8n UI at https://innovareai.app.n8n.cloud/workflow/GSnGJbsgBMC93msr
+  2. Edit "Fetch Submission Data" node filter expression
+  3. Change from `{{ $json.body.payload.submission_id }}` to `{{ $json.body.payload.payload.submission_id }}`
+  4. Test with submission ID: 2479f01d-739c-430e-8deb-d9099e029a94
+  5. Verify execution completes successfully
+- **Details**: See artifact "Instructions for Deep Agent - Webhook Fix" for complete details
+- **Technical Notes**: 
+  - Webhook payload has double-nested structure
+  - Execution 80761 shows the exact payload format
+  - Alternative solution: Add code node to normalize payload
+- **Context Preservation**:
+  - Workflow ID: GSnGJbsgBMC93msr
+  - Node to fix: "Fetch Submission Data"
+  - Test submission: 2479f01d-739c-430e-8deb-d9099e029a94
+  - Expected fix: body.payload.payload.submission_id
+- **Next Steps**: Manual UI intervention required
+
+### [2025-07-26 12:15] - Emergency System Recovery - COMPLETED [INTEGRATED]
 - **Status**: COMPLETED
 - **Objective**: Fix critical system failures blocking all workflow executions
 - **Details**: 
