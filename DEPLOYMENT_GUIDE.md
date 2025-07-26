@@ -8,7 +8,11 @@
    - Updated `SEOReviewModal.tsx` with GEO tab and approval tracking
    - `SubmissionForm.tsx` already has all required fields
 3. **TypeScript Interfaces**: Already include necessary fields
-4. **n8n Integration**: Migrated to n8n Cloud
+4. **n8n Integration**: Migrated to n8n Cloud with new workflow
+
+### 🔧 Pending Updates
+1. **n8n Workflow Activation**: New workflow (ID: hP9yZxUjmBKJmrZt) needs manual activation in n8n UI
+2. **Database Webhook Update**: Database trigger needs to be updated to new webhook URL
 
 ### 🔧 Pending Database Updates
 The following tables need to be created:
@@ -46,8 +50,8 @@ cp .env.example .env.local
 VITE_SUPABASE_URL=your_supabase_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 
-# n8n Webhook Configuration - UPDATED TO N8N CLOUD
-VITE_N8N_WEBHOOK_URL=https://innovareai.app.n8n.cloud/webhook-test/3cubed-seo-webhook
+# n8n Webhook Configuration - NEW WORKFLOW URL
+VITE_N8N_WEBHOOK_URL=https://innovareai.app.n8n.cloud/webhook/hP9yZxUjmBKJmrZt
 
 # Environment
 VITE_APP_ENV=development
@@ -88,12 +92,23 @@ netlify deploy --prod --dir=dist
 
 ## What's New
 
-### n8n Cloud Migration
-- **New Webhook URL**: `https://innovareai.app.n8n.cloud/webhook-test/3cubed-seo-webhook`
+### n8n Cloud Migration & New Workflow
+- **New Workflow ID**: `hP9yZxUjmBKJmrZt`
+- **New Webhook URL**: `https://innovareai.app.n8n.cloud/webhook/hP9yZxUjmBKJmrZt`
+- **New Features**: 
+  - Improved payload extraction (handles nested structures)
+  - Better error handling
+  - Fixed template variable replacement
+  - Enhanced structured content parsing
 - **Benefits**: 
   - No more schema prefix issues
   - Better reliability and scalability
   - Easier maintenance
+
+### Recent Fixes
+1. **Claude API Authentication**: Fixed with new API key
+2. **Template Variable Replacement**: Now correctly replaces `{{ $json.record.XXX }}` patterns
+3. **Webhook Payload Extraction**: New workflow handles nested payload structure
 
 ### SEO Review Modal Updates
 - **New GEO Tab**: Shows AI optimization fields
@@ -110,6 +125,23 @@ netlify deploy --prod --dir=dist
 - **Review History**: Complete audit trail for all three review stages
 - **Version Control**: Track all content changes
 - **Review Status View**: Comprehensive view of all reviews
+
+## Critical Setup Steps
+
+### 1. Activate n8n Workflow
+**URGENT**: The new workflow must be manually activated in n8n UI
+1. Go to https://innovareai.app.n8n.cloud
+2. Find workflow "3cubed SEO" (ID: hP9yZxUjmBKJmrZt)
+3. Click to open the workflow
+4. Toggle the "Active" switch to enable it
+
+### 2. Update Database Webhook Trigger
+After activating the workflow, update the database trigger:
+1. Go to Supabase SQL Editor
+2. Find the webhook trigger function
+3. Update the URL from old to new:
+   - Old: `https://innovareai.app.n8n.cloud/webhook/BNKl1IJoWxTCKUak`
+   - New: `https://innovareai.app.n8n.cloud/webhook/hP9yZxUjmBKJmrZt`
 
 ## Troubleshooting
 
@@ -137,23 +169,29 @@ npm run lint --fix
 2. Ensure RLS policies are correctly set
 
 ### n8n Webhook Issues
-1. Verify the webhook URL is correct in your `.env.local`
-2. Check n8n Cloud workflow is active
-3. Monitor n8n execution logs for errors
+1. **Workflow Not Active**: Check workflow is activated in n8n UI
+2. **404 Error**: Workflow needs to be activated first
+3. **Payload Issues**: New workflow handles nested payloads automatically
+4. Monitor n8n execution logs for errors
 
 ## Next Steps
 
-1. **Test the Review Flow**:
+1. **Activate New Workflow**:
+   - Login to n8n Cloud
+   - Activate workflow hP9yZxUjmBKJmrZt
+   - Update database webhook URL
+
+2. **Test the Review Flow**:
    - Create a test submission
    - Go through SEO review
    - Verify data is saved correctly
 
-2. **Monitor n8n Integration**:
+3. **Monitor n8n Integration**:
    - Check webhook triggers
    - Verify AI processing pipeline
    - Monitor execution logs
 
-3. **Monitor Performance**:
+4. **Monitor Performance**:
    - Check Supabase logs
    - Monitor Netlify analytics
    - Review n8n execution times
@@ -171,7 +209,7 @@ For issues:
 Ensure these are set in Netlify:
 - `VITE_SUPABASE_URL`
 - `VITE_SUPABASE_ANON_KEY`
-- `VITE_N8N_WEBHOOK_URL` (NEW - n8n Cloud webhook)
+- `VITE_N8N_WEBHOOK_URL` (UPDATED - new n8n Cloud webhook)
 
 Set via Netlify Dashboard:
 Site settings → Environment variables → Add a variable
