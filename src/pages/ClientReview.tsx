@@ -14,7 +14,6 @@ import {
   MessageSquare,
   FileText,
   Users,
-  ThumbsUp,
   Edit3,
   Eye,
   XCircle
