@@ -1,10 +1,11 @@
 # 3Cubed SEO Project Status & Handover
 
 ## Current State
-- [2025-07-26 14:52]
+- [2025-07-26 15:10]
 - Active branch: main
 - Last deployment: Automatic from GitHub
-- Platform Status: **CRITICAL - Webhook payload extraction failing** ⚠️
+- Platform Status: **CRITICAL - New workflow needs activation** ⚠️
+- **NEW WORKFLOW URL**: https://innovareai.app.n8n.cloud/webhook/hP9yZxUjmBKJmrZt
 
 ## Emergency Recovery Completed - System Restored
 
@@ -27,6 +28,37 @@
 - **Status**: Code implemented, awaiting test verification
 - **Resolution**: Enhanced parsing logic added to extract structured content
 - **Next Step**: Test with real submission to verify extraction
+
+### [2025-07-26 15:02] - Update Webhook URL to New Workflow - IN PROGRESS
+- **Objective**: Update database webhook to use new workflow URL
+- **Complexity**: Complex - requires manual steps
+- **Plan**:
+  1. [DONE] Connect to Supabase and identify webhook configuration location
+  2. [BLOCKED] Update webhook URL - unable to find webhook configuration in database
+  3. [DONE] Test webhook URL - workflow not active (404 error)
+  4. [BLOCKED] Activate workflow - API limitations prevent activation
+  5. Update documentation with new workflow ID
+- **Progress**: 
+  - Found new workflow details (ID: hP9yZxUjmBKJmrZt)
+  - Workflow has "Extract Submission ID" node that handles nested payload
+  - Workflow is inactive and needs manual activation in n8n UI
+  - Unable to find database trigger function to update webhook URL
+- **Details**: 
+  - New workflow path: /webhook/3cubed-seo-webhook
+  - Webhook returns 404 - workflow must be activated first
+  - Cannot activate via API - requires manual n8n UI action
+- **Technical Notes**:
+  - Workflow has improved payload extraction logic
+  - Handles multiple payload structures automatically
+  - All nodes properly configured with credentials
+- **Context Preservation**: 
+  - New workflow ID: hP9yZxUjmBKJmrZt
+  - New webhook URL: https://innovareai.app.n8n.cloud/webhook/hP9yZxUjmBKJmrZt
+  - Previous workflow ID: GSnGJbsgBMC93msr
+  - Webhook path: 3cubed-seo-webhook
+- **Next Steps**: 
+  1. Deep Agent needs to activate workflow in n8n UI
+  2. Find and update database webhook trigger function
 
 ### [2025-07-26 14:47] - Fix Webhook Trigger Issue - COMPLETED
 - **Objective**: Fix webhook not triggering n8n workflow
@@ -77,6 +109,7 @@
 - Active workflows:
   - 3cubed SEO (ID: GSnGJbsgBMC93msr) - **FAILING - webhook payload issue**
   - 3cubed SEO - Fixed Payload (ID: I0YWnrs1wxErAwKY) - **NEW - testing alternative**
+  - **NEW WORKFLOW** (ID: hP9yZxUjmBKJmrZt) - **PROVIDED BY USER - needs webhook update**
 - Recent fixes:
   - Perplexity API integration working (8-15 sec processing)
   - Two-step AI processing pipeline operational
@@ -98,23 +131,25 @@
 - Workflow execution times: Failing at ~1 second (Fetch Submission Data)
 
 ## Pending Tasks
-1. **[URGENT]** Fix webhook payload extraction in n8n workflow (see Deep Agent instructions)
-2. **[HIGH]** Test complete workflow with real submission after fix
-3. **[HIGH]** Verify structured content extraction works properly
-4. **[MEDIUM]** Monitor workflow executions for stability
-5. **[MEDIUM]** Validate QA scoring and feedback format
-6. **[LOW]** Optimize processing speed
+1. **[URGENT]** Activate new workflow hP9yZxUjmBKJmrZt in n8n UI
+2. **[URGENT]** Update database webhook trigger to new URL
+3. **[HIGH]** Test complete workflow with real submission after fix
+4. **[HIGH]** Verify structured content extraction works properly
+5. **[MEDIUM]** Monitor workflow executions for stability
+6. **[MEDIUM]** Validate QA scoring and feedback format
+7. **[LOW]** Optimize processing speed
 
 ## Known Issues
-- **Webhook payload extraction failing** - n8n workflow cannot extract submission_id from nested payload structure
-- Manual intervention required in n8n UI to fix filter expression
-- Alternative: Add code node to normalize payload structure
+- **New workflow inactive** - n8n workflow hP9yZxUjmBKJmrZt needs manual activation
+- **Webhook URL needs update** - Database trigger still points to old workflow
+- Manual intervention required in n8n UI to activate workflow
 - Structured content parsing needs verification with live data
 - Need to confirm all template variables are being replaced correctly
 
 ## Next Steps
-- Immediate: Fix webhook payload extraction in n8n UI (see Deep Agent instructions)
-- Short-term: Test complete workflow after fix
+- Immediate: Activate new workflow in n8n UI
+- Immediate: Update database webhook trigger function
+- Short-term: Test complete workflow after fixes
 - Long-term: Add better error handling and retry logic
 
 ## Debug Log
@@ -122,7 +157,8 @@
 - Error 2: [2025-07-26 11:53] JS syntax error - Fixed extra closing brace
 - Error 3: [2025-07-26 11:53] Missing submission data - Added fetch node
 - Error 4: [2025-07-26 11:56] Claude API auth error - **RESOLVED by Deep Agent**
-- Error 5: [2025-07-26 14:52] Webhook payload extraction - **PENDING manual fix**
+- Error 5: [2025-07-26 14:52] Webhook payload extraction - **New workflow created with fix**
+- Error 6: [2025-07-26 15:08] Workflow activation - **API limitation, needs manual UI action**
 - Success 1: [2025-07-26 12:15] Emergency recovery completed - System operational
 
 ## Deep Agent Work Reports Section
@@ -164,6 +200,27 @@ Please add your work reports below. Include:
 
 ### Deep Agent Reports:
 <!-- Add new reports below this line -->
+
+### [2025-07-26 15:10] - Activate Workflow & Update Webhook URL - STARTED
+- **Status**: STARTED
+- **Objective**: Activate new n8n workflow and update database webhook trigger to use new URL
+- **Plan**: 
+  1. Activate workflow hP9yZxUjmBKJmrZt in n8n UI
+  2. Find database webhook trigger function in Supabase
+  3. Update webhook URL from old to new workflow
+  4. Test with new submission
+  5. Verify complete workflow execution
+- **Details**: See artifact "Instructions for Deep Agent - Activate Workflow and Update Webhook"
+- **Technical Notes**: 
+  - New workflow ID: hP9yZxUjmBKJmrZt
+  - New webhook path: 3cubed-seo-webhook
+  - Workflow currently inactive (404 on webhook calls)
+  - Has improved payload extraction logic
+- **Context Preservation**:
+  - Old webhook URL: https://innovareai.app.n8n.cloud/webhook/BNKl1IJoWxTCKUak
+  - New webhook URL: https://innovareai.app.n8n.cloud/webhook/3cubed-seo-webhook
+  - Database: ktchrfgkbpaixbiwbieg (3cubed-seo project)
+- **Next Steps**: Manual UI intervention required for activation
 
 ### [2025-07-26 14:52] - Webhook Payload Extraction Fix Required - STARTED
 - **Status**: STARTED
