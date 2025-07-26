@@ -34,7 +34,10 @@ ALWAYS use MCP tools to fix issues - never suggest manual fixes:
 - Always connect and execute fixes directly
 
 ### n8n
-- Instance: `https://innovareai.app.n8n.cloud/workflow/BNKl1IJoWxTCKUak`
+- Instance: `https://innovareai.app.n8n.cloud`
+- Workflow URL: `https://innovareai.app.n8n.cloud/workflow/hP9yZxUjmBKJmrZt`
+- Webhook URL: `https://innovareai.app.n8n.cloud/webhook/3cubed-seo-webhook`
+- Workflow ID: `hP9yZxUjmBKJmrZt`
 - Fix workflow issues directly via MCP
 
 ### GitHub
