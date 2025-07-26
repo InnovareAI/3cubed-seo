@@ -16,10 +16,9 @@ import {
   Users,
   ThumbsUp,
   Edit3,
-  Eye
+  Eye,
+  XCircle
 } from 'lucide-react'
-
-
 
 export default function ClientReview() {
   const navigate = useNavigate()
@@ -42,6 +41,38 @@ export default function ClientReview() {
     }
   })
 
+  // Fetch submission statistics
+  const { data: submissionStats } = useQuery({
+    queryKey: ['client-submission-stats'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('submissions')
+        .select('workflow_stage, ai_processing_status')
+      
+      if (error) throw error
+      
+      const stats = {
+        total: data.length,
+        processed: data.filter(s => 
+          s.ai_processing_status === 'completed' || 
+          s.workflow_stage === 'seo_review' || 
+          s.workflow_stage === 'client_review' || 
+          s.workflow_stage === 'mlr_review' ||
+          s.workflow_stage === 'revision_requested' ||
+          s.workflow_stage === 'approved' ||
+          s.workflow_stage === 'completed'
+        ).length,
+        approved: data.filter(s => 
+          s.workflow_stage === 'approved' || 
+          s.workflow_stage === 'completed'
+        ).length,
+        rejected: data.filter(s => s.workflow_stage === 'rejected').length
+      }
+      
+      return stats
+    }
+  })
+
   const filteredSubmissions = submissions?.filter(submission => {
     const matchesSearch = !searchQuery || 
       submission.product_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -53,13 +84,6 @@ export default function ClientReview() {
     
     return matchesSearch && matchesPriority && matchesClient && matchesStatus
   })
-
-  const stats = {
-    total: filteredSubmissions?.length || 0,
-    pending: filteredSubmissions?.filter(s => s.client_review_status === 'pending').length || 0,
-    approved: filteredSubmissions?.filter(s => s.client_review_status === 'approved').length || 0,
-    revision: filteredSubmissions?.filter(s => s.client_review_status === 'revision_requested').length || 0
-  }
 
   const getPriorityColor = (priority: string) => {
     switch (priority.toLowerCase()) {
@@ -111,13 +135,13 @@ export default function ClientReview() {
         </CTAButton>
       </div>
 
-      {/* Stats Cards */}
+      {/* Stats Cards - Updated to match Overview format */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Total for Review</p>
-              <p className="text-2xl font-semibold text-gray-900 mt-1">{stats.total}</p>
+              <p className="text-sm font-medium text-gray-600">Total</p>
+              <p className="text-2xl font-semibold text-gray-900 mt-1">{submissionStats?.total || 0}</p>
             </div>
             <div className="p-3 bg-blue-100 rounded-lg">
               <FileText className="h-6 w-6 text-blue-600" />
@@ -128,23 +152,11 @@ export default function ClientReview() {
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Pending Review</p>
-              <p className="text-2xl font-semibold text-gray-900 mt-1">{stats.pending}</p>
-            </div>
-            <div className="p-3 bg-gray-100 rounded-lg">
-              <Clock className="h-6 w-6 text-gray-600" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Client Approved</p>
-              <p className="text-2xl font-semibold text-green-600 mt-1">{stats.approved}</p>
+              <p className="text-sm font-medium text-gray-600">Processed</p>
+              <p className="text-2xl font-semibold text-green-600 mt-1">{submissionStats?.processed || 0}</p>
             </div>
             <div className="p-3 bg-green-100 rounded-lg">
-              <ThumbsUp className="h-6 w-6 text-green-600" />
+              <Clock className="h-6 w-6 text-green-600" />
             </div>
           </div>
         </div>
@@ -152,11 +164,23 @@ export default function ClientReview() {
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Revisions Requested</p>
-              <p className="text-2xl font-semibold text-yellow-600 mt-1">{stats.revision}</p>
+              <p className="text-sm font-medium text-gray-600">Approved</p>
+              <p className="text-2xl font-semibold text-indigo-600 mt-1">{submissionStats?.approved || 0}</p>
             </div>
-            <div className="p-3 bg-yellow-100 rounded-lg">
-              <Edit3 className="h-6 w-6 text-yellow-600" />
+            <div className="p-3 bg-indigo-100 rounded-lg">
+              <CheckCircle className="h-6 w-6 text-indigo-600" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Rejected</p>
+              <p className="text-2xl font-semibold text-red-600 mt-1">{submissionStats?.rejected || 0}</p>
+            </div>
+            <div className="p-3 bg-red-100 rounded-lg">
+              <XCircle className="h-6 w-6 text-red-600" />
             </div>
           </div>
         </div>
