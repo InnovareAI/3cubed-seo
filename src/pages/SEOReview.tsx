@@ -48,6 +48,8 @@ interface Submission {
   h2_tags?: string[]
   seo_strategy_outline?: string
   geo_optimization_score?: number
+  ai_processing_status?: string
+  ai_output?: any
 }
 
 export default function SEOReview() {
@@ -71,11 +73,12 @@ export default function SEOReview() {
   const { data: liveData, isLoading } = useQuery({
     queryKey: ['seo-review-queue'],
     queryFn: async () => {
+      // Changed query: Show all submissions, not just those in 'seo_review' stage
+      // This will include drafts that have been processed by AI
       const { data, error } = await supabase
         .from('submissions')
         .select('*')
-        .eq('workflow_stage', 'seo_review')
-        .order('created_at', { ascending: true })
+        .order('created_at', { ascending: false })
       
       if (error) throw error
       return data as Submission[]
@@ -92,10 +95,10 @@ export default function SEOReview() {
 
   const filteredSubmissions = submissions?.filter(submission => {
     if (searchTerm && !submission.product_name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-        !submission.therapeutic_area.toLowerCase().includes(searchTerm.toLowerCase())) {
+        !submission.therapeutic_area?.toLowerCase().includes(searchTerm.toLowerCase())) {
       return false
     }
-    if (priorityFilter !== 'all' && submission.priority_level.toLowerCase() !== priorityFilter) {
+    if (priorityFilter !== 'all' && submission.priority_level?.toLowerCase() !== priorityFilter) {
       return false
     }
     if (therapeuticAreaFilter !== 'all' && submission.therapeutic_area !== therapeuticAreaFilter) {
@@ -109,7 +112,7 @@ export default function SEOReview() {
   }
 
   const getPriorityColor = (priority: string) => {
-    switch (priority.toLowerCase()) {
+    switch (priority?.toLowerCase()) {
       case 'high':
         return 'text-red-700 bg-red-50 ring-red-600/20'
       case 'medium':
@@ -118,6 +121,19 @@ export default function SEOReview() {
         return 'text-green-700 bg-green-50 ring-green-600/20'
       default:
         return 'text-gray-700 bg-gray-50 ring-gray-600/20'
+    }
+  }
+
+  const getProcessingStatusColor = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case 'completed':
+        return 'text-green-700 bg-green-50'
+      case 'processing':
+        return 'text-blue-700 bg-blue-50'
+      case 'error':
+        return 'text-red-700 bg-red-50'
+      default:
+        return 'text-gray-700 bg-gray-50'
     }
   }
 
@@ -171,7 +187,7 @@ export default function SEOReview() {
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Total for Review</p>
+              <p className="text-sm font-medium text-gray-600">Total Submissions</p>
               <p className="text-2xl font-semibold text-gray-900 mt-1">{stats.total}</p>
             </div>
             <div className="p-3 bg-blue-100 rounded-lg">
@@ -282,7 +298,7 @@ export default function SEOReview() {
                 <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
                   {submission.product_name}
                 </h3>
-                <p className="text-sm text-gray-600 mt-1">{submission.therapeutic_area}</p>
+                <p className="text-sm text-gray-600 mt-1">{submission.therapeutic_area || 'Not specified'}</p>
               </div>
               <span className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(submission.priority_level || 'medium')}`}>
                 {submission.priority_level || 'Medium'} Priority
@@ -297,13 +313,21 @@ export default function SEOReview() {
 
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <Users className="h-4 w-4" />
-                <span>{submission.target_audience || 'Healthcare Professionals'}</span>
+                <span>{Array.isArray(submission.target_audience) ? submission.target_audience.join(', ') : 'Healthcare Professionals'}</span>
               </div>
 
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <Calendar className="h-4 w-4" />
                 <span>Submitted {format(new Date(submission.created_at), 'MMM d, yyyy')}</span>
               </div>
+
+              {/* Show AI processing status */}
+              {submission.ai_processing_status && (
+                <div className={`flex items-center gap-2 text-sm px-2 py-1 rounded ${getProcessingStatusColor(submission.ai_processing_status)}`}>
+                  <Clock className="h-4 w-4" />
+                  <span className="font-medium">AI Status: {submission.ai_processing_status}</span>
+                </div>
+              )}
 
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <Hash className="h-4 w-4" />
@@ -336,7 +360,7 @@ export default function SEOReview() {
 
             <div className="mt-4 flex items-center justify-between">
               <span className="text-sm text-gray-600">
-                Click to review
+                {submission.workflow_stage === 'seo_review' ? 'Ready for review' : `Stage: ${submission.workflow_stage}`}
               </span>
               <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-blue-600 transition-colors" />
             </div>
@@ -346,7 +370,8 @@ export default function SEOReview() {
 
       {filteredSubmissions?.length === 0 && (
         <div className="text-center py-12">
-          <p className="text-gray-500">No content found for SEO review</p>
+          <p className="text-gray-500">No submissions found</p>
+          <p className="text-sm text-gray-400 mt-2">Try adjusting your filters or switch to demo data to see examples</p>
         </div>
       )}
     </div>
