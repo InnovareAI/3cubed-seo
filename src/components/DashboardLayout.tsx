@@ -25,7 +25,10 @@ interface NavItem {
   icon: any
   showBadge?: boolean
   badgeType?: 'seoReview' | 'clientReview' | 'mlrReview'
-  subItems?: NavItem[]
+  subItems?: Array<{
+    name: string
+    href: string
+  }>
 }
 
 const navigation: NavItem[] = [
@@ -98,9 +101,9 @@ export default function DashboardLayout() {
               <ChevronRight className="h-4 w-4" />
             )}
           </button>
-          {adminExpanded && (
+          {adminExpanded && item.subItems && (
             <div className="ml-8 mt-1 space-y-1">
-              {item.subItems.map((subItem: NavItem) => (
+              {item.subItems.map((subItem) => (
                 <NavLink
                   key={subItem.href}
                   to={subItem.href}
