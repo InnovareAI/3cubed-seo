@@ -1,15 +1,16 @@
 # 3Cubed SEO Project Status & Handover
 
 ## Current State
-- [2025-07-26 20:15]
+- [2025-07-26 21:00]
 - Active branch: main
 - Last deployment: Automatic from GitHub
-- Platform Status: **Updating webhook URL to new workflow** 🔧
+- Platform Status: **Investigating dashboard and webhook issues** 🔧
 - **NEW WORKFLOW URL**: https://innovareai.app.n8n.cloud/webhook/hP9yZxUjmBKJmrZt
 - **DEPLOYMENT_GUIDE.md**: ✅ Updated with new workflow configuration
 - **Field Analysis**: ✅ Completed - n8n workflow now updated for 6 mandatory fields
 - **n8n Workflow Updates**: ✅ Fixed missing generic_name and reviewer fields
-- **Dashboard Issue**: ✅ RESOLVED - ai_processing_status field exists and is populated
+- **Dashboard Issue**: 🔍 INVESTIGATING - Checking ai_processing_status field
+- **Webhook URL**: ⚠️ ISSUE - Database trigger using old URL, needs update
 
 ## Emergency Recovery Completed - System Restored
 
@@ -33,31 +34,36 @@
 - **Resolution**: Enhanced parsing logic added to extract structured content
 - **Next Step**: Test with real submission to verify extraction
 
-### [2025-07-26 20:15] - Update Database Webhook URL - IN PROGRESS
-- **Objective**: Update database webhook trigger to use new n8n workflow URL
-- **Complexity**: Simple (<5 steps)
+### [2025-07-26 21:00] - Investigate Dashboard and Webhook Issues - IN PROGRESS
+- **Objective**: Verify dashboard display and update webhook trigger to new URL
+- **Complexity**: Simple (<5 steps) 
 - **Plan**:
-  1. [DONE] Connect to Supabase and locate webhook configuration
-  2. [DONE] Find webhook trigger function or webhook_config table
-  3. [IN PROGRESS] Update URL from old (BNKl1IJoWxTCKUak) to new (hP9yZxUjmBKJmrZt)
-  4. [PENDING] Test webhook with new submission
-  5. [PENDING] Verify workflow execution completes
-- **Expected Outcome**: Webhook triggers new workflow successfully
+  1. [DONE] Check ai_processing_status field in database
+  2. [DONE] Verify field values and test submission data
+  3. [DONE] Locate webhook configuration in database
+  4. [IN PROGRESS] Create instructions for Deep Agent to update trigger
+  5. [PENDING] Test webhook with updated URL
+- **Expected Outcome**: Dashboard displays correctly, webhook triggers new workflow
 - **Context Preservation**: 
-  - Old webhook URL: https://innovareai.app.n8n.cloud/webhook/BNKl1IJoWxTCKUak
-  - New webhook URL: https://innovareai.app.n8n.cloud/webhook/hP9yZxUjmBKJmrZt
+  - ai_processing_status field EXISTS and is populated
+  - All records have value "pending"
   - Test submission ID: fcd0b892-6240-4642-a499-b5621fec6d91
-- **Progress**: Found webhook configuration but URL appears hardcoded in trigger function
+  - Webhook URL hardcoded in database trigger function
+- **Progress**: 
+  - Dashboard issue: Field exists, populated with "pending" for all records
+  - Many old submissions have NULL mandatory fields (indication, therapeutic_area)
+  - Found webhook executions to both old and new URLs
+  - Created webhook config entry but trigger uses hardcoded URL
 - **Details**: 
-  - Found n8n_webhooks table with webhook configurations
-  - Created new webhook entry with correct URL
-  - Webhook trigger still using old URL - likely hardcoded in database function
-  - Need manual intervention to update trigger function
-- **Technical Notes**:
-  - Webhook entry created: ID 17bbe01d-dd3e-4c5a-979a-7c4faffc720d
-  - Webhook name: 3cubed-seo-new
+  - ai_processing_status column confirmed present with correct data
+  - Dashboard should display submissions correctly now
+  - Webhook trigger needs manual update in Supabase dashboard
   - See artifact "Instructions for Deep Agent - Update Webhook URL"
-- **Next Steps**: Deep Agent needs to update database trigger function
+- **Technical Notes**:
+  - n8n_webhooks table has new entry (ID: 17bbe01d-dd3e-4c5a-979a-7c4faffc720d)
+  - Webhook executions logged (IDs 75-76) show attempts to both URLs
+  - Database trigger function not accessible via MCP
+- **Next Steps**: Deep Agent must update trigger function manually
 
 ### [2025-07-26 16:10] - Fix Dashboard Display Issues - COMPLETED
 - **Objective**: Fix dashboard not showing submissions properly due to schema mismatch
@@ -262,10 +268,10 @@
 
 ## Known Issues
 - **Database webhook trigger** - Still using old workflow URL (BNKl1IJoWxTCKUak instead of hP9yZxUjmBKJmrZt)
-- **Old test data** - 17 submissions from June/July have NULL mandatory fields
+- **Old test data** - Many submissions from June/July have NULL mandatory fields (indication, therapeutic_area)
 - **Database schema issues** - Most fields stored as generic 'object' type instead of proper types
 - **Webhook URL hardcoded** - Database trigger function has hardcoded URL, not reading from n8n_webhooks table
-- Structured content parsing needs verification with live data
+- **Dashboard display** - Shows all submissions as "pending" status, no processing happening due to webhook issue
 
 ## Next Steps
 - Immediate: Update database webhook trigger function
@@ -286,6 +292,7 @@
 - Success 4: [2025-07-26 16:00] n8n workflow updated - all mandatory fields included
 - Success 5: [2025-07-26 16:10] Dashboard display issue resolved - ai_processing_status field exists
 - Success 6: [2025-07-26 20:15] Created new webhook entry with correct URL
+- Success 7: [2025-07-26 21:00] Verified ai_processing_status field exists and populated
 
 ## Deep Agent Work Reports Section
 ### Instructions for Deep Agent:
@@ -327,7 +334,7 @@ Please add your work reports below. Include:
 ### Deep Agent Reports:
 <!-- Add new reports below this line -->
 
-### [2025-07-26 20:30] - Update Database Webhook Trigger Function - STARTED
+### [2025-07-26 21:00] - Update Database Webhook Trigger Function - STARTED
 - **Status**: STARTED
 - **Objective**: Update hardcoded webhook URL in database trigger function
 - **Plan**: 
