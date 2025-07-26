@@ -70,42 +70,88 @@ export default function SEOReview() {
     localStorage.setItem('seoReviewDataMode', useDummyData ? 'demo' : 'live')
   }, [useDummyData])
 
-  const { data: liveData, isLoading } = useQuery({
+  const { data: liveData, isLoading, error } = useQuery({
     queryKey: ['seo-review-queue'],
     queryFn: async () => {
+      console.log('Fetching submissions from Supabase...')
       // Changed query: Show all submissions, not just those in 'seo_review' stage
       // This will include drafts that have been processed by AI
       const { data, error } = await supabase
         .from('submissions')
         .select('*')
         .order('created_at', { ascending: false })
+        .limit(100) // Add explicit limit to ensure we get all data
       
-      if (error) throw error
+      if (error) {
+        console.error('Supabase error:', error)
+        throw error
+      }
+      
+      console.log('Fetched submissions:', data?.length, 'records')
       return data as Submission[]
     },
     refetchInterval: 30000,
     enabled: !useDummyData
   })
 
+  // Log any query errors
+  useEffect(() => {
+    if (error) {
+      console.error('Query error:', error)
+    }
+  }, [error])
+
   // Use dummy data or live data based on toggle
   const submissions = useMemo(() => {
-    if (useDummyData) return mockSEOReviews
+    if (useDummyData) {
+      console.log('Using mock data:', mockSEOReviews.length, 'records')
+      return mockSEOReviews
+    }
+    console.log('Using live data:', liveData?.length || 0, 'records')
     return liveData || []
   }, [useDummyData, liveData])
 
   const filteredSubmissions = submissions?.filter(submission => {
-    if (searchTerm && !submission.product_name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-        !submission.therapeutic_area?.toLowerCase().includes(searchTerm.toLowerCase())) {
-      return false
+    // Search filter
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase()
+      const nameMatch = submission.product_name?.toLowerCase().includes(searchLower)
+      const areaMatch = submission.therapeutic_area?.toLowerCase().includes(searchLower)
+      if (!nameMatch && !areaMatch) {
+        return false
+      }
     }
-    if (priorityFilter !== 'all' && submission.priority_level?.toLowerCase() !== priorityFilter) {
-      return false
+    
+    // Priority filter
+    if (priorityFilter !== 'all') {
+      const submissionPriority = submission.priority_level?.toLowerCase() || 'medium'
+      if (submissionPriority !== priorityFilter) {
+        return false
+      }
     }
-    if (therapeuticAreaFilter !== 'all' && submission.therapeutic_area !== therapeuticAreaFilter) {
-      return false
+    
+    // Therapeutic area filter
+    if (therapeuticAreaFilter !== 'all') {
+      // Handle null/undefined therapeutic areas
+      const submissionArea = submission.therapeutic_area || 'Not specified'
+      if (submissionArea !== therapeuticAreaFilter) {
+        return false
+      }
     }
+    
     return true
   }) || []
+
+  // Log filtering results
+  useEffect(() => {
+    console.log('Filter state:', {
+      searchTerm,
+      priorityFilter,
+      therapeuticAreaFilter,
+      totalSubmissions: submissions?.length,
+      filteredCount: filteredSubmissions?.length
+    })
+  }, [searchTerm, priorityFilter, therapeuticAreaFilter, submissions?.length, filteredSubmissions?.length])
 
   const handleCardClick = (submissionId: string) => {
     navigate(`/seo-review/${submissionId}`)
@@ -180,6 +226,13 @@ export default function SEOReview() {
             Export Report
           </CTAButton>
         </div>
+      </div>
+
+      {/* Debug info - remove in production */}
+      <div className="bg-yellow-50 p-3 rounded text-sm">
+        Debug: Total submissions: {submissions?.length || 0}, 
+        Filtered: {filteredSubmissions?.length || 0},
+        Mode: {useDummyData ? 'Demo' : 'Live'}
       </div>
 
       {/* Stats Cards */}
@@ -264,6 +317,7 @@ export default function SEOReview() {
             className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="all">All Therapeutic Areas</option>
+            <option value="Not specified">Not specified</option>
             {THERAPEUTIC_AREAS.map(area => (
               <option key={area} value={area}>{area}</option>
             ))}
@@ -287,7 +341,7 @@ export default function SEOReview() {
 
       {/* Content Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredSubmissions?.map((submission) => (
+        {filteredSubmissions?.slice(0, 50).map((submission) => (
           <div
             key={submission.id}
             onClick={() => handleCardClick(submission.id)}
