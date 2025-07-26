@@ -1,0 +1,111 @@
+{
+  "name": "3Cubed SEO Workflow - Fixed",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "2o3DxEeLInnYV1Se",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "00d8e8ff-ede2-44e7-9310-88a8d48a3baa",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1800,
+        -60
+      ],
+      "webhookId": "2o3DxEeLInnYV1Se"
+    },
+    {
+      "parameters": {
+        "jsCode": "const record = $input.all()[0].json;\nconst stage = (record.development_stage?.toLowerCase() || \n                             record.stage?.toLowerCase() || '');\n\nlet phase;\nconst allowedPhases = ['phase3', 'marketLaunch'];\n\nif (stage.includes('phase 3') || stage.includes('phase iii') || stage.includes('phase3')) {\n    phase = 'phase3';\n} else if (stage.includes('pre-launch') || stage.includes('market shaping')) {\n    phase = 'marketLaunch';\n} else if (stage.includes('marketed') || stage.includes('market launch') || \n                     stage.includes('market building') || stage.includes('post-launch')) {\n    phase = 'marketLaunch';\n} else {\n    // default case - treat as market launch for now\n    console.log('DEBUG: No condition met, stage =', stage, 'record =', record);\n    phase = 'marketLaunch';\n}\n\n// Check if phase is allowed\nif (!allowedPhases.includes(phase)) {\n    throw new Error('Invalid phase: Only Phase III, Market Shaping, and Market Launch are supported.');\n}\n\n// Return the validated phase and record data\nreturn {\n    phase: phase,\n    record: record\n};\n"
+      },
+      "id": "4c954682-8f7a-497b-a8eb-96fd765df421",
+      "name": "Validate Phase",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -940,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "submissions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $json.submission_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "ai_processing_status",
+              "fieldValue": "qa_review"
+            },
+            {
+              "fieldId": "ai_generated_content",
+              "fieldValue": "={{ JSON.stringify($json.generated_content) }}"
+            },
+            {
+              "fieldId": "seo_keywords",
+              "fieldValue": "={{ $json.seo_keywords }}"
+            },
+            {
+              "fieldId": "meta_title",
+              "fieldValue": "={{ $json.meta_title }}"
+            },
+            {
+              "fieldId": "meta_description",
+              "fieldValue": "={{ $json.meta_description }}"
+            },
+            {
+              "fieldId": "workflow_stage",
+              "fieldValue": "qa_review"
+            },
+            {
+              "fieldId": "last_updated",
+              "fieldValue": "={{ $now.toISO() }}"
+            }
+          ]
+        }
+      },
+      "id": "186d8b08-574c-4c90-a7f6-b06d8dc16c28",
+      "name": "Update DB with AI Content",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -260,
+        -360
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "continueOnFail": true
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Validate Phase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
