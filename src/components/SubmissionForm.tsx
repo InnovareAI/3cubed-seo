@@ -56,7 +56,7 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
     // Section 2 (formerly Section 3)
     nct_number: '',
     sponsor: '',
-    development_stage: '',
+    development_stage: 'Phase III', // Default to Phase III
     line_of_therapy: '',
     patient_population: [],
     
@@ -182,7 +182,7 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
       mlr_reviewer_email: '',
       nct_number: '',
       sponsor: '',
-      development_stage: '',
+      development_stage: 'Phase III', // Reset to default
       line_of_therapy: '',
       patient_population: [],
       route_of_administration: '',
@@ -216,7 +216,7 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         // Section 2: Clinical Context
         nct_number: formData.nct_number || null,
         sponsor: formData.sponsor || null,
-        development_stage: formData.development_stage || null,
+        development_stage: formData.development_stage || 'Phase III', // Default to Phase III if empty
         line_of_therapy: formData.line_of_therapy || null,
         patient_population: formData.patient_population,
         
@@ -484,12 +484,8 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
                     onChange={handleChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
-                    <option value="">Select Stage</option>
-                    <option value="Phase I">Phase I</option>
-                    <option value="Phase II">Phase II</option>
                     <option value="Phase III">Phase III</option>
-                    <option value="FDA Approved">FDA Approved</option>
-                    <option value="EMA Approved">EMA Approved</option>
+                    <option value="Market Shaping">Market Shaping</option>
                     <option value="Market Launch">Market Launch</option>
                   </select>
                 </div>
