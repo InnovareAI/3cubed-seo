@@ -1,15 +1,15 @@
 # 3Cubed SEO Project Status & Handover
 
 ## Current State
-- [2025-07-26 16:10]
+- [2025-07-26 20:15]
 - Active branch: main
 - Last deployment: Automatic from GitHub
-- Platform Status: **Dashboard display issues identified - schema mismatch** ⚠️
+- Platform Status: **Updating webhook URL to new workflow** 🔧
 - **NEW WORKFLOW URL**: https://innovareai.app.n8n.cloud/webhook/hP9yZxUjmBKJmrZt
 - **DEPLOYMENT_GUIDE.md**: ✅ Updated with new workflow configuration
 - **Field Analysis**: ✅ Completed - n8n workflow now updated for 6 mandatory fields
 - **n8n Workflow Updates**: ✅ Fixed missing generic_name and reviewer fields
-- **Dashboard Issue**: ⚠️ Submissions not displaying properly - ai_processing_status field missing
+- **Dashboard Issue**: ✅ RESOLVED - ai_processing_status field exists and is populated
 
 ## Emergency Recovery Completed - System Restored
 
@@ -32,6 +32,32 @@
 - **Status**: Code implemented, awaiting test verification
 - **Resolution**: Enhanced parsing logic added to extract structured content
 - **Next Step**: Test with real submission to verify extraction
+
+### [2025-07-26 20:15] - Update Database Webhook URL - IN PROGRESS
+- **Objective**: Update database webhook trigger to use new n8n workflow URL
+- **Complexity**: Simple (<5 steps)
+- **Plan**:
+  1. [DONE] Connect to Supabase and locate webhook configuration
+  2. [DONE] Find webhook trigger function or webhook_config table
+  3. [IN PROGRESS] Update URL from old (BNKl1IJoWxTCKUak) to new (hP9yZxUjmBKJmrZt)
+  4. [PENDING] Test webhook with new submission
+  5. [PENDING] Verify workflow execution completes
+- **Expected Outcome**: Webhook triggers new workflow successfully
+- **Context Preservation**: 
+  - Old webhook URL: https://innovareai.app.n8n.cloud/webhook/BNKl1IJoWxTCKUak
+  - New webhook URL: https://innovareai.app.n8n.cloud/webhook/hP9yZxUjmBKJmrZt
+  - Test submission ID: fcd0b892-6240-4642-a499-b5621fec6d91
+- **Progress**: Found webhook configuration but URL appears hardcoded in trigger function
+- **Details**: 
+  - Found n8n_webhooks table with webhook configurations
+  - Created new webhook entry with correct URL
+  - Webhook trigger still using old URL - likely hardcoded in database function
+  - Need manual intervention to update trigger function
+- **Technical Notes**:
+  - Webhook entry created: ID 17bbe01d-dd3e-4c5a-979a-7c4faffc720d
+  - Webhook name: 3cubed-seo-new
+  - See artifact "Instructions for Deep Agent - Update Webhook URL"
+- **Next Steps**: Deep Agent needs to update database trigger function
 
 ### [2025-07-26 16:10] - Fix Dashboard Display Issues - COMPLETED
 - **Objective**: Fix dashboard not showing submissions properly due to schema mismatch
@@ -214,6 +240,8 @@
 ### Completed Tests
 - Test 1: Mock submission processing - PARTIAL SUCCESS (failed at QA)
 - Test 2: Real submission webhook - FAILING (submission_id extraction)
+- Test 3: Dashboard display test - SUCCESS (ai_processing_status field exists)
+- Test 4: Test submission created - ID: fcd0b892-6240-4642-a499-b5621fec6d91
 
 ### Failed Tests
 - Webhook payload extraction consistently failing with nested structure
@@ -225,7 +253,7 @@
 - Workflow execution times: Failing at ~1 second (Fetch Submission Data)
 
 ## Pending Tasks
-1. **[URGENT]** Update database webhook trigger to new URL (hP9yZxUjmBKJmrZt)
+1. **[URGENT]** Update database webhook trigger function to new URL (hP9yZxUjmBKJmrZt)
 2. **[HIGH]** Test workflow with only 6 mandatory fields
 3. **[MEDIUM]** Clean up old test data with NULL mandatory fields
 4. **[MEDIUM]** Run database migration to fix data types
@@ -236,7 +264,7 @@
 - **Database webhook trigger** - Still using old workflow URL (BNKl1IJoWxTCKUak instead of hP9yZxUjmBKJmrZt)
 - **Old test data** - 17 submissions from June/July have NULL mandatory fields
 - **Database schema issues** - Most fields stored as generic 'object' type instead of proper types
-- Manual intervention required in n8n UI to activate workflow
+- **Webhook URL hardcoded** - Database trigger function has hardcoded URL, not reading from n8n_webhooks table
 - Structured content parsing needs verification with live data
 
 ## Next Steps
@@ -257,6 +285,7 @@
 - Success 3: [2025-07-26 15:45] Field analysis completed - identified n8n updates needed
 - Success 4: [2025-07-26 16:00] n8n workflow updated - all mandatory fields included
 - Success 5: [2025-07-26 16:10] Dashboard display issue resolved - ai_processing_status field exists
+- Success 6: [2025-07-26 20:15] Created new webhook entry with correct URL
 
 ## Deep Agent Work Reports Section
 ### Instructions for Deep Agent:
@@ -298,26 +327,25 @@ Please add your work reports below. Include:
 ### Deep Agent Reports:
 <!-- Add new reports below this line -->
 
-### [2025-07-26 15:10] - Activate Workflow & Update Webhook URL - STARTED
+### [2025-07-26 20:30] - Update Database Webhook Trigger Function - STARTED
 - **Status**: STARTED
-- **Objective**: Activate new n8n workflow and update database webhook trigger to use new URL
+- **Objective**: Update hardcoded webhook URL in database trigger function
 - **Plan**: 
-  1. Activate workflow hP9yZxUjmBKJmrZt in n8n UI
-  2. Find database webhook trigger function in Supabase
-  3. Update webhook URL from old to new workflow
-  4. Test with new submission
-  5. Verify complete workflow execution
-- **Details**: See artifact "Instructions for Deep Agent - Activate Workflow and Update Webhook"
+  1. Access Supabase dashboard for project ktchrfgkbpaixbiwbieg
+  2. Navigate to Database → Functions
+  3. Find webhook trigger function (likely triggered on submissions INSERT/UPDATE)
+  4. Update hardcoded URL from old to new webhook
+  5. Test with existing submission
+- **Details**: See artifact "Instructions for Deep Agent - Update Webhook URL"
 - **Technical Notes**: 
-  - New workflow ID: hP9yZxUjmBKJmrZt
-  - New webhook path: 3cubed-seo-webhook
-  - Workflow currently inactive (404 on webhook calls)
-  - Has improved payload extraction logic
+  - Webhook URL is hardcoded in database function, not read from n8n_webhooks table
+  - New webhook entry created but not being used
+  - Function likely named trigger_n8n_webhook or similar
 - **Context Preservation**:
-  - Old webhook URL: https://innovareai.app.n8n.cloud/webhook/BNKl1IJoWxTCKUak
-  - New webhook URL: https://innovareai.app.n8n.cloud/webhook/3cubed-seo-webhook
-  - Database: ktchrfgkbpaixbiwbieg (3cubed-seo project)
-- **Next Steps**: Manual UI intervention required for activation
+  - Old URL: https://innovareai.app.n8n.cloud/webhook/BNKl1IJoWxTCKUak
+  - New URL: https://innovareai.app.n8n.cloud/webhook/hP9yZxUjmBKJmrZt
+  - Test submission ready: fcd0b892-6240-4642-a499-b5621fec6d91
+- **Next Steps**: Manual update required in Supabase dashboard
 
 ### [2025-07-26 14:52] - Webhook Payload Extraction Fix Required - STARTED
 - **Status**: STARTED
