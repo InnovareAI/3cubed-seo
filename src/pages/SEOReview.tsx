@@ -1,8 +1,7 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { mockSEOReviews } from '../data/mockSEOReviews'
 import CTAButton from '../components/CTAButton'
 import { THERAPEUTIC_AREAS } from '../constants/therapeuticAreas'
 import { 
@@ -57,30 +56,16 @@ export default function SEOReview() {
   const [searchTerm, setSearchTerm] = useState('')
   const [priorityFilter, setPriorityFilter] = useState<string>('all')
   const [therapeuticAreaFilter, setTherapeuticAreaFilter] = useState<string>('all')
-  
-  // Initialize from localStorage, defaulting to 'live' if not set
-  const [useDummyData, setUseDummyData] = useState(() => {
-    const stored = localStorage.getItem('seoReviewDataMode')
-    // Default to live data if not set
-    return stored === 'demo' ? true : false
-  })
 
-  // Update localStorage when state changes
-  useEffect(() => {
-    localStorage.setItem('seoReviewDataMode', useDummyData ? 'demo' : 'live')
-  }, [useDummyData])
-
-  const { data: liveData, isLoading, error } = useQuery({
+  const { data: submissions, isLoading, error } = useQuery({
     queryKey: ['seo-review-queue'],
     queryFn: async () => {
       console.log('Fetching submissions from Supabase...')
-      // Changed query: Show all submissions, not just those in 'seo_review' stage
-      // This will include drafts that have been processed by AI
       const { data, error } = await supabase
         .from('submissions')
         .select('*')
         .order('created_at', { ascending: false })
-        .limit(100) // Add explicit limit to ensure we get all data
+        .limit(100) // Ensure we get all data
       
       if (error) {
         console.error('Supabase error:', error)
@@ -90,8 +75,7 @@ export default function SEOReview() {
       console.log('Fetched submissions:', data?.length, 'records')
       return data as Submission[]
     },
-    refetchInterval: 30000,
-    enabled: !useDummyData
+    refetchInterval: 30000
   })
 
   // Log any query errors
@@ -100,16 +84,6 @@ export default function SEOReview() {
       console.error('Query error:', error)
     }
   }, [error])
-
-  // Use dummy data or live data based on toggle
-  const submissions = useMemo(() => {
-    if (useDummyData) {
-      console.log('Using mock data:', mockSEOReviews.length, 'records')
-      return mockSEOReviews
-    }
-    console.log('Using live data:', liveData?.length || 0, 'records')
-    return liveData || []
-  }, [useDummyData, liveData])
 
   const filteredSubmissions = submissions?.filter(submission => {
     // Search filter
@@ -141,17 +115,6 @@ export default function SEOReview() {
     
     return true
   }) || []
-
-  // Log filtering results
-  useEffect(() => {
-    console.log('Filter state:', {
-      searchTerm,
-      priorityFilter,
-      therapeuticAreaFilter,
-      totalSubmissions: submissions?.length,
-      filteredCount: filteredSubmissions?.length
-    })
-  }, [searchTerm, priorityFilter, therapeuticAreaFilter, submissions?.length, filteredSubmissions?.length])
 
   const handleCardClick = (submissionId: string) => {
     navigate(`/seo-review/${submissionId}`)
@@ -195,7 +158,7 @@ export default function SEOReview() {
     }).length || 0
   }
 
-  if (!useDummyData && isLoading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -212,27 +175,10 @@ export default function SEOReview() {
           <p className="text-sm text-gray-600 mt-1">Review and optimize AI-generated content for search performance</p>
         </div>
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => setUseDummyData(!useDummyData)}
-            className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
-              useDummyData 
-                ? 'bg-amber-100 text-amber-700' 
-                : 'bg-green-100 text-green-700'
-            }`}
-          >
-            {useDummyData ? 'Demo Data' : 'Live Data'}
-          </button>
           <CTAButton variant="primary" icon={<FileText className="h-4 w-4" />}>
             Export Report
           </CTAButton>
         </div>
-      </div>
-
-      {/* Debug info - remove in production */}
-      <div className="bg-yellow-50 p-3 rounded text-sm">
-        Debug: Total submissions: {submissions?.length || 0}, 
-        Filtered: {filteredSubmissions?.length || 0},
-        Mode: {useDummyData ? 'Demo' : 'Live'}
       </div>
 
       {/* Stats Cards */}
@@ -341,7 +287,7 @@ export default function SEOReview() {
 
       {/* Content Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredSubmissions?.slice(0, 50).map((submission) => (
+        {filteredSubmissions?.map((submission) => (
           <div
             key={submission.id}
             onClick={() => handleCardClick(submission.id)}
@@ -425,7 +371,7 @@ export default function SEOReview() {
       {filteredSubmissions?.length === 0 && (
         <div className="text-center py-12">
           <p className="text-gray-500">No submissions found</p>
-          <p className="text-sm text-gray-400 mt-2">Try adjusting your filters or switch to demo data to see examples</p>
+          <p className="text-sm text-gray-400 mt-2">Try adjusting your filters</p>
         </div>
       )}
     </div>
