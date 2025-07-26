@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { FileText, Clock, CheckCircle, XCircle } from 'lucide-react'
+import { FileText, Clock, CheckCircle, XCircle, Search, Users, Shield } from 'lucide-react'
 import MetricCard from '@/components/MetricCard'
 import ProcessingQueue from '@/components/ProcessingQueue'
 import SEOProcessingQueue from '@/components/SEOProcessingQueue'
