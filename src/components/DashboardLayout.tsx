@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Outlet, NavLink, useLocation } from 'react-router-dom'
+import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useReviewCounts } from '../hooks/useReviewCounts'
 import { 
   FileText, 
@@ -40,21 +40,18 @@ const navigation: NavItem[] = [
   { name: 'Revisions', href: '/revisions', icon: LayoutDashboard },
   { name: 'Content Hub', href: '/content-hub', icon: Library },
   { name: 'Audit Trail', href: '/audit', icon: Activity },
-  { 
-    name: 'Administration', 
-    href: '/admin', 
-    icon: Settings,
-    subItems: [
-      { name: 'General Settings', href: '/admin' },
-      { name: 'Client Management', href: '/admin/clients' }
-    ]
-  },
+]
+
+const adminMenuItems = [
+  { name: 'General Settings', href: '/admin' },
+  { name: 'Client Management', href: '/admin/clients' }
 ]
 
 export default function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [adminExpanded, setAdminExpanded] = useState(false)
+  const [adminMenuOpen, setAdminMenuOpen] = useState(false)
   const location = useLocation()
+  const navigate = useNavigate()
 
   // Fetch review counts
   const { data: reviewCounts } = useReviewCounts()
@@ -78,52 +75,7 @@ export default function DashboardLayout() {
     : 0
 
   const renderNavItem = (item: NavItem, isMobile = false) => {
-    const hasSubItems = item.subItems && item.subItems.length > 0
-    const isAdminActive = location.pathname.startsWith('/admin')
     const badgeCount = getCountForBadgeType(item.badgeType)
-
-    if (hasSubItems) {
-      return (
-        <div key={item.name}>
-          <button
-            onClick={() => setAdminExpanded(!adminExpanded)}
-            className={`w-full flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors mb-1 ${
-              isAdminActive
-                ? 'bg-blue-50 text-blue-700'
-                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-            }`}
-          >
-            <item.icon className="h-5 w-5" />
-            <span className="flex-1 text-left">{item.name}</span>
-            {adminExpanded ? (
-              <ChevronDown className="h-4 w-4" />
-            ) : (
-              <ChevronRight className="h-4 w-4" />
-            )}
-          </button>
-          {adminExpanded && item.subItems && (
-            <div className="ml-8 mt-1 space-y-1">
-              {item.subItems.map((subItem) => (
-                <NavLink
-                  key={subItem.href}
-                  to={subItem.href}
-                  className={({ isActive }) =>
-                    `block rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                      isActive
-                        ? 'bg-blue-50 text-blue-700'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                    }`
-                  }
-                  onClick={() => isMobile && setSidebarOpen(false)}
-                >
-                  {subItem.name}
-                </NavLink>
-              ))}
-            </div>
-          )}
-        </div>
-      )
-    }
 
     return (
       <NavLink
@@ -187,14 +139,45 @@ export default function DashboardLayout() {
             {navigation.map((item) => renderNavItem(item))}
           </nav>
           <div className="border-t border-gray-200 p-4">
-            <div className="flex items-center">
-              <div className="flex-1">
-                <p className="text-sm font-medium text-gray-900">Admin User</p>
-                <p className="text-xs text-gray-500">admin@3cubed.com</p>
+            <div className="relative">
+              <div className="flex items-center">
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-900">Admin User</p>
+                  <p className="text-xs text-gray-500">admin@3cubed.com</p>
+                </div>
+                <button 
+                  onClick={() => setAdminMenuOpen(!adminMenuOpen)}
+                  className={`p-2 rounded-md transition-colors ${
+                    adminMenuOpen ? 'bg-gray-100 text-gray-900' : 'text-gray-400 hover:text-gray-600'
+                  }`}
+                >
+                  <Settings className="h-5 w-5" />
+                </button>
               </div>
-              <button className="p-2 text-gray-400 hover:text-gray-600">
-                <Settings className="h-5 w-5" />
-              </button>
+              
+              {/* Admin dropdown menu */}
+              {adminMenuOpen && (
+                <div className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-md shadow-lg border border-gray-200 overflow-hidden">
+                  <div className="py-1">
+                    {adminMenuItems.map((item) => (
+                      <button
+                        key={item.href}
+                        onClick={() => {
+                          navigate(item.href)
+                          setAdminMenuOpen(false)
+                        }}
+                        className={`w-full text-left px-4 py-2 text-sm transition-colors ${
+                          location.pathname === item.href
+                            ? 'bg-blue-50 text-blue-700'
+                            : 'text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        {item.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
           {/* Version indicator - temporary for debugging */}
