@@ -49,7 +49,7 @@ export default function SubmissionForm() {
   const [message, setMessage] = useState({ type: '', text: '' });
 
   const developmentStages = [
-    'Pre-clinical', 'Phase I', 'Phase II', 'Phase III', 'Phase IV', 'Approved', 'Pre-Launch', 'Market Launch'
+    'Phase III', 'Market Shaping', 'Market Launch'
   ];
 
   const routesOfAdmin = [
