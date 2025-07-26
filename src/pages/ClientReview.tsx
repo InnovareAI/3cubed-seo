@@ -1,8 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
-import { mockSEOReviews } from '@/data/mockSEOReviews'
 import CTAButton from '@/components/CTAButton'
 import { 
   Search, 
@@ -28,33 +27,10 @@ export default function ClientReview() {
   const [selectedPriority, setSelectedPriority] = useState<string>('all')
   const [selectedClient, setSelectedClient] = useState<string>('all')
   const [selectedStatus, setSelectedStatus] = useState<string>('all')
-  
-  // Initialize from localStorage
-  const [useDemoData, setUseDemoData] = useState(() => {
-    const stored = localStorage.getItem('clientReviewDataMode')
-    return stored === 'demo'
-  })
-
-  // Update localStorage when state changes
-  useEffect(() => {
-    localStorage.setItem('clientReviewDataMode', useDemoData ? 'demo' : 'live')
-  }, [useDemoData])
 
   const { data: submissions, isLoading } = useQuery({
-    queryKey: ['client-review-content', { searchQuery, selectedPriority, selectedClient, selectedStatus, useDemoData }],
+    queryKey: ['client-review-content', { searchQuery, selectedPriority, selectedClient, selectedStatus }],
     queryFn: async () => {
-      if (useDemoData) {
-        // Transform SEO Review mock data into Client Review data
-        return mockSEOReviews.slice(0, 6).map(s => ({
-          ...s,
-          workflow_stage: 'client_review',
-          client_review_status: Math.random() > 0.5 ? 'pending' : Math.random() > 0.5 ? 'approved' : 'revision_requested',
-          client_approval_date: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
-          client_feedback: Math.random() > 0.5 ? 'Please revise the H2 tags to be more specific' : null,
-          seo_reviewed_at: new Date(Date.now() - Math.random() * 10 * 24 * 60 * 60 * 1000).toISOString()
-        }))
-      }
-
       const { data, error } = await supabase
         .from('submissions')
         .select('*')
@@ -114,7 +90,7 @@ export default function ClientReview() {
     navigate(`/client-review/${id}`)
   }
 
-  if (isLoading && !useDemoData) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -130,21 +106,9 @@ export default function ClientReview() {
           <h1 className="text-2xl font-bold text-gray-900">Client Review</h1>
           <p className="text-sm text-gray-600 mt-1">Review and approve SEO-optimized content with clients</p>
         </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setUseDemoData(!useDemoData)}
-            className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
-              useDemoData 
-                ? 'bg-amber-100 text-amber-700' 
-                : 'bg-green-100 text-green-700'
-            }`}
-          >
-            {useDemoData ? 'Demo Data' : 'Live Data'}
-          </button>
-          <CTAButton variant="primary" icon={<FileText className="h-4 w-4" />}>
-            Export Report
-          </CTAButton>
-        </div>
+        <CTAButton variant="primary" icon={<FileText className="h-4 w-4" />}>
+          Export Report
+        </CTAButton>
       </div>
 
       {/* Stats Cards */}
