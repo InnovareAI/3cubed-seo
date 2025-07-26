@@ -1,20 +1,33 @@
 # 3Cubed SEO Project Status & Handover
 
 ## Current State
-- [Date/Time] 2025-07-26 09:50
+- [Date/Time] 2025-07-26 11:35
 - Active branch: main
 - Last deployment: Unknown
-- Platform Status: DOWN - n8n workflow inactive, needs activation and credentials
+- Platform Status: PARTIALLY UP - Perplexity working, Claude needs credentials
 
 ## Recent Changes
-- DevOps Engineer deleted original workflow (BNKl1IJoWxTCKUak)
+- [2025-07-26 11:35] Fixed Perplexity header configuration - API now works
+- [2025-07-26 11:21] Fixed data extraction in Parse Perplexity Response node
+- [2025-07-26 09:50] DevOps Engineer deleted original workflow (BNKl1IJoWxTCKUak)
 - NEW WORKFLOW URL: https://innovareai.app.n8n.cloud/workflow/GSnGJbsgBMC93msr
 - Webhook URL unchanged: https://innovareai.app.n8n.cloud/webhook/BNKl1IJoWxTCKUak
-- ALL documentation must be updated with new workflow URL
-- Workflow needs:
-  - Activation
-  - Credential configuration for 4 nodes
-  - Documentation updates
+
+## Current Tasks
+### [2025-07-26 11:30] - Fix Perplexity Header Configuration - COMPLETED
+- **Objective**: Fix malformed Authorization header in n8n workflow
+- **Complexity**: Simple (<5 steps)
+- **Actions Completed**:
+  1. ✓ Updated the Perplexity HTTP Request node to fix header format
+  2. ✓ Changed from "Bearer pplx-..." in name field to "Authorization" in name field
+  3. ✓ Value now contains full "Bearer pplx-..." string
+  4. ✓ Tested workflow execution - Perplexity API now works!
+  5. ✓ Fixed data extraction logic in Parse Perplexity Response node
+- **Result**: SUCCESS - Perplexity API now authenticates correctly
+- **Remaining Issues**:
+  - Claude API credential needs configuration (invalid x-api-key error)
+  - Database UUID validation for test data
+- **Context Window Protection**: Workflow ID: GSnGJbsgBMC93msr
 
 ## MCP Connections
 - Supabase: ✓ Connected
@@ -29,9 +42,12 @@
 - Webhook trigger points to correct URL
 
 ## Workflows
-- Active workflows: None (needs activation)
+- Active workflows: 3cubed SEO (GSnGJbsgBMC93msr) - ACTIVE
 - Workflow ID: GSnGJbsgBMC93msr
 - Webhook ID: BNKl1IJoWxTCKUak (preserved)
+- Recent fixes:
+  - Perplexity Authorization header format corrected
+  - Data extraction logic updated for webhook payload structure
 
 ## Documentation Updates Required
 - README.md
@@ -40,21 +56,27 @@
 - Any file referencing old workflow URL
 
 ## Pending Tasks
-1. URGENT: Activate workflow
-2. URGENT: Configure credentials
-3. URGENT: Update all documentation
-4. Test with real submission
+1. URGENT: Configure Claude API credentials in n8n
+2. HIGH: Test with real UUID submission ID
+3. MEDIUM: Update all documentation with new workflow URL
+4. LOW: Add monitoring for workflow health
 
 ## Known Issues
-- Platform DOWN until workflow activated
+- Claude API credential invalid (401 authentication error)
+- Test data needs valid UUID format for database operations
 - Documentation has outdated workflow URLs
+- Perplexity returning template placeholders instead of actual content
 
 ## Next Steps
-- Immediate: Deep Agent to activate and configure
-- Short-term: Update all docs with new URL
+- Immediate: Deep Agent to configure Claude API credentials
+- Short-term: Test with real submission from database
 - Long-term: Add monitoring for workflow health
 
 ## Debug Log
+- [2025-07-26 11:22] Claude API error: "invalid x-api-key" - credential needs update
+- [2025-07-26 11:22] Database error: "invalid input syntax for type uuid" - test ID format
+- [2025-07-26 11:21] Perplexity API SUCCESS - generated content with placeholders
+- [2025-07-26 11:20] Fixed Perplexity header configuration
 - [2025-07-26 09:50] Workflow recreated with new ID
 - [2025-07-26 09:45] Original workflow deleted by accident
 - [2025-07-26 08:45] Expression syntax errors fixed
