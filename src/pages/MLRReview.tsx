@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
@@ -48,12 +48,54 @@ interface Submission {
   ai_output?: any
 }
 
+const STORAGE_KEYS = {
+  SEARCH_TERM: 'mlr_review_search',
+  PRIORITY_FILTER: 'mlr_review_priority',
+  THERAPEUTIC_FILTER: 'mlr_review_therapeutic',
+  STAGE_FILTER: 'mlr_review_stage',
+  VIEW_MODE: 'mlr_review_view'
+} as const
+
 export default function MLRReview() {
   const navigate = useNavigate()
-  const [searchTerm, setSearchTerm] = useState('')
-  const [priorityFilter, setPriorityFilter] = useState<string>('all')
-  const [therapeuticAreaFilter, setTherapeuticAreaFilter] = useState<string>('all')
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  
+  // Initialize state from localStorage
+  const [searchTerm, setSearchTerm] = useState(() => 
+    localStorage.getItem(STORAGE_KEYS.SEARCH_TERM) || ''
+  )
+  const [priorityFilter, setPriorityFilter] = useState<string>(() => 
+    localStorage.getItem(STORAGE_KEYS.PRIORITY_FILTER) || 'all'
+  )
+  const [therapeuticAreaFilter, setTherapeuticAreaFilter] = useState<string>(() => 
+    localStorage.getItem(STORAGE_KEYS.THERAPEUTIC_FILTER) || 'all'
+  )
+  const [stageFilter, setStageFilter] = useState<string>(() => 
+    localStorage.getItem(STORAGE_KEYS.STAGE_FILTER) || 'all'
+  )
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => 
+    (localStorage.getItem(STORAGE_KEYS.VIEW_MODE) as 'grid' | 'list') || 'grid'
+  )
+
+  // Save to localStorage whenever state changes
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.SEARCH_TERM, searchTerm)
+  }, [searchTerm])
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.PRIORITY_FILTER, priorityFilter)
+  }, [priorityFilter])
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.THERAPEUTIC_FILTER, therapeuticAreaFilter)
+  }, [therapeuticAreaFilter])
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.STAGE_FILTER, stageFilter)
+  }, [stageFilter])
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.VIEW_MODE, viewMode)
+  }, [viewMode])
 
   const { data: submissions, isLoading } = useQuery({
     queryKey: ['mlr-review-queue'],
@@ -113,6 +155,9 @@ export default function MLRReview() {
     if (therapeuticAreaFilter !== 'all' && submission.therapeutic_area !== therapeuticAreaFilter) {
       return false
     }
+    if (stageFilter !== 'all' && submission.stage !== stageFilter) {
+      return false
+    }
     return true
   }) || []
 
@@ -132,6 +177,24 @@ export default function MLRReview() {
         return 'bg-gray-100 text-gray-800'
     }
   }
+
+  // Add reset filters function
+  const resetFilters = () => {
+    setSearchTerm('')
+    setPriorityFilter('all')
+    setTherapeuticAreaFilter('all')
+    setStageFilter('all')
+    // Clear localStorage
+    localStorage.removeItem(STORAGE_KEYS.SEARCH_TERM)
+    localStorage.removeItem(STORAGE_KEYS.PRIORITY_FILTER)
+    localStorage.removeItem(STORAGE_KEYS.THERAPEUTIC_FILTER)
+    localStorage.removeItem(STORAGE_KEYS.STAGE_FILTER)
+  }
+
+  const hasActiveFilters = searchTerm || 
+    priorityFilter !== 'all' || 
+    therapeuticAreaFilter !== 'all' || 
+    stageFilter !== 'all'
 
   if (isLoading) {
     return (
@@ -268,8 +331,9 @@ export default function MLRReview() {
           </select>
 
           <select
+            value={stageFilter}
+            onChange={(e) => setStageFilter(e.target.value)}
             className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-            defaultValue="all"
           >
             <option value="all">All Stages</option>
             <option value="pre-launch">Pre-Launch</option>
@@ -277,9 +341,20 @@ export default function MLRReview() {
             <option value="post-launch">Post-Launch</option>
           </select>
 
-          <CTAButton variant="secondary" icon={<Filter className="h-4 w-4" />}>
-            More Filters
-          </CTAButton>
+          <div className="flex gap-2">
+            {hasActiveFilters && (
+              <CTAButton 
+                variant="secondary" 
+                icon={<XCircle className="h-4 w-4" />}
+                onClick={resetFilters}
+              >
+                Reset
+              </CTAButton>
+            )}
+            <CTAButton variant="secondary" icon={<Filter className="h-4 w-4" />}>
+              More Filters
+            </CTAButton>
+          </div>
         </div>
       </div>
 
