@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
@@ -28,7 +28,17 @@ export default function ClientReview() {
   const [selectedPriority, setSelectedPriority] = useState<string>('all')
   const [selectedClient, setSelectedClient] = useState<string>('all')
   const [selectedStatus, setSelectedStatus] = useState<string>('all')
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  
+  // Initialize viewMode from localStorage or default to 'grid'
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
+    const savedViewMode = localStorage.getItem('clientReviewViewMode')
+    return (savedViewMode === 'list' || savedViewMode === 'grid') ? savedViewMode : 'grid'
+  })
+
+  // Save viewMode to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('clientReviewViewMode', viewMode)
+  }, [viewMode])
 
   const { data: submissions, isLoading } = useQuery({
     queryKey: ['client-review-content', { searchQuery, selectedPriority, selectedClient, selectedStatus }],
