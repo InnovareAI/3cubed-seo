@@ -61,7 +61,17 @@ export default function SEOReview() {
   const [searchTerm, setSearchTerm] = useState('')
   const [priorityFilter, setPriorityFilter] = useState<string>('all')
   const [therapeuticAreaFilter, setTherapeuticAreaFilter] = useState<string>('all')
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  
+  // Initialize viewMode from localStorage or default to 'grid'
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
+    const savedViewMode = localStorage.getItem('seoReviewViewMode')
+    return (savedViewMode === 'list' || savedViewMode === 'grid') ? savedViewMode : 'grid'
+  })
+
+  // Save viewMode to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('seoReviewViewMode', viewMode)
+  }, [viewMode])
 
   const { data: submissions, isLoading, error } = useQuery({
     queryKey: ['seo-review-queue'],
