@@ -23,6 +23,7 @@ interface NavItem {
   icon: any
   showBadge?: boolean
   badgeType?: 'seoReview' | 'clientReview' | 'mlrReview'
+  isDivider?: boolean
   subItems?: Array<{
     name: string
     href: string
@@ -36,8 +37,9 @@ const navigation: NavItem[] = [
   { name: 'Client Review', href: '/client-review', icon: Users, showBadge: true, badgeType: 'clientReview' },
   { name: 'MLR Review', href: '/mlr-review', icon: FileCheck, showBadge: true, badgeType: 'mlrReview' },
   { name: 'Revisions', href: '/revisions', icon: LayoutDashboard },
-  { name: 'Content Hub', href: '/content-hub', icon: Library },
   { name: 'Audit Trail', href: '/audit', icon: Activity },
+  { name: 'divider', href: '#', icon: null, isDivider: true },
+  { name: 'Content Hub', href: '/content-hub', icon: Library },
 ]
 
 const adminMenuItems = [
@@ -73,6 +75,11 @@ export default function DashboardLayout() {
     : 0
 
   const renderNavItem = (item: NavItem, isMobile = false) => {
+    // Handle divider
+    if (item.isDivider) {
+      return <div key={item.name} className="my-2 border-t border-gray-200" />
+    }
+
     const badgeCount = getCountForBadgeType(item.badgeType)
 
     return (
