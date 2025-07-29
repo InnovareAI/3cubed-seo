@@ -9,120 +9,181 @@ const supabase = createClient(
 );
 
 async function checkSubmissionDetailed() {
-  const submissionId = '63ebebb8-fe90-447e-8f4c-14d79fbf2fdb';
-  console.log('=== DETAILED SUBMISSION ANALYSIS ===\n');
-  console.log('Submission ID:', submissionId);
-  console.log('=====================================\n');
+  const submissionId = '695e8b9d-9e52-4288-8d2b-6551fae55375';
+  
+  console.log(`Checking submission ID: ${submissionId}\n`);
 
-  // Get full submission record
-  console.log('1. FULL SUBMISSION RECORD:');
-  const { data: submission, error } = await supabase
+  // Fetch ALL fields from the submission
+  let { data: submission, error } = await supabase
     .from('submissions')
     .select('*')
     .eq('id', submissionId)
     .single();
 
   if (error) {
-    console.error('❌ Error fetching submission:', error);
+    console.error('Error fetching submission:', error);
     return;
   }
 
-  // Display all fields
-  console.log('\n📊 All Submission Fields:');
-  for (const [key, value] of Object.entries(submission)) {
-    if (value !== null && value !== undefined) {
-      if (typeof value === 'object') {
-        console.log(`   - ${key}:`, JSON.stringify(value, null, 2));
-      } else if (typeof value === 'string' && value.length > 100) {
-        console.log(`   - ${key}: ${value.substring(0, 100)}...`);
-      } else {
-        console.log(`   - ${key}: ${value}`);
-      }
+  if (!submission) {
+    console.log('No submission found with this ID');
+    return;
+  }
+
+  console.log('=== BASIC INFORMATION ===\n');
+  console.log(`ID: ${submission.id}`);
+  console.log(`Compliance ID: ${submission.compliance_id || 'N/A'}`);
+  console.log(`Product Name: ${submission.product_name || 'N/A'}`);
+  console.log(`Submitter: ${submission.submitter_name} (${submission.submitter_email})`);
+  console.log(`Company: ${submission.submitter_company || 'N/A'}`);
+  console.log(`Created: ${submission.created_at}`);
+  console.log(`Last Updated: ${submission.updated_at}`);
+
+  console.log('\n=== WORKFLOW STATUS ===\n');
+  console.log(`Workflow Stage: ${submission.workflow_stage || 'Not set'}`);
+  console.log(`AI Processing Status: ${submission.ai_processing_status || 'Not set'}`);
+  console.log(`AI Phase: ${submission.ai_phase || 'Not set'}`);
+  console.log(`AI Status: ${submission.ai_status || 'Not set'}`);
+  console.log(`AI Retry Count: ${submission.ai_retry_count || 0}`);
+  console.log(`AI Last Retry: ${submission.ai_last_retry || 'N/A'}`);
+
+  console.log('\n=== CONTENT STATUS ===\n');
+  
+  // Raw Input Content
+  console.log('1. Raw Input Content:');
+  if (submission.raw_input_content) {
+    console.log(`   ✅ POPULATED (${submission.raw_input_content.length} characters)`);
+    console.log(`   Preview: ${submission.raw_input_content.substring(0, 200)}...`);
+  } else {
+    console.log('   ❌ EMPTY');
+  }
+
+  // AI Generated Content
+  console.log('\n2. AI Generated Content:');
+  if (submission.ai_generated_content) {
+    console.log(`   ✅ POPULATED`);
+    if (typeof submission.ai_generated_content === 'string') {
+      console.log(`   Length: ${submission.ai_generated_content.length} characters`);
+      console.log(`   Preview: ${submission.ai_generated_content.substring(0, 200)}...`);
+    } else {
+      console.log(`   Type: ${typeof submission.ai_generated_content}`);
+      console.log(`   Content:`, JSON.stringify(submission.ai_generated_content, null, 2));
     }
+  } else {
+    console.log('   ❌ EMPTY');
   }
 
-  // Check specifically for error fields
-  console.log('\n2. ERROR/ISSUE FIELDS:');
-  console.log('   - error_message:', submission.error_message || 'None');
-  console.log('   - processing_metadata:', submission.processing_metadata || 'None');
-  console.log('   - langchain_status:', submission.langchain_status || 'None');
-  console.log('   - langchain_error:', submission.langchain_error || 'None');
-
-  // Check workflow stage and AI status
-  console.log('\n3. WORKFLOW STATUS ANALYSIS:');
-  console.log('   - workflow_stage:', submission.workflow_stage);
-  console.log('   - ai_processing_status:', submission.ai_processing_status);
-  console.log('   - qa_status:', submission.qa_status || 'Not set');
-  
-  if (submission.workflow_stage === 'draft') {
-    console.log('\n   ⚠️  ISSUE: Submission is stuck in DRAFT stage!');
-    console.log('   Expected flow: draft → form_submitted → ai_processing → hitl_review → ...');
-    console.log('   The webhook trigger requires workflow_stage = "form_submitted"');
-  }
-
-  if (submission.ai_processing_status === 'processing' && !submission.ai_generated_content) {
-    console.log('\n   ⚠️  ISSUE: AI status is "processing" but no content generated!');
-    console.log('   This suggests the AI processing may have failed or never started.');
-  }
-
-  // Check timestamps
-  console.log('\n4. TIMELINE ANALYSIS:');
-  const created = new Date(submission.created_at);
-  const updated = new Date(submission.updated_at);
-  const timeDiff = (updated - created) / 1000 / 60; // minutes
-  
-  console.log('   - Created:', created.toLocaleString());
-  console.log('   - Last Updated:', updated.toLocaleString());
-  console.log(`   - Time elapsed: ${timeDiff.toFixed(1)} minutes`);
-  
-  if (timeDiff > 5 && submission.workflow_stage === 'draft') {
-    console.log('   ⚠️  Submission has been in draft for over 5 minutes!');
-  }
-
-  // Check for any webhook execution history
-  console.log('\n5. WEBHOOK EXECUTION CHECK:');
-  
-  // Try different table names for webhook logs
-  const webhookTables = ['n8n_webhook_executions', 'webhook_executions', 'webhook_logs'];
-  let webhookFound = false;
-  
-  for (const table of webhookTables) {
-    try {
-      const { data: webhookData, error: webhookError } = await supabase
-        .from(table)
-        .select('*')
-        .or(`submission_id.eq.${submissionId},payload.cs.${submissionId}`)
-        .limit(1);
-        
-      if (!webhookError && webhookData && webhookData.length > 0) {
-        console.log(`   ✅ Found webhook execution in ${table}:`, webhookData[0]);
-        webhookFound = true;
-        break;
-      }
-    } catch (e) {
-      // Table doesn't exist, continue
+  // AI Output
+  console.log('\n3. AI Output:');
+  if (submission.ai_output) {
+    console.log(`   ✅ POPULATED`);
+    console.log(`   Type: ${typeof submission.ai_output}`);
+    if (typeof submission.ai_output === 'object') {
+      console.log(`   Keys: ${Object.keys(submission.ai_output).join(', ')}`);
     }
-  }
-  
-  if (!webhookFound) {
-    console.log('   ❌ No webhook execution found for this submission');
+  } else {
+    console.log('   ❌ EMPTY');
   }
 
-  // Summary and recommendations
-  console.log('\n6. SUMMARY & RECOMMENDATIONS:');
-  console.log('\n   Issues identified:');
-  console.log('   1. Submission is in "draft" stage instead of "form_submitted"');
-  console.log('   2. AI processing status shows "processing" but no content generated');
-  console.log('   3. No webhook execution logs found');
+  console.log('\n=== QA & FEEDBACK ===\n');
   
-  console.log('\n   Root cause:');
-  console.log('   The submission was never properly transitioned from draft to form_submitted,');
-  console.log('   which prevented the database trigger from firing the webhook.');
+  // QA Feedback
+  console.log('1. QA Feedback (Claude\'s Review):');
+  if (submission.qa_feedback) {
+    console.log(`   ✅ POPULATED`);
+    if (typeof submission.qa_feedback === 'string') {
+      console.log(`   Length: ${submission.qa_feedback.length} characters`);
+      console.log(`   Preview: ${submission.qa_feedback.substring(0, 200)}...`);
+    } else {
+      console.log(`   Type: ${typeof submission.qa_feedback}`);
+      console.log(`   Content:`, JSON.stringify(submission.qa_feedback, null, 2));
+    }
+  } else {
+    console.log('   ❌ EMPTY');
+  }
+
+  // QA Score
+  console.log('\n2. QA Score:');
+  if (submission.qa_score !== null && submission.qa_score !== undefined) {
+    console.log(`   ✅ Score: ${submission.qa_score}`);
+  } else {
+    console.log('   ❌ NOT SET');
+  }
+
+  console.log('\n=== SEO FIELDS ===\n');
+
+  // SEO Keywords
+  console.log('1. SEO Keywords:');
+  if (submission.seo_keywords) {
+    console.log(`   ✅ POPULATED`);
+    if (Array.isArray(submission.seo_keywords)) {
+      console.log(`   Keywords: ${submission.seo_keywords.join(', ')}`);
+    } else {
+      console.log(`   Value: ${submission.seo_keywords}`);
+    }
+  } else {
+    console.log('   ❌ EMPTY');
+  }
+
+  // Meta Title
+  console.log('\n2. Meta Title:');
+  if (submission.meta_title) {
+    console.log(`   ✅ POPULATED`);
+    console.log(`   Title: ${submission.meta_title}`);
+  } else {
+    console.log('   ❌ EMPTY');
+  }
+
+  // Meta Description
+  console.log('\n3. Meta Description:');
+  if (submission.meta_description) {
+    console.log(`   ✅ POPULATED`);
+    console.log(`   Description: ${submission.meta_description}`);
+  } else {
+    console.log('   ❌ EMPTY');
+  }
+
+  // Additional SEO fields
+  console.log('\n4. Additional SEO Fields:');
+  console.log(`   Long Tail Keywords: ${submission.long_tail_keywords ? '✅' : '❌'}`);
+  console.log(`   Consumer Questions: ${submission.consumer_questions ? '✅' : '❌'}`);
+  console.log(`   H1 Tag: ${submission.h1_tag ? '✅' : '❌'}`);
+  console.log(`   H2 Tags: ${submission.h2_tags ? '✅' : '❌'}`);
+  console.log(`   SEO Title: ${submission.seo_title ? '✅' : '❌'}`);
+  console.log(`   SEO Strategy Outline: ${submission.seo_strategy_outline ? '✅' : '❌'}`);
+
+  console.log('\n=== ADDITIONAL INFORMATION ===\n');
   
-  console.log('\n   Recommended actions:');
-  console.log('   1. Update workflow_stage to "form_submitted" to trigger the webhook');
-  console.log('   2. Or manually trigger the AI processing workflow');
-  console.log('   3. Investigate why the form submission didn\'t set the correct stage');
+  // Product details
+  console.log('Product Information:');
+  console.log(`   Therapeutic Area: ${submission.therapeutic_area || 'N/A'}`);
+  console.log(`   Stage: ${submission.stage || 'N/A'}`);
+  console.log(`   Priority Level: ${submission.priority_level || 'N/A'}`);
+  console.log(`   Target Audience: ${submission.target_audience || 'N/A'}`);
+  console.log(`   Medical Indication: ${submission.medical_indication || submission.indication || 'N/A'}`);
+  console.log(`   Dosage Form: ${submission.dosage_form || 'N/A'}`);
+
+  // Error information
+  if (submission.error_message) {
+    console.log('\n⚠️  ERROR INFORMATION:');
+    console.log(`   Error Message: ${submission.error_message}`);
+  }
+
+  // Client review status
+  console.log('\nClient Review Status:');
+  console.log(`   Ready for MLR: ${submission.ready_for_mlr || false}`);
+  console.log(`   Client Reviewed At: ${submission.client_reviewed_at || 'N/A'}`);
+  console.log(`   Client Reviewed By: ${submission.client_reviewed_by || 'N/A'}`);
+
+  // SEO review status
+  console.log('\nSEO Review Status:');
+  console.log(`   SEO Reviewed At: ${submission.seo_reviewed_at || 'N/A'}`);
+  console.log(`   SEO Reviewed By: ${submission.seo_reviewed_by || 'N/A'}`);
+
+  console.log('\n=== RAW DATA (for debugging) ===\n');
+  console.log('All fields in submission:', Object.keys(submission).sort().join(', '));
+
+  console.log('\n=== END OF DETAILED REPORT ===');
 }
 
 checkSubmissionDetailed().catch(console.error);
