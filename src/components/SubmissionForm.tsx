@@ -239,14 +239,17 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         }
       });
 
-      console.log('About to submit data:', submissionData);
+      console.log('🚀 About to submit data to Supabase:', submissionData);
 
       try {
-        const { error: supabaseError } = await supabase
+        const { data: insertedData, error: supabaseError } = await supabase
         .from('submissions')
-        .insert([submissionData]);
+        .insert([submissionData])
+        .select();
 
         if (supabaseError) throw supabaseError;
+
+        console.log('✅ Data successfully inserted into Supabase:', insertedData);
 
         // Show success message
         setShowSuccessMessage(true);
