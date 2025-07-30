@@ -1,0 +1,32 @@
+{
+  "name": "Automated Backup & Sync Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 6
+            }
+          ]
+        }
+      },
+      "id": "backup-scheduler",
+      "name": "Backup Scheduler",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [200, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Intelligent Backup & Sync System\nconst backupConfig = {\n  backup_id: `BKP-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,\n  backup_type: 'incremental',\n  initiated_at: new Date().toISOString(),\n  \n  // Data sources to backup\n  data_sources: [\n    { name: 'submissions', table: 'submissions', priority: 'critical' },\n    { name: 'approval_workflows', table: 'approval_workflows', priority: 'high' },\n    { name: 'audit_logs', table: 'audit_logs', priority: 'high' },\n    { name: 'user_profiles', table: 'user_profiles', priority: 'medium' },\n    { name: 'system_health_logs', table: 'system_health_logs', priority: 'low' }\n  ],\n  \n  // Sync destinations\n  sync_targets: [\n    { name: 'aws_s3', enabled: true, retention_days: 90 },\n    { name: 'google_drive', enabled: true, retention_days: 30 },\n    { name: 'local_storage', enabled: true, retention_days: 7 },\n    { name: 'disaster_recovery_site', enabled: true, retention_days: 365 }\n  ],\n  \n  // Backup strategy\n  strategy: {\n    compression: true,\n    encryption: true,\n    differential_backup: true,\n    exclude_temp_data: true,\n    include_attachments: false\n  }\n};\n\nreturn [{ json: backupConfig }];"
+      },
+      "id": "backup-orchestrator",
+      "name": "Backup Orchestrator",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [420, 300]
+    }
+  ]
+}

@@ -1,0 +1,433 @@
+{
+  "name": "Advanced Pharmaceutical SEO Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "pharmaceutical-intake",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-intake",
+      "name": "Pharmaceutical Intake Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "therapeutic-area-routing",
+              "leftValue": "={{ $json.therapeutic_area }}",
+              "rightValue": "Oncology",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "therapeutic-area-router",
+      "name": "Therapeutic Area Router",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "resource": "submission",
+        "operation": "create",
+        "table": "submissions",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "product_name": "={{ $json.product_name }}",
+            "therapeutic_area": "={{ $json.therapeutic_area }}",
+            "indication": "={{ $json.indication }}",
+            "priority_level": "={{ $json.therapeutic_area === 'Oncology' ? 'high' : 'medium' }}",
+            "workflow_stage": "intake_validation",
+            "ai_processing_status": "pending",
+            "compliance_id": "PHR-{{ $now.format('YYYY') }}-{{ $runIndex }}"
+          }
+        }
+      },
+      "id": "create-submission",
+      "name": "Create Submission Record",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [680, 300],
+      "credentials": {
+        "supabaseApi": {
+          "id": "supabase-pharma-creds",
+          "name": "Supabase Pharma API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "jsonToCsv",
+        "options": {
+          "fileName": "submission-{{ $json.id }}.csv"
+        }
+      },
+      "id": "data-validation",
+      "name": "Data Validation & Formatting",
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "batchSize": 5,
+        "options": {
+          "reset": false
+        }
+      },
+      "id": "batch-processor",
+      "name": "Batch Processor",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ai-orchestration",
+              "name": "ai_provider",
+              "value": "={{ $json.therapeutic_area === 'Oncology' ? 'claude' : $json.complexity_score > 0.8 ? 'gpt4' : 'perplexity' }}",
+              "type": "string"
+            },
+            {
+              "id": "priority-scoring",
+              "name": "priority_score",
+              "value": "={{ $json.therapeutic_area === 'Oncology' ? 10 : $json.product_name.includes('novel') ? 8 : 5 }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ai-orchestrator",
+      "name": "AI Provider Orchestrator",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1340, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "claude-routing",
+              "leftValue": "={{ $json.ai_provider }}",
+              "rightValue": "claude",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "ai-provider-router",
+      "name": "AI Provider Router",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1560, 300]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "model": "claude-3-sonnet-20240229",
+        "prompt": "=Create comprehensive SEO content for this pharmaceutical product:\n\nProduct: {{ $json.product_name }}\nIndication: {{ $json.indication }}\nTherapeutic Area: {{ $json.therapeutic_area }}\n\nGenerate:\n1. SEO-optimized title tag\n2. Meta description\n3. H1 tag\n4. Primary keywords (10)\n5. Body content (500 words)\n6. FAQ schema\n7. Medical accuracy score\n8. Compliance risk assessment\n\nEnsure all content follows FDA guidelines and pharmaceutical advertising regulations.",
+        "options": {
+          "maxTokens": 4000,
+          "temperature": 0.3
+        }
+      },
+      "id": "claude-processor",
+      "name": "Claude AI Processor",
+      "type": "n8n-nodes-base.anthropic",
+      "typeVersion": 1,
+      "position": [1780, 200],
+      "credentials": {
+        "anthropicApi": {
+          "id": "claude-api-creds",
+          "name": "Claude API Credentials"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "gpt-4",
+        "messages": {
+          "values": [
+            {
+              "role": "system",
+              "content": "You are a pharmaceutical SEO content specialist. Create compliant, accurate content for drug information."
+            },
+            {
+              "role": "user", 
+              "content": "=Create SEO content for: {{ $json.product_name }} - {{ $json.indication }}"
+            }
+          ]
+        },
+        "options": {
+          "maxTokens": 3000,
+          "temperature": 0.2
+        }
+      },
+      "id": "gpt4-processor",
+      "name": "GPT-4 Processor", 
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1,
+      "position": [1780, 400],
+      "credentials": {
+        "openAiApi": {
+          "id": "openai-api-creds",
+          "name": "OpenAI API Credentials"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://api.perplexity.ai/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "perplexityApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "llama-3.1-sonar-large-128k-online"
+            },
+            {
+              "name": "messages",
+              "value": "=[{\"role\": \"user\", \"content\": \"Create pharmaceutical SEO content for {{ $json.product_name }}\"}]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "perplexity-processor",
+      "name": "Perplexity AI Processor",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1780, 600],
+      "credentials": {
+        "perplexityApi": {
+          "id": "perplexity-api-creds", 
+          "name": "Perplexity API Credentials"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "id": "ai-consensus-merger",
+      "name": "AI Consensus Merger",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2.1,
+      "position": [2000, 400]
+    },
+    {
+      "parameters": {
+        "jsCode": "// AI Consensus Scoring Algorithm\nconst responses = items.map(item => item.json);\n\n// Extract scores from different AI providers\nconst claudeScore = responses.find(r => r.provider === 'claude')?.medical_accuracy || 0;\nconst gpt4Score = responses.find(r => r.provider === 'gpt4')?.medical_accuracy || 0;\nconst perplexityScore = responses.find(r => r.provider === 'perplexity')?.medical_accuracy || 0;\n\n// Weighted consensus scoring\nconst consensusScore = {\n  claude_weight: 0.4,\n  gpt4_weight: 0.35, \n  perplexity_weight: 0.25\n};\n\nconst finalScore = (\n  claudeScore * consensusScore.claude_weight +\n  gpt4Score * consensusScore.gpt4_weight +\n  perplexityScore * consensusScore.perplexity_weight\n);\n\n// Quality gates\nconst qualityGates = {\n  medical_accuracy: finalScore >= 85,\n  content_completeness: responses.every(r => r.content && r.content.length > 100),\n  compliance_check: responses.every(r => !r.content.includes('guaranteed') && !r.content.includes('cure')),\n  consistency_check: Math.abs(Math.max(claudeScore, gpt4Score, perplexityScore) - Math.min(claudeScore, gpt4Score, perplexityScore)) < 20\n};\n\nconst allGatesPassed = Object.values(qualityGates).every(gate => gate);\n\nreturn [{\n  json: {\n    consensus_score: Math.round(finalScore),\n    individual_scores: {\n      claude: claudeScore,\n      gpt4: gpt4Score,\n      perplexity: perplexityScore\n    },\n    quality_gates: qualityGates,\n    quality_gates_passed: allGatesPassed,\n    recommended_action: allGatesPassed ? 'approve' : 'review_required',\n    combined_content: responses[0]?.content || '',\n    processing_timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "consensus-scorer",
+      "name": "AI Consensus Scorer",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2220, 400]
+    }
+  ],
+  "connections": {
+    "Pharmaceutical Intake Webhook": {
+      "main": [
+        [
+          {
+            "node": "Therapeutic Area Router",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Therapeutic Area Router": {
+      "main": [
+        [
+          {
+            "node": "Create Submission Record",
+            "type": "main", 
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create Submission Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Submission Record": {
+      "main": [
+        [
+          {
+            "node": "Data Validation & Formatting",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Validation & Formatting": {
+      "main": [
+        [
+          {
+            "node": "Batch Processor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Batch Processor": {
+      "main": [
+        [
+          {
+            "node": "AI Provider Orchestrator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Provider Orchestrator": {
+      "main": [
+        [
+          {
+            "node": "AI Provider Router",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Provider Router": {
+      "main": [
+        [
+          {
+            "node": "Claude AI Processor",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "GPT-4 Processor", 
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Perplexity AI Processor",
+            "type": "main", 
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude AI Processor": {
+      "main": [
+        [
+          {
+            "node": "AI Consensus Merger",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GPT-4 Processor": {
+      "main": [
+        [
+          {
+            "node": "AI Consensus Merger",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Perplexity AI Processor": {
+      "main": [
+        [
+          {
+            "node": "AI Consensus Merger",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "AI Consensus Merger": {
+      "main": [
+        [
+          {
+            "node": "AI Consensus Scorer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "createdAt": "2025-01-30T18:45:00.000Z",
+      "updatedAt": "2025-01-30T18:45:00.000Z", 
+      "id": "pharmaceutical-seo",
+      "name": "Pharmaceutical SEO"
+    }
+  ],
+  "triggerCount": 1,
+  "updatedAt": "2025-01-30T18:45:00.000Z",
+  "versionId": "advanced-pharma-v1"
+}

@@ -1,0 +1,243 @@
+{
+  "name": "Multi-Stage Approval Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "approval-request",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "approval-webhook",
+      "name": "Approval Request Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 400]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Role-Based Approval Routing Engine\nconst submission = items[0].json;\n\n// Define approval workflow based on submission characteristics\nconst approvalRules = {\n  // High-risk pharmaceutical content requires all approvals\n  high_risk: {\n    required_approvals: ['seo_reviewer', 'medical_reviewer', 'legal_reviewer', 'mlr_reviewer'],\n    approval_order: 'sequential',\n    escalation_time_hours: 24,\n    bypass_roles: ['admin', 'emergency_approver']\n  },\n  \n  // Medium-risk content requires medical and legal\n  medium_risk: {\n    required_approvals: ['seo_reviewer', 'medical_reviewer', 'mlr_reviewer'],\n    approval_order: 'parallel_then_sequential', // SEO + Medical parallel, then MLR\n    escalation_time_hours: 48,\n    bypass_roles: ['admin']\n  },\n  \n  // Low-risk content requires basic approvals\n  low_risk: {\n    required_approvals: ['seo_reviewer', 'content_reviewer'],\n    approval_order: 'parallel',\n    escalation_time_hours: 72,\n    bypass_roles: ['admin', 'senior_reviewer']\n  }\n};\n\n// Risk assessment algorithm\nfunction assessRisk(submission) {\n  let riskScore = 0;\n  \n  // Therapeutic area risk\n  const highRiskAreas = ['Oncology', 'Neurology', 'Rare Disease', 'Pediatrics'];\n  if (highRiskAreas.includes(submission.therapeutic_area)) {\n    riskScore += 30;\n  }\n  \n  // Development stage risk\n  if (submission.development_stage === 'Phase III' || submission.development_stage === 'Approved') {\n    riskScore += 25;\n  }\n  \n  // Content complexity risk\n  if (submission.ai_generated_content && submission.ai_generated_content.length > 2000) {\n    riskScore += 15;\n  }\n  \n  // Medical claims risk\n  const highRiskClaims = ['first-in-class', 'breakthrough', 'superior efficacy', 'novel mechanism'];\n  const contentLower = (submission.ai_generated_content || '').toLowerCase();\n  const hasHighRiskClaims = highRiskClaims.some(claim => contentLower.includes(claim));\n  if (hasHighRiskClaims) {\n    riskScore += 20;\n  }\n  \n  // Regulatory status risk\n  if (submission.regulatory_status === 'pending' || submission.regulatory_status === 'investigational') {\n    riskScore += 10;\n  }\n  \n  // Determine risk level\n  if (riskScore >= 70) return 'high_risk';\n  if (riskScore >= 40) return 'medium_risk';\n  return 'low_risk';\n}\n\n// Get user roles and permissions\nfunction getUserRoles() {\n  // In production, this would query the database\n  return {\n    'john.doe@pharma.com': ['seo_reviewer', 'senior_reviewer'],\n    'jane.smith@pharma.com': ['medical_reviewer', 'admin'],\n    'bob.johnson@pharma.com': ['legal_reviewer'],\n    'mary.wilson@pharma.com': ['mlr_reviewer'],\n    'admin@pharma.com': ['admin', 'emergency_approver']\n  };\n}\n\n// Create approval workflow\nconst riskLevel = assessRisk(submission);\nconst approvalConfig = approvalRules[riskLevel];\nconst userRoles = getUserRoles();\n\n// Generate approval stages\nconst approvalStages = [];\nconst requiredRoles = approvalConfig.required_approvals;\n\nif (approvalConfig.approval_order === 'sequential') {\n  // Sequential approval - each role one after another\n  requiredRoles.forEach((role, index) => {\n    approvalStages.push({\n      stage_number: index + 1,\n      stage_name: `${role}_approval`,\n      required_role: role,\n      parallel_approvers: 1,\n      depends_on_stages: index > 0 ? [index] : [],\n      escalation_time_hours: approvalConfig.escalation_time_hours,\n      status: 'pending'\n    });\n  });\n} else if (approvalConfig.approval_order === 'parallel') {\n  // Parallel approval - all roles simultaneously\n  approvalStages.push({\n    stage_number: 1,\n    stage_name: 'parallel_approval',\n    required_roles: requiredRoles,\n    parallel_approvers: requiredRoles.length,\n    depends_on_stages: [],\n    escalation_time_hours: approvalConfig.escalation_time_hours,\n    status: 'pending'\n  });\n} else if (approvalConfig.approval_order === 'parallel_then_sequential') {\n  // Mixed: First two parallel, then sequential\n  approvalStages.push({\n    stage_number: 1,\n    stage_name: 'initial_parallel_approval',\n    required_roles: requiredRoles.slice(0, 2),\n    parallel_approvers: 2,\n    depends_on_stages: [],\n    escalation_time_hours: approvalConfig.escalation_time_hours / 2,\n    status: 'pending'\n  });\n  \n  requiredRoles.slice(2).forEach((role, index) => {\n    approvalStages.push({\n      stage_number: index + 2,\n      stage_name: `${role}_approval`,\n      required_role: role,\n      parallel_approvers: 1,\n      depends_on_stages: [1],\n      escalation_time_hours: approvalConfig.escalation_time_hours / 2,\n      status: 'pending'\n    });\n  });\n}\n\n// Assign specific approvers based on roles and availability\nconst approverAssignments = {};\nrequiredRoles.forEach(role => {\n  const availableUsers = Object.entries(userRoles)\n    .filter(([user, roles]) => roles.includes(role))\n    .map(([user, roles]) => user);\n  \n  if (availableUsers.length > 0) {\n    approverAssignments[role] = {\n      primary_approver: availableUsers[0],\n      backup_approvers: availableUsers.slice(1),\n      role_name: role\n    };\n  }\n});\n\n// Create approval workflow record\nconst approvalWorkflow = {\n  workflow_id: `APR-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,\n  submission_id: submission.id,\n  risk_level: riskLevel,\n  risk_score: assessRisk(submission),\n  approval_config: approvalConfig,\n  approval_stages: approvalStages,\n  approver_assignments: approverAssignments,\n  workflow_status: 'active',\n  current_stage: 1,\n  created_at: new Date().toISOString(),\n  estimated_completion: new Date(Date.now() + (approvalConfig.escalation_time_hours * 60 * 60 * 1000)).toISOString(),\n  \n  // Escalation rules\n  escalation_rules: {\n    auto_escalate_after_hours: approvalConfig.escalation_time_hours,\n    escalation_chain: ['senior_reviewer', 'admin', 'emergency_approver'],\n    weekend_escalation: true,\n    holiday_escalation: false\n  },\n  \n  // Override mechanisms\n  override_permissions: {\n    emergency_override_roles: approvalConfig.bypass_roles,\n    requires_justification: true,\n    audit_trail_required: true\n  },\n  \n  // SLA tracking\n  sla_metrics: {\n    target_completion_hours: approvalConfig.escalation_time_hours * 0.8, // 80% of escalation time\n    priority_multiplier: riskLevel === 'high_risk' ? 1.5 : riskLevel === 'medium_risk' ? 1.2 : 1.0,\n    business_hours_only: false\n  }\n};\n\nreturn [{\n  json: {\n    approval_workflow: approvalWorkflow,\n    next_action: 'initiate_first_stage',\n    notifications_to_send: generateInitialNotifications(approvalWorkflow),\n    monitoring_setup: {\n      check_interval_minutes: 30,\n      escalation_warnings: [50, 75, 90], // Percentage of time elapsed\n      stakeholder_updates: ['daily_summary', 'stage_completion', 'escalation_triggered']\n    }\n  }\n}];\n\nfunction generateInitialNotifications(workflow) {\n  const notifications = [];\n  \n  // Notify assigned approvers for first stage\n  const firstStage = workflow.approval_stages[0];\n  if (firstStage.required_role) {\n    const assignment = workflow.approver_assignments[firstStage.required_role];\n    if (assignment) {\n      notifications.push({\n        type: 'approval_request',\n        recipient: assignment.primary_approver,\n        role: firstStage.required_role,\n        stage: 1,\n        deadline: new Date(Date.now() + (firstStage.escalation_time_hours * 60 * 60 * 1000)).toISOString()\n      });\n    }\n  } else if (firstStage.required_roles) {\n    // Multiple parallel approvers\n    firstStage.required_roles.forEach(role => {\n      const assignment = workflow.approver_assignments[role];\n      if (assignment) {\n        notifications.push({\n          type: 'approval_request',\n          recipient: assignment.primary_approver,\n          role: role,\n          stage: 1,\n          deadline: new Date(Date.now() + (firstStage.escalation_time_hours * 60 * 60 * 1000)).toISOString()\n        });\n      }\n    });\n  }\n  \n  // Notify submission owner\n  notifications.push({\n    type: 'approval_initiated',\n    recipient: workflow.approver_assignments.submitter_email || 'unknown@pharma.com',\n    workflow_id: workflow.workflow_id,\n    estimated_completion: workflow.estimated_completion\n  });\n  \n  return notifications;\n}"
+      },
+      "id": "approval-routing-engine",
+      "name": "Role-Based Approval Routing Engine",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 400]
+    },
+    {
+      "parameters": {
+        "resource": "submission",
+        "operation": "insert",
+        "table": "approval_workflows",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "workflow_id": "={{ $json.approval_workflow.workflow_id }}",
+            "submission_id": "={{ $json.approval_workflow.submission_id }}",
+            "risk_level": "={{ $json.approval_workflow.risk_level }}",
+            "approval_stages": "={{ JSON.stringify($json.approval_workflow.approval_stages) }}",
+            "approver_assignments": "={{ JSON.stringify($json.approval_workflow.approver_assignments) }}",
+            "workflow_status": "active",
+            "current_stage": 1,
+            "created_at": "={{ $json.approval_workflow.created_at }}",
+            "escalation_rules": "={{ JSON.stringify($json.approval_workflow.escalation_rules) }}"
+          }
+        }
+      },
+      "id": "create-approval-workflow",
+      "name": "Create Approval Workflow",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [680, 400],
+      "credentials": {
+        "supabaseApi": {
+          "id": "supabase-pharma-creds",
+          "name": "Supabase Pharma API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "batchSize": "={{ $json.notifications_to_send.length }}",
+        "options": {
+          "reset": false
+        }
+      },
+      "id": "notification-splitter",
+      "name": "Notification Splitter",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [900, 400]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "current-notification",
+              "name": "current_notification",
+              "value": "={{ $json.notifications_to_send[$('Notification Splitter').item.json.$index] }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-notification",
+      "name": "Set Current Notification",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1120, 400]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "notification-type",
+              "leftValue": "={{ $json.current_notification.type }}",
+              "rightValue": "approval_request",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "notification-router",
+      "name": "Notification Type Router",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1340, 400]
+    },
+    {
+      "parameters": {
+        "fromEmail": "noreply@pharmaplatform.com",
+        "toEmail": "={{ $json.current_notification.recipient }}",
+        "subject": "🔔 Pharmaceutical Content Approval Required - {{ $json.current_notification.role }}",
+        "emailFormat": "html",
+        "html": "=<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    body { font-family: Arial, sans-serif; color: #333; }\n    .header { background-color: #2c5aa0; color: white; padding: 20px; text-align: center; }\n    .content { padding: 20px; }\n    .approval-box { background-color: #f8f9fa; border-left: 4px solid #007bff; padding: 15px; margin: 20px 0; }\n    .buttons { text-align: center; margin: 30px 0; }\n    .btn { display: inline-block; padding: 12px 24px; margin: 0 10px; text-decoration: none; border-radius: 5px; font-weight: bold; }\n    .btn-approve { background-color: #28a745; color: white; }\n    .btn-reject { background-color: #dc3545; color: white; }\n    .btn-review { background-color: #ffc107; color: #212529; }\n  </style>\n</head>\n<body>\n  <div class=\"header\">\n    <h1>Pharmaceutical Content Approval Request</h1>\n  </div>\n  \n  <div class=\"content\">\n    <h2>Approval Required: {{ $json.current_notification.role }}</h2>\n    \n    <div class=\"approval-box\">\n      <strong>Workflow ID:</strong> {{ $json.approval_workflow.workflow_id }}<br>\n      <strong>Risk Level:</strong> {{ $json.approval_workflow.risk_level }}<br>\n      <strong>Product:</strong> {{ $json.approval_workflow.submission.product_name || 'N/A' }}<br>\n      <strong>Therapeutic Area:</strong> {{ $json.approval_workflow.submission.therapeutic_area || 'N/A' }}<br>\n      <strong>Deadline:</strong> {{ $json.current_notification.deadline }}<br>\n      <strong>Stage:</strong> {{ $json.current_notification.stage }} of {{ $json.approval_workflow.approval_stages.length }}\n    </div>\n    \n    <h3>Content Summary:</h3>\n    <p>{{ ($json.approval_workflow.submission.ai_generated_content || '').substring(0, 300) }}...</p>\n    \n    <div class=\"buttons\">\n      <a href=\"https://pharmaplatform.com/approve/{{ $json.approval_workflow.workflow_id }}?action=approve\" class=\"btn btn-approve\">✅ APPROVE</a>\n      <a href=\"https://pharmaplatform.com/approve/{{ $json.approval_workflow.workflow_id }}?action=review\" class=\"btn btn-review\">📝 REQUEST CHANGES</a>\n      <a href=\"https://pharmaplatform.com/approve/{{ $json.approval_workflow.workflow_id }}?action=reject\" class=\"btn btn-reject\">❌ REJECT</a>\n    </div>\n    \n    <p><strong>Important:</strong> This content requires your expert review for pharmaceutical compliance and accuracy. Please review within {{ $json.current_notification.deadline }} to avoid escalation.</p>\n    \n    <p><em>This is an automated message from the Pharmaceutical SEO Platform.</em></p>\n  </div>\n</body>\n</html>",
+        "options": {}
+      },
+      "id": "send-approval-email",
+      "name": "Send Approval Request Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [1560, 300],
+      "credentials": {
+        "smtp": {
+          "id": "pharma-smtp-server",
+          "name": "Pharma SMTP Server"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C1234567890",
+          "mode": "name",
+          "cachedResultName": "pharma-approvals"
+        },
+        "text": "=📋 **New Approval Request** 📋\\n\\n**Role:** {{ $json.current_notification.role }}\\n**Assignee:** {{ $json.current_notification.recipient }}\\n**Risk Level:** {{ $json.approval_workflow.risk_level }}\\n**Product:** {{ $json.approval_workflow.submission.product_name || 'N/A' }}\\n**Deadline:** {{ $json.current_notification.deadline }}\\n\\n<https://pharmaplatform.com/approve/{{ $json.approval_workflow.workflow_id }}|Review & Approve>",
+        "otherOptions": {
+          "mrkdwn": true
+        }
+      },
+      "id": "slack-approval-notification",
+      "name": "Slack Approval Notification",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [1560, 500],
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "slack-pharma-alerts",
+          "name": "Slack Pharmaceutical Alerts"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Approval Request Webhook": {
+      "main": [
+        [
+          {
+            "node": "Role-Based Approval Routing Engine",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Role-Based Approval Routing Engine": {
+      "main": [
+        [
+          {
+            "node": "Create Approval Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Approval Workflow": {
+      "main": [
+        [
+          {
+            "node": "Notification Splitter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notification Splitter": {
+      "main": [
+        [
+          {
+            "node": "Set Current Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Current Notification": {
+      "main": [
+        [
+          {
+            "node": "Notification Type Router",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notification Type Router": {
+      "main": [
+        [
+          {
+            "node": "Send Approval Request Email",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Slack Approval Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

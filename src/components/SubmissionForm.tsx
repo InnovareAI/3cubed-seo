@@ -259,14 +259,15 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
           trigger_source: 'form_submission'
         };
         
-        console.log('🚀 Triggering n8n workflow with payload:', webhookPayload);
+        console.log('🚀 Triggering AI processing with payload:', webhookPayload);
         
-        const webhookResponse = await fetch('https://innovareai.app.n8n.cloud/webhook/hP9yZxUjmBKJmrZt', {
+        // Use Netlify function instead of n8n
+        const webhookResponse = await fetch('/.netlify/functions/process-submission', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(webhookPayload)
+          body: JSON.stringify({ submission_id: data.id })
         });
 
         console.log('Webhook response status:', webhookResponse.status, webhookResponse.statusText);

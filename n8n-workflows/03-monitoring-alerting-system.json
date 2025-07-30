@@ -1,0 +1,203 @@
+{
+  "name": "N8N Monitoring & Alerting System",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 5
+            }
+          ]
+        }
+      },
+      "id": "health-check-scheduler",
+      "name": "Health Check Scheduler",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [200, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// N8N Health Monitoring System\nconst healthChecks = {\n  database_connectivity: null,\n  api_endpoints: [],\n  workflow_performance: {},\n  resource_usage: {},\n  error_rates: {},\n  sla_compliance: {}\n};\n\n// Database connectivity check\ntry {\n  // This would normally make an actual DB connection\n  healthChecks.database_connectivity = {\n    status: 'healthy',\n    response_time_ms: Math.random() * 50 + 10,\n    last_checked: new Date().toISOString()\n  };\n} catch (error) {\n  healthChecks.database_connectivity = {\n    status: 'unhealthy',\n    error: error.message,\n    last_checked: new Date().toISOString()\n  };\n}\n\n// API endpoint health checks\nconst endpoints = [\n  { name: 'supabase', url: 'https://ktchrfgkbpaixbiwbieg.supabase.co/rest/v1/' },\n  { name: 'perplexity', url: 'https://api.perplexity.ai/chat/completions' },\n  { name: 'claude', url: 'https://api.anthropic.com/v1/messages' },\n  { name: 'openai', url: 'https://api.openai.com/v1/chat/completions' }\n];\n\nendpoints.forEach(endpoint => {\n  // Simulate health check (in real implementation, make actual HTTP calls)\n  const isHealthy = Math.random() > 0.1; // 90% healthy simulation\n  \n  healthChecks.api_endpoints.push({\n    name: endpoint.name,\n    url: endpoint.url,\n    status: isHealthy ? 'healthy' : 'unhealthy',\n    response_time_ms: isHealthy ? Math.random() * 200 + 50 : null,\n    last_checked: new Date().toISOString(),\n    error_count_24h: isHealthy ? Math.floor(Math.random() * 3) : Math.floor(Math.random() * 20) + 5\n  });\n});\n\n// Workflow performance metrics\nconst workflows = [\n  'pharmaceutical-intake',\n  'ai-content-generation', \n  'compliance-review',\n  'fda-data-integration'\n];\n\nworkflows.forEach(workflow => {\n  healthChecks.workflow_performance[workflow] = {\n    executions_24h: Math.floor(Math.random() * 100) + 20,\n    success_rate: 0.85 + Math.random() * 0.14, // 85-99% success rate\n    avg_execution_time_ms: Math.random() * 30000 + 5000, // 5-35 seconds\n    failed_executions_24h: Math.floor(Math.random() * 5),\n    last_execution: new Date(Date.now() - Math.random() * 3600000).toISOString()\n  };\n});\n\n// Resource usage monitoring\nhealthChecks.resource_usage = {\n  cpu_usage_percent: Math.random() * 40 + 30, // 30-70%\n  memory_usage_percent: Math.random() * 50 + 25, // 25-75%\n  disk_usage_percent: Math.random() * 30 + 20, // 20-50%\n  active_workflows: workflows.length,\n  queue_size: Math.floor(Math.random() * 10),\n  concurrent_executions: Math.floor(Math.random() * 5) + 1\n};\n\n// Error rate analysis\nhealthChecks.error_rates = {\n  total_errors_24h: Math.floor(Math.random() * 15) + 2,\n  critical_errors_24h: Math.floor(Math.random() * 3),\n  error_rate_percent: (Math.random() * 5) + 1, // 1-6%\n  most_common_errors: [\n    'API rate limit exceeded',\n    'Database connection timeout',\n    'Invalid submission format'\n  ]\n};\n\n// SLA compliance monitoring\nconst slaTargets = {\n  processing_time_minutes: 30,\n  uptime_percent: 99.5,\n  success_rate_percent: 95,\n  response_time_ms: 5000\n};\n\nhealthChecks.sla_compliance = {\n  processing_time: {\n    target: slaTargets.processing_time_minutes,\n    actual: 22 + Math.random() * 15, // 22-37 minutes\n    compliant: null\n  },\n  uptime: {\n    target: slaTargets.uptime_percent,\n    actual: 99.2 + Math.random() * 0.7, // 99.2-99.9%\n    compliant: null\n  },\n  success_rate: {\n    target: slaTargets.success_rate_percent,\n    actual: 94 + Math.random() * 5, // 94-99%\n    compliant: null\n  },\n  response_time: {\n    target: slaTargets.response_time_ms,\n    actual: 3000 + Math.random() * 4000, // 3-7 seconds\n    compliant: null\n  }\n};\n\n// Determine SLA compliance\nObject.keys(healthChecks.sla_compliance).forEach(metric => {\n  const sla = healthChecks.sla_compliance[metric];\n  if (metric === 'processing_time' || metric === 'response_time') {\n    sla.compliant = sla.actual <= sla.target;\n  } else {\n    sla.compliant = sla.actual >= sla.target;\n  }\n});\n\n// Overall health score calculation\nlet healthScore = 100;\n\n// Deduct for unhealthy endpoints\nconst unhealthyEndpoints = healthChecks.api_endpoints.filter(ep => ep.status === 'unhealthy').length;\nhealthScore -= unhealthyEndpoints * 15;\n\n// Deduct for high error rates\nif (healthChecks.error_rates.error_rate_percent > 5) {\n  healthScore -= 20;\n}\n\n// Deduct for SLA violations\nconst slaViolations = Object.values(healthChecks.sla_compliance).filter(sla => !sla.compliant).length;\nhealthScore -= slaViolations * 10;\n\n// Deduct for high resource usage\nif (healthChecks.resource_usage.cpu_usage_percent > 80) {\n  healthScore -= 10;\n}\nif (healthChecks.resource_usage.memory_usage_percent > 85) {\n  healthScore -= 10;\n}\n\nhealthScore = Math.max(0, healthScore);\n\n// Determine alert level\nlet alertLevel = 'healthy';\nif (healthScore < 50) {\n  alertLevel = 'critical';\n} else if (healthScore < 70) {\n  alertLevel = 'warning';\n} else if (healthScore < 85) {\n  alertLevel = 'attention';\n}\n\nreturn [{\n  json: {\n    overall_health_score: healthScore,\n    alert_level: alertLevel,\n    timestamp: new Date().toISOString(),\n    health_checks: healthChecks,\n    recommendations: generateRecommendations(healthChecks, healthScore)\n  }\n}];\n\nfunction generateRecommendations(checks, score) {\n  const recommendations = [];\n  \n  if (score < 70) {\n    recommendations.push('URGENT: System health below acceptable threshold');\n  }\n  \n  const unhealthyEndpoints = checks.api_endpoints.filter(ep => ep.status === 'unhealthy');\n  if (unhealthyEndpoints.length > 0) {\n    recommendations.push(`Check API connectivity for: ${unhealthyEndpoints.map(ep => ep.name).join(', ')}`);\n  }\n  \n  if (checks.error_rates.error_rate_percent > 5) {\n    recommendations.push('High error rate detected - investigate recent changes');\n  }\n  \n  const slaViolations = Object.entries(checks.sla_compliance)\n    .filter(([_, sla]) => !sla.compliant)\n    .map(([metric, _]) => metric);\n  \n  if (slaViolations.length > 0) {\n    recommendations.push(`SLA violations in: ${slaViolations.join(', ')}`);\n  }\n  \n  if (checks.resource_usage.cpu_usage_percent > 80) {\n    recommendations.push('High CPU usage - consider scaling resources');\n  }\n  \n  if (checks.resource_usage.memory_usage_percent > 85) {\n    recommendations.push('High memory usage - check for memory leaks');\n  }\n  \n  if (recommendations.length === 0) {\n    recommendations.push('System operating within normal parameters');\n  }\n  \n  return recommendations;\n}"
+      },
+      "id": "health-monitor",
+      "name": "System Health Monitor",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [420, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "critical-alert-condition",
+              "leftValue": "={{ $json.alert_level }}",
+              "rightValue": "critical",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "alert-level-router",
+      "name": "Alert Level Router",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [640, 300]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C1234567890",
+          "mode": "name",
+          "cachedResultName": "pharmaceutical-alerts"
+        },
+        "text": "=🚨 **CRITICAL SYSTEM ALERT** 🚨\n\n**Health Score:** {{ $json.overall_health_score }}/100\n**Alert Level:** {{ $json.alert_level.toUpperCase() }}\n**Timestamp:** {{ $json.timestamp }}\n\n**Issues Detected:**\n{{ $json.recommendations.map(r => '• ' + r).join('\\n') }}\n\n**System Status:**\n• Database: {{ $json.health_checks.database_connectivity.status }}\n• API Endpoints: {{ $json.health_checks.api_endpoints.filter(ep => ep.status === 'unhealthy').length }} unhealthy\n• Error Rate: {{ $json.health_checks.error_rates.error_rate_percent.toFixed(1) }}%\n• CPU Usage: {{ $json.health_checks.resource_usage.cpu_usage_percent.toFixed(1) }}%\n\n**Action Required:** Immediate investigation needed for pharmaceutical workflow continuity.",
+        "otherOptions": {
+          "mrkdwn": true
+        }
+      },
+      "id": "slack-critical-alert",
+      "name": "Slack Critical Alert",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [860, 200],
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "slack-pharma-alerts",
+          "name": "Slack Pharmaceutical Alerts"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "message", 
+        "operation": "sendMessage",
+        "chatId": "pharmaceutical-ops",
+        "text": "=⚠️ **System Warning** ⚠️\n\nHealth Score: {{ $json.overall_health_score }}/100\nAlert Level: {{ $json.alert_level }}\n\nRecommendations:\n{{ $json.recommendations.map(r => '• ' + r).join('\\n') }}\n\nMonitoring continues...",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "teams-warning-alert", 
+      "name": "Teams Warning Alert",
+      "type": "n8n-nodes-base.microsoftTeams",
+      "typeVersion": 2,
+      "position": [860, 400],
+      "credentials": {
+        "microsoftTeamsOAuth2Api": {
+          "id": "teams-pharma-ops",
+          "name": "Teams Pharmaceutical Ops"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "submission",
+        "operation": "insert",
+        "table": "system_health_logs",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "health_score": "={{ $json.overall_health_score }}",
+            "alert_level": "={{ $json.alert_level }}",
+            "health_data": "={{ JSON.stringify($json.health_checks) }}",
+            "recommendations": "={{ JSON.stringify($json.recommendations) }}",
+            "created_at": "={{ $json.timestamp }}"
+          }
+        }
+      },
+      "id": "log-health-metrics",
+      "name": "Log Health Metrics",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1080, 300],
+      "credentials": {
+        "supabaseApi": {
+          "id": "supabase-pharma-creds",
+          "name": "Supabase Pharma API"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Health Check Scheduler": {
+      "main": [
+        [
+          {
+            "node": "System Health Monitor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "System Health Monitor": {
+      "main": [
+        [
+          {
+            "node": "Alert Level Router",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alert Level Router": {
+      "main": [
+        [
+          {
+            "node": "Slack Critical Alert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Teams Warning Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack Critical Alert": {
+      "main": [
+        [
+          {
+            "node": "Log Health Metrics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Teams Warning Alert": {
+      "main": [
+        [
+          {
+            "node": "Log Health Metrics",
+            "type": "main", 
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

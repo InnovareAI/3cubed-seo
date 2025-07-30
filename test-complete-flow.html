@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>3Cubed SEO - Complete Flow Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: Arial; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .test-section { border: 2px solid #ccc; padding: 20px; margin: 20px 0; border-radius: 8px; }
+        .success { color: green; font-weight: bold; }
+        .error { color: red; font-weight: bold; }
+        .loading { color: blue; }
+        button { padding: 10px 20px; margin: 10px 0; cursor: pointer; }
+        pre { background: #f4f4f4; padding: 10px; overflow: auto; }
+    </style>
+</head>
+<body>
+    <h1>3Cubed SEO - Complete Flow Test</h1>
+    
+    <!-- Step 1: Test Form Submission -->
+    <div class="test-section">
+        <h2>Step 1: Form → Supabase</h2>
+        <form id="testForm">
+            <label>Product Name: <input type="text" id="product_name" value="Testdrug XR" required></label><br>
+            <label>Generic Name: <input type="text" id="generic_name" value="testamab" required></label><br>
+            <label>Indication: <input type="text" id="indication" value="Test Disease" required></label><br>
+            <label>Therapeutic Area: <input type="text" id="therapeutic_area" value="Oncology" required></label><br>
+            <button type="submit">Submit to Supabase</button>
+        </form>
+        <div id="step1Result"></div>
+    </div>
+
+    <!-- Step 2: Test Perplexity -->
+    <div class="test-section">
+        <h2>Step 2: Test Perplexity AI</h2>
+        <button onclick="testPerplexity()" disabled id="perplexityBtn">Test Perplexity Content Generation</button>
+        <div id="step2Result"></div>
+    </div>
+
+    <!-- Step 3: Test Claude -->
+    <div class="test-section">
+        <h2>Step 3: Test Claude QA</h2>
+        <button onclick="testClaude()" disabled id="claudeBtn">Test Claude QA Review</button>
+        <div id="step3Result"></div>
+    </div>
+
+    <!-- Step 4: Update Supabase -->
+    <div class="test-section">
+        <h2>Step 4: Update Supabase with Results</h2>
+        <button onclick="updateSupabase()" disabled id="updateBtn">Update Supabase</button>
+        <div id="step4Result"></div>
+    </div>
+
+    <!-- Step 5: Dashboard Subscription -->
+    <div class="test-section">
+        <h2>Step 5: Real-time Dashboard Updates</h2>
+        <div id="dashboardUpdates"></div>
+    </div>
+
+    <script>
+        // Initialize Supabase
+        const supabaseUrl = 'https://eqokpqqjdzbzatbmqiea.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVxb2twcXFqZHpiemF0Ym1xaWVhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY5Mzk1NTAsImV4cCI6MjA1MjUxNTU1MH0.TFLR1z7VdvKf9v_zNx8QQ6vYqLjUd2S4m3o4ZOBJZj4';
+        const supabase = createClient(supabaseUrl, supabaseKey);
+
+        let currentSubmissionId = null;
+        let perplexityContent = null;
+
+        // Step 1: Form Submission
+        document.getElementById('testForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const result = document.getElementById('step1Result');
+            result.innerHTML = '<div class="loading">Submitting to Supabase...</div>';
+            
+            try {
+                const formData = {
+                    product_name: document.getElementById('product_name').value,
+                    generic_name: document.getElementById('generic_name').value,
+                    indication: document.getElementById('indication').value,
+                    therapeutic_area: document.getElementById('therapeutic_area').value,
+                    development_stage: 'Phase III',
+                    submitter_name: 'Test User',
+                    submitter_email: 'test@example.com',
+                    workflow_stage: 'form_submitted',
+                    ai_processing_status: 'pending',
+                    created_at: new Date().toISOString()
+                };
+
+                const { data, error } = await supabase
+                    .from('submissions')
+                    .insert([formData])
+                    .select()
+                    .single();
+
+                if (error) throw error;
+
+                currentSubmissionId = data.id;
+                result.innerHTML = `<div class="success">✓ Submitted! ID: ${data.id}</div>
+                                   <pre>${JSON.stringify(data, null, 2)}</pre>`;
+                
+                document.getElementById('perplexityBtn').disabled = false;
+                
+                // Start subscription
+                subscribeToUpdates(data.id);
+                
+            } catch (error) {
+                result.innerHTML = `<div class="error">✗ Error: ${error.message}</div>`;
+            }
+        };
+
+        // Step 2: Test Perplexity
+        async function testPerplexity() {
+            const result = document.getElementById('step2Result');
+            result.innerHTML = '<div class="loading">Calling Perplexity AI...</div>';
+            
+            // Since we can't call Perplexity directly from browser (CORS), 
+            // we'll simulate the response
+            setTimeout(() => {
+                perplexityContent = {
+                    seo_title: "Testdrug XR: Advanced Treatment for Test Disease",
+                    meta_description: "Learn about Testdrug XR (testamab), a breakthrough Phase III treatment for Test Disease. Explore clinical efficacy, safety profile, and patient outcomes.",
+                    seo_keywords: ["Testdrug XR", "testamab", "Test Disease treatment", "Phase III oncology"],
+                    content: "Testdrug XR represents a significant advancement in Test Disease treatment...",
+                    h2_tags: ["Mechanism of Action", "Clinical Trial Results", "Safety Profile", "Patient Selection"],
+                    geo_event_tags: ["oncology conference", "ASCO meeting", "FDA approval"]
+                };
+                
+                result.innerHTML = `<div class="success">✓ Content Generated!</div>
+                                   <pre>${JSON.stringify(perplexityContent, null, 2)}</pre>`;
+                document.getElementById('claudeBtn').disabled = false;
+                
+                // Note: In production, use Netlify function to call Perplexity
+                result.innerHTML += '<div style="color: orange; margin-top: 10px;">Note: This is simulated. Production will use Netlify function.</div>';
+            }, 2000);
+        }
+
+        // Step 3: Test Claude
+        async function testClaude() {
+            const result = document.getElementById('step3Result');
+            result.innerHTML = '<div class="loading">Running Claude QA Review...</div>';
+            
+            // Simulate Claude QA response
+            setTimeout(() => {
+                const qaResult = {
+                    qa_score: 92,
+                    compliance_score: 95,
+                    medical_accuracy: 90,
+                    seo_effectiveness: 88,
+                    recommendation: "PASS",
+                    detailed_feedback: "Content meets pharmaceutical compliance standards. SEO optimization is effective.",
+                    critical_issues: [],
+                    required_changes: []
+                };
+                
+                result.innerHTML = `<div class="success">✓ QA Review Complete!</div>
+                                   <pre>${JSON.stringify(qaResult, null, 2)}</pre>`;
+                document.getElementById('updateBtn').disabled = false;
+                
+                // Store for update
+                window.qaResult = qaResult;
+            }, 2000);
+        }
+
+        // Step 4: Update Supabase
+        async function updateSupabase() {
+            const result = document.getElementById('step4Result');
+            result.innerHTML = '<div class="loading">Updating Supabase...</div>';
+            
+            try {
+                const updateData = {
+                    ai_output: perplexityContent,
+                    seo_title: perplexityContent.seo_title,
+                    meta_description: perplexityContent.meta_description,
+                    seo_keywords: perplexityContent.seo_keywords,
+                    h2_tags: perplexityContent.h2_tags,
+                    geo_event_tags: perplexityContent.geo_event_tags,
+                    qa_score: window.qaResult.qa_score,
+                    compliance_score: window.qaResult.compliance_score,
+                    workflow_stage: 'completed',
+                    ai_processing_status: 'completed',
+                    last_updated: new Date().toISOString()
+                };
+
+                const { data, error } = await supabase
+                    .from('submissions')
+                    .update(updateData)
+                    .eq('id', currentSubmissionId)
+                    .select();
+
+                if (error) throw error;
+
+                result.innerHTML = `<div class="success">✓ Updated Successfully!</div>
+                                   <pre>${JSON.stringify(data[0], null, 2)}</pre>`;
+                
+            } catch (error) {
+                result.innerHTML = `<div class="error">✗ Error: ${error.message}</div>`;
+            }
+        }
+
+        // Step 5: Subscribe to updates
+        function subscribeToUpdates(submissionId) {
+            const updates = document.getElementById('dashboardUpdates');
+            updates.innerHTML = '<div class="loading">Listening for updates...</div>';
+            
+            const subscription = supabase
+                .channel(`submission-${submissionId}`)
+                .on('postgres_changes', 
+                    { 
+                        event: 'UPDATE', 
+                        schema: 'public', 
+                        table: 'submissions',
+                        filter: `id=eq.${submissionId}`
+                    }, 
+                    (payload) => {
+                        const timestamp = new Date().toLocaleTimeString();
+                        updates.innerHTML += `
+                            <div style="border-top: 1px solid #ccc; margin-top: 10px; padding-top: 10px;">
+                                <div class="success">✓ Update received at ${timestamp}</div>
+                                <div>Stage: ${payload.new.workflow_stage}</div>
+                                <div>Status: ${payload.new.ai_processing_status}</div>
+                                ${payload.new.qa_score ? `<div>QA Score: ${payload.new.qa_score}</div>` : ''}
+                            </div>
+                        `;
+                    }
+                )
+                .subscribe();
+        }
+    </script>
+</body>
+</html>

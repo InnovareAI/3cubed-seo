@@ -1,0 +1,181 @@
+{
+  "name": "Pharmaceutical Batch Processing Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 6
+            }
+          ]
+        }
+      },
+      "id": "batch-scheduler",
+      "name": "Batch Processing Scheduler",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [200, 400]
+    },
+    {
+      "parameters": {
+        "resource": "submission",
+        "operation": "getAll",
+        "table": "submissions",
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "workflow_stage",
+              "keyValue": "pending_batch_processing"
+            },
+            {
+              "keyName": "priority_level",
+              "keyValue": "high,medium"
+            }
+          ]
+        },
+        "sort": {
+          "fields": [
+            {
+              "field": "priority_level",
+              "direction": "desc"
+            },
+            {
+              "field": "created_at",
+              "direction": "asc"
+            }
+          ]
+        },
+        "limit": 50
+      },
+      "id": "fetch-pending-submissions",
+      "name": "Fetch Pending Submissions",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [420, 400],
+      "credentials": {
+        "supabaseApi": {
+          "id": "supabase-pharma-creds",
+          "name": "Supabase Pharma API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Intelligent Batch Processing Algorithm\nconst submissions = items.map(item => item.json);\n\nif (submissions.length === 0) {\n  return [{ json: { message: 'No submissions found for batch processing' } }];\n}\n\n// Group submissions by processing characteristics\nconst processingGroups = {\n  high_priority_oncology: [],\n  high_priority_other: [],\n  medium_priority_complex: [],\n  medium_priority_standard: [],\n  low_priority: []\n};\n\nsubmissions.forEach(submission => {\n  const priority = submission.priority_level;\n  const therapeutic = submission.therapeutic_area;\n  const complexity = calculateComplexity(submission);\n  \n  if (priority === 'high' && therapeutic === 'Oncology') {\n    processingGroups.high_priority_oncology.push(submission);\n  } else if (priority === 'high') {\n    processingGroups.high_priority_other.push(submission);\n  } else if (priority === 'medium' && complexity > 0.7) {\n    processingGroups.medium_priority_complex.push(submission);\n  } else if (priority === 'medium') {\n    processingGroups.medium_priority_standard.push(submission);\n  } else {\n    processingGroups.low_priority.push(submission);\n  }\n});\n\n// Create optimized batch configuration\nconst batchConfig = {\n  batch_id: generateBatchId(),\n  total_submissions: submissions.length,\n  processing_groups: processingGroups,\n  batch_strategy: determineBatchStrategy(processingGroups),\n  resource_allocation: calculateResourceAllocation(processingGroups),\n  estimated_processing_time: estimateProcessingTime(processingGroups),\n  parallel_processing_limit: 10,\n  created_at: new Date().toISOString()\n};\n\n// Create processing batches with optimal sizing\nconst processingBatches = [];\n\n// Process high priority oncology first (batch size: 5)\nif (processingGroups.high_priority_oncology.length > 0) {\n  const batches = chunkArray(processingGroups.high_priority_oncology, 5);\n  batches.forEach((batch, index) => {\n    processingBatches.push({\n      batch_number: processingBatches.length + 1,\n      batch_type: 'high_priority_oncology',\n      submissions: batch,\n      processing_priority: 1,\n      resource_allocation: 'high',\n      ai_provider_preference: 'claude',\n      estimated_time_minutes: batch.length * 8,\n      parallel_limit: 3\n    });\n  });\n}\n\n// Process other high priority (batch size: 8)\nif (processingGroups.high_priority_other.length > 0) {\n  const batches = chunkArray(processingGroups.high_priority_other, 8);\n  batches.forEach((batch, index) => {\n    processingBatches.push({\n      batch_number: processingBatches.length + 1,\n      batch_type: 'high_priority_other',\n      submissions: batch,\n      processing_priority: 2,\n      resource_allocation: 'high',\n      ai_provider_preference: 'gpt4',\n      estimated_time_minutes: batch.length * 6,\n      parallel_limit: 4\n    });\n  });\n}\n\n// Process medium priority complex (batch size: 6)\nif (processingGroups.medium_priority_complex.length > 0) {\n  const batches = chunkArray(processingGroups.medium_priority_complex, 6);\n  batches.forEach((batch, index) => {\n    processingBatches.push({\n      batch_number: processingBatches.length + 1,\n      batch_type: 'medium_priority_complex',\n      submissions: batch,\n      processing_priority: 3,\n      resource_allocation: 'medium',\n      ai_provider_preference: 'claude',\n      estimated_time_minutes: batch.length * 7,\n      parallel_limit: 3\n    });\n  });\n}\n\n// Process medium priority standard (batch size: 10)\nif (processingGroups.medium_priority_standard.length > 0) {\n  const batches = chunkArray(processingGroups.medium_priority_standard, 10);\n  batches.forEach((batch, index) => {\n    processingBatches.push({\n      batch_number: processingBatches.length + 1,\n      batch_type: 'medium_priority_standard',\n      submissions: batch,\n      processing_priority: 4,\n      resource_allocation: 'medium',\n      ai_provider_preference: 'perplexity',\n      estimated_time_minutes: batch.length * 4,\n      parallel_limit: 5\n    });\n  });\n}\n\n// Process low priority (batch size: 15)\nif (processingGroups.low_priority.length > 0) {\n  const batches = chunkArray(processingGroups.low_priority, 15);\n  batches.forEach((batch, index) => {\n    processingBatches.push({\n      batch_number: processingBatches.length + 1,\n      batch_type: 'low_priority',\n      submissions: batch,\n      processing_priority: 5,\n      resource_allocation: 'low',\n      ai_provider_preference: 'perplexity',\n      estimated_time_minutes: batch.length * 3,\n      parallel_limit: 6\n    });\n  });\n}\n\nreturn [{\n  json: {\n    batch_configuration: batchConfig,\n    processing_batches: processingBatches,\n    execution_plan: {\n      total_batches: processingBatches.length,\n      estimated_total_time_minutes: processingBatches.reduce((sum, batch) => sum + batch.estimated_time_minutes, 0),\n      resource_requirements: calculateTotalResourceRequirements(processingBatches),\n      processing_order: processingBatches.map(batch => ({\n        batch_number: batch.batch_number,\n        type: batch.batch_type,\n        count: batch.submissions.length,\n        priority: batch.processing_priority\n      }))\n    }\n  }\n}];\n\nfunction calculateComplexity(submission) {\n  let complexity = 0.5; // base complexity\n  \n  if (submission.therapeutic_area === 'Oncology') complexity += 0.2;\n  if (submission.therapeutic_area === 'Rare Disease') complexity += 0.3;\n  if (submission.mechanism_of_action?.includes('novel')) complexity += 0.1;\n  if (submission.development_stage === 'Phase III') complexity += 0.1;\n  \n  return Math.min(complexity, 1.0);\n}\n\nfunction generateBatchId() {\n  return `BATCH-${new Date().toISOString().slice(0, 10)}-${Math.random().toString(36).substr(2, 6)}`;\n}\n\nfunction determineBatchStrategy(groups) {\n  const totalSubmissions = Object.values(groups).reduce((sum, group) => sum + group.length, 0);\n  \n  if (totalSubmissions > 30) {\n    return 'parallel_processing';\n  } else if (totalSubmissions > 15) {\n    return 'sequential_with_overlap';\n  } else {\n    return 'sequential';\n  }\n}\n\nfunction calculateResourceAllocation(groups) {\n  return {\n    cpu_cores: Math.min(16, Math.max(4, Object.values(groups).reduce((sum, group) => sum + group.length, 0) / 5)),\n    memory_gb: Math.min(32, Math.max(8, Object.values(groups).reduce((sum, group) => sum + group.length, 0) / 3)),\n    api_rate_limit_buffer: 0.8, // Use 80% of rate limits\n    concurrent_ai_calls: Math.min(10, Math.max(3, groups.high_priority_oncology.length + groups.high_priority_other.length))\n  };\n}\n\nfunction estimateProcessingTime(groups) {\n  const processingTimes = {\n    high_priority_oncology: 8, // minutes per submission\n    high_priority_other: 6,\n    medium_priority_complex: 7,\n    medium_priority_standard: 4,\n    low_priority: 3\n  };\n  \n  let totalTime = 0;\n  Object.entries(groups).forEach(([groupName, submissions]) => {\n    totalTime += submissions.length * processingTimes[groupName];\n  });\n  \n  return {\n    sequential_time_minutes: totalTime,\n    parallel_time_minutes: Math.ceil(totalTime / 4), // Assuming 4x parallelization\n    estimated_completion: new Date(Date.now() + (totalTime / 4) * 60000).toISOString()\n  };\n}\n\nfunction calculateTotalResourceRequirements(batches) {\n  return {\n    total_api_calls: batches.reduce((sum, batch) => sum + batch.submissions.length * 3, 0), // 3 calls per submission\n    peak_concurrent_processing: Math.max(...batches.map(b => b.parallel_limit)),\n    estimated_cost_usd: batches.reduce((sum, batch) => {\n      const costPerSubmission = {\n        high_priority_oncology: 0.25,\n        high_priority_other: 0.20,\n        medium_priority_complex: 0.18,\n        medium_priority_standard: 0.12,\n        low_priority: 0.08\n      };\n      return sum + (batch.submissions.length * costPerSubmission[batch.batch_type]);\n    }, 0)\n  };\n}\n\nfunction chunkArray(array, chunkSize) {\n  const chunks = [];\n  for (let i = 0; i < array.length; i += chunkSize) {\n    chunks.push(array.slice(i, i + chunkSize));\n  }\n  return chunks;\n}"
+      },
+      "id": "batch-optimizer",
+      "name": "Intelligent Batch Optimizer",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [640, 400]
+    },
+    {
+      "parameters": {
+        "batchSize": "={{ $json.execution_plan.total_batches }}",
+        "options": {
+          "reset": false
+        }
+      },
+      "id": "batch-splitter",
+      "name": "Batch Splitter",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [860, 400]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "current-batch",
+              "name": "current_batch",
+              "value": "={{ $json.processing_batches[$('Batch Splitter').item.json.$index] }}",
+              "type": "object"
+            },
+            {
+              "id": "batch-progress",
+              "name": "batch_progress",
+              "value": "={{ { current: $('Batch Splitter').item.json.$index + 1, total: $json.execution_plan.total_batches, percentage: Math.round((($('Batch Splitter').item.json.$index + 1) / $json.execution_plan.total_batches) * 100) } }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "batch-context",
+      "name": "Set Batch Context",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1080, 400]
+    },
+    {
+      "parameters": {
+        "resource": "submission",
+        "operation": "update",
+        "table": "submissions",
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $json.current_batch.submissions.map(s => s.id) }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",\n          \"value\": {\n            \"workflow_stage\": \"batch_processing\",\n            \"ai_processing_status\": \"processing\",\n            \"batch_id\": \"={{ $json.batch_configuration.batch_id }}\",\n            \"batch_number\": \"={{ $json.current_batch.batch_number }}\",\n            \"processing_started_at\": \"={{ $now.toISOString() }}\"\n          }\n        }\n      },\n      \"id\": \"update-batch-status\",\n      \"name\": \"Update Batch Processing Status\",\n      \"type\": \"n8n-nodes-base.supabase\",\n      \"typeVersion\": 1,\n      \"position\": [1300, 400],\n      \"credentials\": {\n        \"supabaseApi\": {\n          \"id\": \"supabase-pharma-creds\",\n          \"name\": \"Supabase Pharma API\"\n        }\n      }\n    },\n    {\n      \"parameters\": {\n        \"batchSize\": \"={{ $json.current_batch.parallel_limit }}\",\n        \"options\": {\n          \"reset\": false\n        }\n      },\n      \"id\": \"parallel-processor\",\n      \"name\": \"Parallel Submission Processor\",\n      \"type\": \"n8n-nodes-base.splitInBatches\",\n      \"typeVersion\": 3,\n      \"position\": [1520, 400]\n    },\n    {\n      \"parameters\": {\n        \"conditions\": {\n          \"options\": {\n            \"caseSensitive\": true,\n            \"leftValue\": \"\",\n            \"typeValidation\": \"strict\"\n          },\n          \"conditions\": [\n            {\n              \"id\": \"ai-provider-routing\",\n              \"leftValue\": \"={{ $json.current_batch.ai_provider_preference }}\",\n              \"rightValue\": \"claude\",\n              \"operator\": {\n                \"type\": \"string\",\n                \"operation\": \"equals\"\n              }\n            }\n          ],\n          \"combinator\": \"and\"\n        },\n        \"options\": {}\n      },\n      \"id\": \"ai-provider-router\",\n      \"name\": \"AI Provider Router\",\n      \"type\": \"n8n-nodes-base.if\",\n      \"typeVersion\": 2,\n      \"position\": [1740, 400]\n    },\n    {\n      \"parameters\": {\n        \"authentication\": \"oAuth2\",\n        \"select\": \"channel\",\n        \"channelId\": {\n          \"__rl\": true,\n          \"value\": \"C1234567890\",\n          \"mode\": \"name\",\n          \"cachedResultName\": \"batch-processing\"\n        },\n        \"text\": \"=📊 **Batch Processing Update** 📊\\n\\n**Batch ID:** {{ $json.batch_configuration.batch_id }}\\n**Progress:** {{ $json.batch_progress.current }}/{{ $json.batch_progress.total }} ({{ $json.batch_progress.percentage }}%)\\n**Current Batch:** {{ $json.current_batch.batch_type }}\\n**Submissions:** {{ $json.current_batch.submissions.length }}\\n**AI Provider:** {{ $json.current_batch.ai_provider_preference }}\\n**Estimated Time:** {{ $json.current_batch.estimated_time_minutes }} minutes\\n\\n**Status:** Processing in progress...\",\n        \"otherOptions\": {\n          \"mrkdwn\": true\n        }\n      },\n      \"id\": \"batch-progress-notification\",\n      \"name\": \"Batch Progress Notification\",\n      \"type\": \"n8n-nodes-base.slack\",\n      \"typeVersion\": 2.2,\n      \"position\": [1960, 200],\n      \"credentials\": {\n        \"slackOAuth2Api\": {\n          \"id\": \"slack-pharma-alerts\",\n          \"name\": \"Slack Pharmaceutical Alerts\"\n        }\n      }\n    }\n  ],\n  \"connections\": {\n    \"Batch Processing Scheduler\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Fetch Pending Submissions\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Fetch Pending Submissions\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Intelligent Batch Optimizer\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Intelligent Batch Optimizer\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Batch Splitter\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Batch Splitter\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Set Batch Context\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Set Batch Context\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Update Batch Processing Status\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Update Batch Processing Status\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Parallel Submission Processor\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Parallel Submission Processor\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"AI Provider Router\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"AI Provider Router\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Batch Progress Notification\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    }\n  }\n}"
+      ],
+      "id": "update-batch-status",
+      "name": "Update Batch Processing Status",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1300, 400],
+      "credentials": {
+        "supabaseApi": {
+          "id": "supabase-pharma-creds",
+          "name": "Supabase Pharma API"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Batch Processing Scheduler": {
+      "main": [
+        [
+          {
+            "node": "Fetch Pending Submissions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Pending Submissions": {
+      "main": [
+        [
+          {
+            "node": "Intelligent Batch Optimizer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Intelligent Batch Optimizer": {
+      "main": [
+        [
+          {
+            "node": "Batch Splitter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

@@ -1,0 +1,111 @@
+{
+  "name": "Extended Integration Hub",
+  "nodes": [
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "record",
+        "operation": "create",
+        "application": "appXXXXXXXXXXXXXX",
+        "table": "Pharmaceutical Submissions",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Product Name": "={{ $json.product_name }}",
+            "Status": "={{ $json.workflow_stage }}",
+            "Therapeutic Area": "={{ $json.therapeutic_area }}",
+            "QA Score": "={{ $json.qa_score }}",
+            "Created": "={{ $json.created_at }}"
+          }
+        }
+      },
+      "id": "airtable-sync",
+      "name": "Airtable CRM Sync",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 1,
+      "position": [200, 200]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "contact",
+        "operation": "upsert",
+        "properties": {
+          "email": "={{ $json.submitter_email }}",
+          "firstname": "={{ $json.submitter_name.split(' ')[0] }}",
+          "lastname": "={{ $json.submitter_name.split(' ')[1] }}",
+          "company": "Pharmaceutical Company",
+          "hs_lead_status": "NEW"
+        }
+      },
+      "id": "hubspot-sync",
+      "name": "HubSpot CRM Integration",
+      "type": "n8n-nodes-base.hubspot",
+      "typeVersion": 2,
+      "position": [200, 400]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "chatId": "@pharmaceutical_team",
+        "text": "=📊 **New Pharmaceutical Submission**\\n\\n**Product:** {{ $json.product_name }}\\n**Area:** {{ $json.therapeutic_area }}\\n**Status:** {{ $json.workflow_stage }}\\n**QA Score:** {{ $json.qa_score || 'Pending' }}\\n\\n[View Details](https://dashboard.pharma.com/submission/{{ $json.id }})"
+      },
+      "id": "telegram-notification",
+      "name": "Telegram Team Notification",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [200, 600]
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "resource": "spreadsheet",
+        "operation": "appendRow",
+        "documentId": {
+          "__rl": true,
+          "value": "1ABC123DEF456GHI789JKL",
+          "mode": "id"
+        },
+        "sheetName": "Pharmaceutical Data",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "A": "={{ $json.created_at }}",
+            "B": "={{ $json.product_name }}",
+            "C": "={{ $json.therapeutic_area }}",
+            "D": "={{ $json.workflow_stage }}",
+            "E": "={{ $json.qa_score }}",
+            "F": "={{ $json.medical_accuracy_score }}"
+          }
+        }
+      },
+      "id": "google-sheets-log",
+      "name": "Google Sheets Analytics Log",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [400, 200]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "file",
+        "operation": "upload",
+        "folderId": {
+          "__rl": true,
+          "value": "1BCD234EFG567HIJ890KLM",
+          "mode": "id"
+        },
+        "name": "={{ 'submission-' + $json.id + '-content.txt' }}",
+        "options": {
+          "description": "AI-generated pharmaceutical content for {{ $json.product_name }}"
+        }
+      },
+      "id": "google-drive-backup",
+      "name": "Google Drive Content Backup",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [400, 400]
+    }
+  ]
+}

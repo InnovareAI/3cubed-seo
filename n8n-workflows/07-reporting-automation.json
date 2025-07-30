@@ -1,0 +1,36 @@
+{
+  "name": "Automated Pharmaceutical Reporting System",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weekDays",
+              "weekDays": [1]
+            },
+            {
+              "field": "hours",
+              "hoursInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "weekly-report-trigger",
+      "name": "Weekly Report Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [200, 400]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Comprehensive Pharmaceutical Analytics Report Generator\nconst reportData = {\n  report_id: `RPT-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,\n  report_type: 'weekly_analytics',\n  generated_at: new Date().toISOString(),\n  period: {\n    start_date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),\n    end_date: new Date().toISOString()\n  }\n};\n\n// Simulate comprehensive analytics data\nreportData.submission_metrics = {\n  total_submissions: 47,\n  completed_submissions: 38,\n  pending_submissions: 9,\n  success_rate: 80.9,\n  avg_processing_time_hours: 4.2,\n  therapeutic_area_breakdown: {\n    'Oncology': { count: 18, success_rate: 83.3 },\n    'Cardiology': { count: 12, success_rate: 91.7 },\n    'Neurology': { count: 8, success_rate: 75.0 },\n    'Other': { count: 9, success_rate: 77.8 }\n  }\n};\n\nreportData.ai_performance = {\n  claude_usage: { count: 28, avg_score: 87.3, cost_usd: 4.20 },\n  gpt4_usage: { count: 15, avg_score: 84.1, cost_usd: 3.75 },\n  perplexity_usage: { count: 12, avg_score: 81.9, cost_usd: 1.80 },\n  total_ai_cost: 9.75,\n  consensus_accuracy: 89.2\n};\n\nreportData.compliance_metrics = {\n  fda_compliance_rate: 94.7,\n  medical_accuracy_avg: 88.4,\n  legal_risk_avg: 15.2, // Lower is better\n  mlr_approval_rate: 91.5,\n  critical_issues: 2,\n  warnings_issued: 7\n};\n\nreportData.quality_metrics = {\n  avg_qa_score: 86.8,\n  grade_a_percentage: 34.0,\n  grade_b_percentage: 45.7,\n  grade_c_percentage: 17.0,\n  grade_f_percentage: 3.3,\n  improvement_trend: '+2.4%'\n};\n\nreportData.operational_metrics = {\n  system_uptime: 99.8,\n  avg_response_time_ms: 247,\n  api_errors: 3,\n  batch_processing_efficiency: 87.2,\n  resource_utilization: 68.5\n};\n\nreportData.user_activity = {\n  active_users: 23,\n  new_users: 4,\n  top_contributors: [\n    { name: 'Dr. Sarah Johnson', submissions: 8, avg_score: 91.2 },\n    { name: 'Mike Chen', submissions: 6, avg_score: 87.8 },\n    { name: 'Lisa Rodriguez', submissions: 5, avg_score: 89.4 }\n  ]\n};\n\nreportData.recommendations = [\n  'Increase Claude AI usage for oncology submissions (higher accuracy)',\n  'Review and improve cardiovascular content templates',\n  'Consider additional medical reviewer for peak periods',\n  'Optimize batch processing for better resource utilization'\n];\n\nreportData.alerts = [\n  { level: 'warning', message: 'API error rate slightly elevated (0.3%)', action: 'Monitor closely' },\n  { level: 'info', message: 'New therapeutic area requests increasing', action: 'Consider expansion' }\n];\n\nreturn [{ json: reportData }];"
+      },
+      "id": "report-generator",
+      "name": "Analytics Report Generator",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [420, 400]
+    }
+  ]
+}
