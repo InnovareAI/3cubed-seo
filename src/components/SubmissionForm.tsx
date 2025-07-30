@@ -244,6 +244,8 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         }
       });
 
+      console.log('About to submit data:', submissionData);
+
       const { error: supabaseError } = await supabase
         .from('submissions')
         .insert([submissionData]);
@@ -279,7 +281,18 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
       if (onClose) onClose();
     } catch (err) {
       console.error('Error submitting form:', err);
-      setError(`Failed to submit form: ${err instanceof Error ? err.message : 'Unknown error'}. Please try again.`);
+      console.error('Submission data that failed:', submissionData);
+      
+      let errorMessage = 'Unknown error';
+      if (err instanceof Error) {
+        errorMessage = err.message;
+      } else if (typeof err === 'object' && err !== null) {
+        errorMessage = JSON.stringify(err);
+      } else if (typeof err === 'string') {
+        errorMessage = err;
+      }
+      
+      setError(`Failed to submit form: ${errorMessage}. Please check the browser console for more details.`);
     } finally {
       setIsSubmitting(false);
     }
