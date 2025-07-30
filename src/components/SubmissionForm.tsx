@@ -193,9 +193,8 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         submitter_name: formData.seo_reviewer_name,
         submitter_email: formData.seo_reviewer_email,
         
-        // Basic required fields that should exist
+        // Only the most basic fields
         target_audience: ['Healthcare Professionals'],
-        stage: formData.development_stage || 'Not Specified',
         priority_level: 'Medium',
         workflow_stage: 'draft'
       };
