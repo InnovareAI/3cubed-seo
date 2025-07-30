@@ -1,5 +1,4 @@
 import React, { useState, useMemo } from 'react';
-import { supabase } from '../lib/supabase';
 import { THERAPEUTIC_AREAS } from '../constants/therapeuticAreas';
 import { CheckCircle } from 'lucide-react';
 
