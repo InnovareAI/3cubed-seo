@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { supabase } from '../lib/supabase';
 import { THERAPEUTIC_AREAS } from '../constants/therapeuticAreas';
 import { CheckCircle } from 'lucide-react';
 
@@ -238,16 +239,34 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         }
       });
 
-      console.log('🚀 About to submit data to n8n webhook:', submissionData);
+      console.log('🚀 About to create submission record in Supabase:', submissionData);
 
       try {
-        // Submit to n8n webhook for processing
+        // Step 1: Create submission record in Supabase
+        const { data: insertedData, error: supabaseError } = await supabase
+          .from('submissions')
+          .insert([submissionData])
+          .select();
+
+        if (supabaseError) throw supabaseError;
+        
+        const submissionId = insertedData[0].id;
+        console.log('✅ Created submission record:', submissionId);
+
+        // Step 2: Trigger n8n workflow with submission ID
+        const webhookPayload = {
+          submission_id: submissionId,
+          trigger_source: 'form_submission'
+        };
+        
+        console.log('🚀 Triggering n8n workflow with payload:', webhookPayload);
+        
         const webhookResponse = await fetch('https://innovareai.app.n8n.cloud/webhook/hP9yZxUjmBKJmrZt', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(submissionData)
+          body: JSON.stringify(webhookPayload)
         });
 
         console.log('Webhook response status:', webhookResponse.status, webhookResponse.statusText);
@@ -278,6 +297,7 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         }
         
         console.log('✅ Data successfully sent to n8n webhook:', webhookData);
+        console.log('🎉 Full submission flow completed - record created and workflow triggered');
 
         // Show success modal (user must dismiss manually)
         setShowSuccessMessage(true);
