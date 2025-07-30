@@ -251,9 +251,8 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
 
         console.log('✅ Data successfully inserted into Supabase:', insertedData);
 
-        // Show success message
+        // Show success modal (user must dismiss manually)
         setShowSuccessMessage(true);
-        setTimeout(() => setShowSuccessMessage(false), 4000);
 
         // Reset form
         setFormData({
@@ -303,12 +302,29 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
 
   return (
     <>
-      {/* Success Message */}
+      {/* Success Modal */}
       {showSuccessMessage && (
-        <div className="fixed top-4 right-4 z-50 bg-green-50 border border-green-200 rounded-lg p-4 shadow-lg">
-          <div className="flex items-center gap-2">
-            <CheckCircle className="h-5 w-5 text-green-600" />
-            <p className="text-sm font-medium text-green-800">SEO content request submitted successfully!</p>
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+            <div className="flex items-center justify-center mb-4">
+              <div className="bg-green-100 rounded-full p-3">
+                <CheckCircle className="h-8 w-8 text-green-600" />
+              </div>
+            </div>
+            <div className="text-center">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Success!
+              </h3>
+              <p className="text-gray-600 mb-6">
+                Your SEO content request has been submitted successfully and is now being processed.
+              </p>
+              <button
+                onClick={() => setShowSuccessMessage(false)}
+                className="w-full bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+              >
+                Continue
+              </button>
+            </div>
           </div>
         </div>
       )}
