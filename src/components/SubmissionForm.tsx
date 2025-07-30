@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import { THERAPEUTIC_AREAS } from '../constants/therapeuticAreas';
+import { CheckCircle } from 'lucide-react';
 
 interface SubmissionFormProps {
   onSuccess?: () => void;
@@ -39,6 +40,7 @@ interface FormData {
 }
 
 export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClose }) => {
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     // Section 1
     product_name: '',
@@ -246,6 +248,10 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
 
         if (supabaseError) throw supabaseError;
 
+        // Show success message
+        setShowSuccessMessage(true);
+        setTimeout(() => setShowSuccessMessage(false), 4000);
+
         // Reset form
         setFormData({
           product_name: '',
@@ -293,12 +299,23 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {error && (
-        <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm">
-          {error}
+    <>
+      {/* Success Message */}
+      {showSuccessMessage && (
+        <div className="fixed top-4 right-4 z-50 bg-green-50 border border-green-200 rounded-lg p-4 shadow-lg">
+          <div className="flex items-center gap-2">
+            <CheckCircle className="h-5 w-5 text-green-600" />
+            <p className="text-sm font-medium text-green-800">SEO content request submitted successfully!</p>
+          </div>
         </div>
       )}
+      
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {error && (
+          <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm">
+            {error}
+          </div>
+        )}
 
       {/* Progress Bar */}
       <div className="bg-white p-4 rounded-lg border border-gray-200">
@@ -868,5 +885,6 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         </button>
       </div>
     </form>
+    </>
   );
 };
