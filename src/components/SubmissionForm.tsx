@@ -193,8 +193,7 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         submitter_name: formData.seo_reviewer_name,
         submitter_email: formData.seo_reviewer_email,
         
-        // Only the most basic fields
-        target_audience: ['Healthcare Professionals'],
+        // Only the absolutely essential fields
         priority_level: 'Medium',
         workflow_stage: 'draft'
       };
