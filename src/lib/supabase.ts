@@ -207,6 +207,11 @@ export interface ContentPiece {
   seo_reviewed_at?: string
   seo_reviewed_by?: string
   
+  // AI-generated SEO fields
+  seo_title?: string
+  geo_event_tags?: string[]
+  seo_strategy_outline?: string
+  
   // Relations
   project?: Project
   seo_reviewer?: User

@@ -15,7 +15,6 @@ import {
   Hash,
   FileText,
   Brain,
-  Code,
   Target,
   Globe,
   Calendar,
@@ -23,7 +22,6 @@ import {
   Users,
   Pill,
   XCircle,
-  Copy,
   Shield
 } from 'lucide-react'
 import { format } from 'date-fns'

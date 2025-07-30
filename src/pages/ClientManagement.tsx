@@ -19,7 +19,6 @@ import {
   BarChart,
   User,
   CheckCircle,
-  Trash2,
   X
 } from 'lucide-react'
 
@@ -213,61 +212,61 @@ export default function ClientManagement() {
     setExpandedClient(expandedClient === clientId ? null : clientId)
   }
 
-  const handleEditClient = (client: ExtendedClient) => {
-    setEditingClient(client)
-    setNewClient({
-      name: client.name,
-      company_domain: client.company_domain,
-      contact_name: client.contact_name || '',
-      contact_email: client.contact_email || '',
-      status: client.status,
-      phone: client.phone || '',
-      address: '',
-      contract_type: 'annual',
-      therapeutic_areas: client.therapeutic_areas || [],
-      compliance_requirements: {
-        fda_regulated: true,
-        ema_regulated: false,
-        other_regulations: ''
-      }
-    })
-    setIsAddingClient(true)
-  }
+  // const handleEditClient = (client: ExtendedClient) => {
+  //   setEditingClient(client)
+  //   setNewClient({
+  //     name: client.name,
+  //     company_domain: client.company_domain,
+  //     contact_name: client.contact_name || '',
+  //     contact_email: client.contact_email || '',
+  //     status: client.status,
+  //     phone: client.phone || '',
+  //     address: '',
+  //     contract_type: 'annual',
+  //     therapeutic_areas: client.therapeutic_areas || [],
+  //     compliance_requirements: {
+  //       fda_regulated: true,
+  //       ema_regulated: false,
+  //       other_regulations: ''
+  //     }
+  //   })
+  //   setIsAddingClient(true)
+  // }
 
-  const handleUpdateClient = async () => {
-    if (!editingClient) return
+  // const handleUpdateClient = async () => {
+  //   if (!editingClient) return
     
-    if (!newClient.name || !newClient.company_domain || !newClient.contact_name || !newClient.contact_email) {
-      alert('Please fill in all required fields')
-      return
-    }
+  //   if (!newClient.name || !newClient.company_domain || !newClient.contact_name || !newClient.contact_email) {
+  //     alert('Please fill in all required fields')
+  //     return
+  //   }
 
-    if (useDemoData) {
-      // Update in local state
-      const updatedClients = localClients.map(client => 
-        client.id === editingClient.id 
-          ? {
-              ...client,
-              ...newClient,
-              updated_at: new Date().toISOString()
-            }
-          : client
-      )
-      setLocalClients(updatedClients)
-      setIsAddingClient(false)
-      setEditingClient(null)
-      resetNewClient()
-      showSuccess('Client updated successfully!')
-    }
-  }
+  //   if (useDemoData) {
+  //     // Update in local state
+  //     const updatedClients = localClients.map(client => 
+  //       client.id === editingClient.id 
+  //         ? {
+  //             ...client,
+  //             ...newClient,
+  //             updated_at: new Date().toISOString()
+  //           }
+  //         : client
+  //     )
+  //     setLocalClients(updatedClients)
+  //     setIsAddingClient(false)
+  //     setEditingClient(null)
+  //     resetNewClient()
+  //     showSuccess('Client updated successfully!')
+  //   }
+  // }
 
-  const handleDeleteClient = async (clientId: string) => {
-    if (useDemoData) {
-      setLocalClients(localClients.filter(client => client.id !== clientId))
-      setShowDeleteConfirm(null)
-      showSuccess('Client deleted successfully!')
-    }
-  }
+  // const handleDeleteClient = async (clientId: string) => {
+  //   if (useDemoData) {
+  //     setLocalClients(localClients.filter(client => client.id !== clientId))
+  //     setShowDeleteConfirm(null)
+  //     showSuccess('Client deleted successfully!')
+  //   }
+  // }
 
   const therapeuticAreaOptions = [
     'Oncology', 'Cardiology', 'Neurology', 'Rheumatology', 'Immunology',
