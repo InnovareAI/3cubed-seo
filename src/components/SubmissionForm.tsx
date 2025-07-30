@@ -199,7 +199,6 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         priority_level: 'Medium',
         langchain_status: 'needs_processing',
         workflow_stage: 'draft',
-        langchain_retry_count: 0,
         compliance_id: `COMP-${Date.now()}`,
         raw_input_content: JSON.stringify(formData)
       };
