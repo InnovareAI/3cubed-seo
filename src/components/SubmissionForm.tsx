@@ -250,11 +250,33 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
           body: JSON.stringify(submissionData)
         });
 
+        console.log('Webhook response status:', webhookResponse.status, webhookResponse.statusText);
+        console.log('Webhook response headers:', Object.fromEntries(webhookResponse.headers));
+        
         if (!webhookResponse.ok) {
-          throw new Error(`Webhook failed: ${webhookResponse.status} ${webhookResponse.statusText}`);
+          const errorText = await webhookResponse.text();
+          console.error('Webhook error response:', errorText);
+          throw new Error(`Webhook failed: ${webhookResponse.status} ${webhookResponse.statusText} - ${errorText}`);
         }
 
-        const webhookData = await webhookResponse.json();
+        // Get response as text first to debug
+        const responseText = await webhookResponse.text();
+        console.log('Raw webhook response:', responseText);
+        
+        let webhookData;
+        if (responseText.trim()) {
+          try {
+            webhookData = JSON.parse(responseText);
+          } catch (parseError) {
+            console.error('JSON parse error:', parseError);
+            console.log('Response was not valid JSON, treating as success');
+            webhookData = { status: 'submitted', rawResponse: responseText };
+          }
+        } else {
+          console.log('Empty response from webhook, treating as success');
+          webhookData = { status: 'submitted', message: 'Empty response' };
+        }
+        
         console.log('✅ Data successfully sent to n8n webhook:', webhookData);
 
         // Show success modal (user must dismiss manually)
