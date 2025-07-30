@@ -194,7 +194,7 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         submitter_email: formData.seo_reviewer_email,
         
         // Only the absolutely essential fields
-        priority_level: 'Medium',
+        priority_level: 'medium',  // lowercase - check constraint might require this
         workflow_stage: 'draft'
       };
 
