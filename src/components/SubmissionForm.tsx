@@ -183,9 +183,8 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
       return;
     }
 
-    try {
-      // Build submission data - only include fields that have values
-      const submissionData: any = {
+    // Build submission data - only include fields that have values
+    let submissionData: any = {
         // Mandatory fields (always included)
         product_name: formData.product_name,
         generic_name: formData.generic_name,
@@ -246,53 +245,54 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
 
       console.log('About to submit data:', submissionData);
 
-      const { error: supabaseError } = await supabase
+      try {
+        const { error: supabaseError } = await supabase
         .from('submissions')
         .insert([submissionData]);
 
-      if (supabaseError) throw supabaseError;
+        if (supabaseError) throw supabaseError;
 
-      // Reset form
-      setFormData({
-        product_name: '',
-        generic_name: '',
-        indication: '',
-        therapeutic_area: '',
-        nct_number: '',
-        sponsor: '',
-        development_stage: 'Phase III',
-        line_of_therapy: '',
-        patient_population: [],
-        route_of_administration: '',
-        combination_partners: [],
-        primary_endpoints: [],
-        geographic_markets: [],
-        key_biomarkers: [],
-        target_age_groups: [],
-        seo_reviewer_name: '',
-        seo_reviewer_email: '',
-        client_reviewer_name: '',
-        client_reviewer_email: '',
-        mlr_reviewer_name: '',
-        mlr_reviewer_email: ''
-      });
-      
-      if (onSuccess) onSuccess();
-      if (onClose) onClose();
-    } catch (err) {
-      console.error('Error submitting form:', err);
-      console.error('Submission data that failed:', submissionData);
-      
-      let errorMessage = 'Unknown error';
-      if (err instanceof Error) {
-        errorMessage = err.message;
-      } else if (typeof err === 'object' && err !== null) {
-        errorMessage = JSON.stringify(err);
-      } else if (typeof err === 'string') {
-        errorMessage = err;
-      }
-      
-      setError(`Failed to submit form: ${errorMessage}. Please check the browser console for more details.`);
+        // Reset form
+        setFormData({
+          product_name: '',
+          generic_name: '',
+          indication: '',
+          therapeutic_area: '',
+          nct_number: '',
+          sponsor: '',
+          development_stage: 'Phase III',
+          line_of_therapy: '',
+          patient_population: [],
+          route_of_administration: '',
+          combination_partners: [],
+          primary_endpoints: [],
+          geographic_markets: [],
+          key_biomarkers: [],
+          target_age_groups: [],
+          seo_reviewer_name: '',
+          seo_reviewer_email: '',
+          client_reviewer_name: '',
+          client_reviewer_email: '',
+          mlr_reviewer_name: '',
+          mlr_reviewer_email: ''
+        });
+        
+        if (onSuccess) onSuccess();
+        if (onClose) onClose();
+      } catch (err) {
+        console.error('Error submitting form:', err);
+        console.error('Submission data that failed:', submissionData);
+        
+        let errorMessage = 'Unknown error';
+        if (err instanceof Error) {
+          errorMessage = err.message;
+        } else if (typeof err === 'object' && err !== null) {
+          errorMessage = JSON.stringify(err);
+        } else if (typeof err === 'string') {
+          errorMessage = err;
+        }
+        
+        setError(`Failed to submit form: ${errorMessage}. Please check the browser console for more details.`);
     } finally {
       setIsSubmitting(false);
     }
