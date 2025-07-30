@@ -267,7 +267,7 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ submission_id: data.id })
+          body: JSON.stringify({ submission_id: submissionData.id })
         });
 
         console.log('Webhook response status:', webhookResponse.status, webhookResponse.statusText);
