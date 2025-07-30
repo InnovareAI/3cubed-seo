@@ -183,7 +183,7 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
       return;
     }
 
-    // Build submission data - only include fields that have values
+    // Build submission data - only include fields that definitely exist
     let submissionData: any = {
         // Mandatory fields (always included)
         product_name: formData.product_name,
@@ -193,14 +193,11 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         submitter_name: formData.seo_reviewer_name,
         submitter_email: formData.seo_reviewer_email,
         
-        // Required database fields with defaults
+        // Basic required fields that should exist
         target_audience: ['Healthcare Professionals'],
         stage: formData.development_stage || 'Not Specified',
         priority_level: 'Medium',
-        langchain_status: 'needs_processing',
-        workflow_stage: 'draft',
-        compliance_id: `COMP-${Date.now()}`,
-        raw_input_content: JSON.stringify(formData)
+        workflow_stage: 'draft'
       };
 
       // Optional fields - only include if they have values
