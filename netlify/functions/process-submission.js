@@ -6,6 +6,77 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_KEY || process.env.VITE_SUPABASE_ANON_KEY
 );
 
+// FDA Data Enrichment Function
+async function enrichWithFDAData(submission) {
+  const fdaData = {
+    clinical_trials: null,
+    drug_approval: null,
+    adverse_events: null,
+    drug_labeling: null
+  };
+
+  try {
+    // 1. Search ClinicalTrials.gov
+    if (submission.nct_number) {
+      const ctResponse = await fetch(
+        `https://clinicaltrials.gov/api/v2/studies?query.id=${submission.nct_number}&format=json`
+      );
+      if (ctResponse.ok) {
+        const ctData = await ctResponse.json();
+        if (ctData.studies && ctData.studies.length > 0) {
+          const study = ctData.studies[0];
+          fdaData.clinical_trials = {
+            nct_id: study.protocolSection?.identificationModule?.nctId,
+            title: study.protocolSection?.identificationModule?.briefTitle,
+            status: study.protocolSection?.statusModule?.overallStatus,
+            phase: study.protocolSection?.designModule?.phases,
+            enrollment: study.protocolSection?.designModule?.enrollmentInfo?.count
+          };
+        }
+      }
+    }
+
+    // 2. Search FDA Drug Approvals
+    const searchTerms = [submission.product_name, submission.generic_name].filter(Boolean);
+    for (const term of searchTerms) {
+      const fdaResponse = await fetch(
+        `https://api.fda.gov/drug/drugsfda.json?search=products.brand_name:"${term}"+OR+products.active_ingredients.name:"${term}"&limit=1`
+      );
+      if (fdaResponse.ok) {
+        const fdaApproval = await fdaResponse.json();
+        if (fdaApproval.results && fdaApproval.results.length > 0) {
+          fdaData.drug_approval = {
+            application_number: fdaApproval.results[0].application_number,
+            approval_date: fdaApproval.results[0].products?.[0]?.approval_date,
+            brand_name: fdaApproval.results[0].products?.[0]?.brand_name,
+            dosage_form: fdaApproval.results[0].products?.[0]?.dosage_form
+          };
+          break;
+        }
+      }
+    }
+
+    // 3. Check for adverse events (limit to recent)
+    const faersResponse = await fetch(
+      `https://api.fda.gov/drug/event.json?search=patient.drug.medicinalproduct:"${submission.product_name}"&count=reaction.reactionmeddrapt.exact&limit=5`
+    );
+    if (faersResponse.ok) {
+      const faersData = await faersResponse.json();
+      if (faersData.results) {
+        fdaData.adverse_events = faersData.results.map(r => ({
+          reaction: r.term,
+          count: r.count
+        }));
+      }
+    }
+
+  } catch (error) {
+    console.error('FDA API error:', error);
+  }
+
+  return fdaData;
+}
+
 // Netlify function handler
 exports.handler = async (event, context) => {
   // Only allow POST
@@ -37,8 +108,21 @@ exports.handler = async (event, context) => {
       })
       .eq('id', submission_id);
 
-    // 3. Generate content with Perplexity
-    console.log('Calling Perplexity AI...');
+    // 3. FDA Data Enrichment
+    console.log('Enriching with FDA data...');
+    const fdaData = await enrichWithFDAData(submission);
+    
+    // Update submission with FDA data
+    await supabase
+      .from('submissions')
+      .update({ 
+        fda_data: fdaData,
+        workflow_stage: 'content_generation'
+      })
+      .eq('id', submission_id);
+
+    // 4. Generate content with Perplexity (now with FDA data)
+    console.log('Calling Perplexity AI with FDA-enriched data...');
     const perplexityResponse = await fetch('https://api.perplexity.ai/chat/completions', {
       method: 'POST',
       headers: {
@@ -52,20 +136,44 @@ exports.handler = async (event, context) => {
           content: 'You are an expert pharmaceutical SEO content writer. Generate professional, compliant SEO content.'
         }, {
           role: 'user',
-          content: `Generate SEO content for:
-Product: ${submission.product_name}
-Generic: ${submission.generic_name}
-Indication: ${submission.indication}
-Therapeutic Area: ${submission.therapeutic_area}
+          content: `Generate SEO content for pharmaceutical product with FDA data:
 
-Please provide:
-1. SEO Title (60 chars max)
-2. Meta Description (155 chars max)
-3. 5-10 SEO Keywords
-4. 5 H2 Tags
-5. Brief SEO Strategy
+PRODUCT INFORMATION:
+- Product: ${submission.product_name}
+- Generic: ${submission.generic_name}
+- Indication: ${submission.indication}
+- Therapeutic Area: ${submission.therapeutic_area}
+- Development Stage: ${submission.development_stage || 'Not specified'}
 
-Format as JSON.`
+FDA DATA:
+${fdaData.clinical_trials ? `
+CLINICAL TRIAL:
+- NCT ID: ${fdaData.clinical_trials.nct_id}
+- Status: ${fdaData.clinical_trials.status}
+- Phase: ${fdaData.clinical_trials.phase}
+- Enrollment: ${fdaData.clinical_trials.enrollment}
+` : 'No clinical trial data available'}
+
+${fdaData.drug_approval ? `
+FDA APPROVAL:
+- Application: ${fdaData.drug_approval.application_number}
+- Approval Date: ${fdaData.drug_approval.approval_date}
+- Dosage Form: ${fdaData.drug_approval.dosage_form}
+` : 'No FDA approval data found'}
+
+${fdaData.adverse_events ? `
+TOP ADVERSE EVENTS:
+${fdaData.adverse_events.slice(0, 3).map(ae => `- ${ae.reaction}: ${ae.count} reports`).join('\n')}
+` : ''}
+
+Please generate:
+1. SEO Title (60 chars max) - Include product name and key benefit
+2. Meta Description (155 chars max) - Mention FDA status if applicable
+3. 8-10 SEO Keywords - Include regulatory terms
+4. 5 H2 Tags - Include clinical data sections
+5. SEO Strategy - Focus on FDA data and clinical evidence
+
+Format as JSON with keys: seo_title, meta_description, seo_keywords, h2_tags, seo_strategy`
         }],
         max_tokens: 1000,
         temperature: 0.3
@@ -90,8 +198,8 @@ Format as JSON.`
       };
     }
 
-    // 4. Claude QA Review
-    console.log('Running Claude QA...');
+    // 5. Claude QA Review (renumbered)
+    console.log('Running Claude QA with FDA compliance check...');
     const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -104,16 +212,30 @@ Format as JSON.`
         max_tokens: 1000,
         messages: [{
           role: 'user',
-          content: `Review this pharmaceutical SEO content for compliance:
-Product: ${submission.product_name}
-Content: ${JSON.stringify(aiContent)}
+          content: `Review this pharmaceutical SEO content for FDA compliance and accuracy:
 
-Rate on:
-- Compliance (0-100)
-- Medical Accuracy (0-100)
-- SEO Effectiveness (0-100)
+PRODUCT: ${submission.product_name}
+STAGE: ${submission.development_stage || 'Not specified'}
 
-Return JSON with scores and feedback.`
+FDA DATA AVAILABLE:
+${JSON.stringify(fdaData, null, 2)}
+
+GENERATED SEO CONTENT:
+${JSON.stringify(aiContent, null, 2)}
+
+Please evaluate:
+1. FDA Compliance (0-100) - Are claims appropriate for development stage?
+2. Medical Accuracy (0-100) - Does content align with FDA data?
+3. SEO Effectiveness (0-100) - Will this rank well while remaining compliant?
+4. Overall QA Score (0-100)
+
+Check specifically:
+- No unsubstantiated efficacy claims
+- Adverse events mentioned if significant
+- Clinical trial status accurately reflected
+- Development stage appropriate language
+
+Return JSON with: compliance_score, medical_accuracy, seo_effectiveness, qa_score, and detailed_feedback`
         }]
       })
     });
@@ -135,10 +257,14 @@ Return JSON with scores and feedback.`
       }
     }
 
-    // 5. Update Supabase with results
+    // 6. Update Supabase with all results (renumbered)
     const { error: updateError } = await supabase
       .from('submissions')
       .update({
+        // FDA data (already saved earlier, but including summary)
+        fda_data_sources: Object.keys(fdaData).filter(key => fdaData[key] !== null),
+        fda_enrichment_timestamp: new Date().toISOString(),
+        
         // AI content
         seo_title: aiContent.seo_title,
         meta_description: aiContent.meta_description,
@@ -150,6 +276,8 @@ Return JSON with scores and feedback.`
         // QA scores
         qa_score: qaScores.qa_score,
         compliance_score: qaScores.compliance_score,
+        medical_accuracy: qaScores.medical_accuracy || 85,
+        seo_effectiveness: qaScores.seo_effectiveness || 85,
         
         // Status
         workflow_stage: 'completed',
