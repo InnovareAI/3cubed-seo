@@ -242,7 +242,7 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
 
       try {
         // Submit to n8n webhook for processing
-        const webhookResponse = await fetch('https://innovareai.app.n8n.cloud/webhook-test/generate-pharma-content', {
+        const webhookResponse = await fetch('https://innovareai.app.n8n.cloud/webhook/hP9yZxUjmBKJmrZt', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
