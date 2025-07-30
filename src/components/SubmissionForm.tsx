@@ -204,6 +204,10 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         submitter_name: formData.seo_reviewer_name,
         submitter_email: formData.seo_reviewer_email,
         
+        // Required fields that might be missing
+        target_audience: ['Healthcare Professionals'], // Default value
+        stage: formData.development_stage, // Map development_stage to stage
+        
         // Default values
         priority_level: 'Medium',
         langchain_status: 'needs_processing',
@@ -248,7 +252,7 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
       if (onClose) onClose();
     } catch (err) {
       console.error('Error submitting form:', err);
-      setError('Failed to submit form. Please try again.');
+      setError(`Failed to submit form: ${err instanceof Error ? err.message : 'Unknown error'}. Please try again.`);
     } finally {
       setIsSubmitting(false);
     }
