@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Form Submission</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select, textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .success { color: green; padding: 10px; background: #f0fff0; border: 1px solid #90ee90; margin: 10px 0; }
+        .error { color: red; padding: 10px; background: #fff0f0; border: 1px solid #ffcccb; margin: 10px 0; }
+        .log { background: #f8f9fa; padding: 10px; margin: 10px 0; border-left: 4px solid #007bff; }
+        pre { white-space: pre-wrap; word-wrap: break-word; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Form Submission to Supabase</h1>
+    
+    <div id="status"></div>
+    
+    <form id="testForm">
+        <h3>Required Fields</h3>
+        
+        <div class="form-group">
+            <label for="product_name">Product Name:</label>
+            <input type="text" id="product_name" name="product_name" value="Test Product - Browser Verification" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="generic_name">Generic Name:</label>
+            <input type="text" id="generic_name" name="generic_name" value="test-generic-browser" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="indication">Indication:</label>
+            <textarea id="indication" name="indication" required>Test indication for browser-based database verification</textarea>
+        </div>
+        
+        <div class="form-group">
+            <label for="therapeutic_area">Therapeutic Area:</label>
+            <select id="therapeutic_area" name="therapeutic_area" required>
+                <option value="">Select...</option>
+                <option value="Oncology" selected>Oncology</option>
+                <option value="Cardiovascular">Cardiovascular</option>
+                <option value="Neurology">Neurology</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="submitter_name">Submitter Name:</label>
+            <input type="text" id="submitter_name" name="submitter_name" value="Test Browser Submitter" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="submitter_email">Submitter Email:</label>
+            <input type="email" id="submitter_email" name="submitter_email" value="test.browser@example.com" required>
+        </div>
+        
+        <button type="submit">🚀 Submit Test Data</button>
+    </form>
+    
+    <div id="logs"></div>
+
+    <script>
+        // Use the same configuration as the app
+        const SUPABASE_URL = 'https://ktchrfgkbpaixbiwbieg.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0Y2hyZmdrYnBhaXhiaXdiaWVnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjk1MzU2NDIsImV4cCI6MjA0NTExMTY0Mn0.lBCTlkcrxHxFqR2BCnjutXH3WNhT8lKFGBt7LKJV7_E';
+        
+        const { createClient } = supabase;
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        function log(message, type = 'info') {
+            const logsDiv = document.getElementById('logs');
+            const logElement = document.createElement('div');
+            logElement.className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'log';
+            
+            if (typeof message === 'object') {
+                logElement.innerHTML = `<pre>${JSON.stringify(message, null, 2)}</pre>`;
+            } else {
+                logElement.textContent = message;
+            }
+            
+            logsDiv.appendChild(logElement);
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+            
+            console.log(message);
+        }
+        
+        document.getElementById('testForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = '⏳ Submitting...';
+            
+            // Clear previous logs
+            document.getElementById('logs').innerHTML = '';
+            
+            // Get form data
+            const formData = new FormData(e.target);
+            const submissionData = {
+                product_name: formData.get('product_name'),
+                generic_name: formData.get('generic_name'),
+                indication: formData.get('indication'),
+                therapeutic_area: formData.get('therapeutic_area'),
+                submitter_name: formData.get('submitter_name'),
+                submitter_email: formData.get('submitter_email'),
+                priority_level: 'medium',
+                workflow_stage: 'draft'
+            };
+            
+            log('🚀 About to submit data to Supabase:');
+            log(submissionData);
+            
+            try {
+                const { data, error } = await supabaseClient
+                    .from('submissions')
+                    .insert([submissionData])
+                    .select();
+                
+                if (error) {
+                    log('❌ Supabase error:', 'error');
+                    log(error, 'error');
+                    statusDiv.innerHTML = '❌ Submission failed - check logs below';
+                } else {
+                    log('✅ Success! Data inserted:', 'success');
+                    log(data, 'success');
+                    statusDiv.innerHTML = '✅ Test submission successful!';
+                    
+                    // Try to query for recent test submissions
+                    setTimeout(async () => {
+                        log('🔍 Querying for recent test submissions...');
+                        
+                        const { data: testData, error: queryError } = await supabaseClient
+                            .from('submissions')
+                            .select('id, product_name, submitter_name, submitter_email, created_at')
+                            .or('product_name.ilike.%test%,submitter_name.ilike.%test%,submitter_email.ilike.%test%')
+                            .order('created_at', { ascending: false })
+                            .limit(10);
+                        
+                        if (queryError) {
+                            log('❌ Query error:', 'error');
+                            log(queryError, 'error');
+                        } else {
+                            log(`📊 Found ${testData.length} test submissions:`, 'success');
+                            testData.forEach((item, index) => {
+                                log(`${index + 1}. "${item.product_name}" by ${item.submitter_name} (${new Date(item.created_at).toLocaleString()})`);
+                            });
+                        }
+                    }, 1000);
+                }
+                
+            } catch (error) {
+                log('🔥 Unexpected error:', 'error');
+                log(error, 'error');
+                statusDiv.innerHTML = '🔥 Unexpected error - check logs below';
+            }
+        });
+        
+        // Test connection on load
+        window.addEventListener('load', async function() {
+            log('🔧 Testing Supabase connection...');
+            
+            try {
+                // Try a simple query first
+                const { data, error } = await supabaseClient
+                    .from('submissions')
+                    .select('id')
+                    .limit(1);
+                
+                if (error) {
+                    log('❌ Connection test failed:', 'error');
+                    log(error, 'error');
+                } else {
+                    log('✅ Connection test successful!', 'success');
+                    log(`Database has ${data ? 'some' : 'no'} data`);
+                }
+            } catch (error) {
+                log('🔥 Connection error:', 'error');
+                log(error, 'error');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,164 @@
+{
+  "name": "3cubed-SEO Jul28 - Enhanced with FDA Data",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "hP9yZxUjmBKJmrZt",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "position": [-1000, 200],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract submission_id from webhook payload\ntry {\n  const webhookData = $input.all()[0].json;\n  console.log('Raw webhook payload:', JSON.stringify(webhookData, null, 2));\n\n  let submission_id;\n  let record = {};\n\n  if (webhookData && webhookData.body && webhookData.body.submission_id) {\n    submission_id = webhookData.body.submission_id;\n    record = webhookData.body;\n  } else if (webhookData && webhookData.submission_id) {\n    submission_id = webhookData.submission_id;\n    record = webhookData;\n  } else {\n    throw new Error('Could not find submission_id in webhook payload');\n  }\n\n  return {\n    submission_id: submission_id,\n    webhook_data: webhookData,\n    record: record\n  };\n} catch (error) {\n  console.error('Error in Extract Submission ID:', error.message);\n  throw error;\n}"
+      },
+      "id": "extract-submission-id",
+      "name": "Extract Submission ID",
+      "type": "n8n-nodes-base.code",
+      "position": [-800, 200],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "submissions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $json.submission_id }}"
+            }
+          ]
+        }
+      },
+      "id": "fetch-submission-data",
+      "name": "Fetch Submission Data",
+      "type": "n8n-nodes-base.supabase",
+      "position": [-600, 200],
+      "typeVersion": 1,
+      "credentials": {
+        "supabaseApi": {
+          "id": "pgPh6lGomFMfn2ju",
+          "name": "Supabase account 3C SEO"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const records = $input.all();\nif (!records || records.length === 0) {\n  throw new Error('No submission found with the provided ID');\n}\n\nconst record = records[0].json;\nconst stage = (record.development_stage?.toLowerCase() || record.stage?.toLowerCase() || '');\n\nlet phase;\nif (stage.includes('phase 3') || stage.includes('phase iii') || stage.includes('phase3')) {\n    phase = 'phase3';\n} else if (stage.includes('pre-launch') || stage.includes('market shaping')) {\n    phase = 'marketLaunch';\n} else if (stage.includes('marketed') || stage.includes('market launch') || stage.includes('market building') || stage.includes('post-launch')) {\n    phase = 'marketLaunch';\n} else {\n    phase = 'marketLaunch';\n}\n\nreturn {\n    phase: phase,\n    record: record,\n    submission_id: record.id\n};"
+      },
+      "id": "validate-phase",
+      "name": "Validate Phase",
+      "type": "n8n-nodes-base.code",
+      "position": [-400, 200],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "jsCode": "// FDA Multi-Database Enrichment Node\nconst record = $input.all()[0].json.record;\nconst productName = record.product_name;\nconst genericName = record.generic_name;\n\n// Initialize data containers\nlet enrichedData = {\n  clinical_trial_data: null,\n  drug_approval_data: null,\n  drug_labeling_data: null,\n  adverse_events_data: null,\n  recall_data: null,\n  shortage_data: null\n};\n\n// Helper function for API calls with rate limiting\nasync function fetchWithDelay(url, delay = 1000) {\n  await new Promise(resolve => setTimeout(resolve, delay));\n  try {\n    const response = await fetch(url);\n    return response.ok ? await response.json() : null;\n  } catch (error) {\n    console.log(`API call failed: ${url}`, error);\n    return null;\n  }\n}\n\n// 1. CLINICAL TRIALS DATA (ClinicalTrials.gov)\ntry {\n  let clinicalData = null;\n  \n  // Strategy 1: Direct NCT lookup\n  if (record.nct_number) {\n    const nctData = await fetchWithDelay(`https://clinicaltrials.gov/api/v2/studies?query.id=${record.nct_number}&format=json`);\n    if (nctData?.studies?.length > 0) {\n      clinicalData = nctData.studies[0];\n    }\n  }\n  \n  // Strategy 2: Product name search\n  if (!clinicalData && productName) {\n    const productData = await fetchWithDelay(`https://clinicaltrials.gov/api/v2/studies?query.term=${encodeURIComponent(productName)}&query.field=InterventionName&filter.phase=PHASE3&format=json`);\n    if (productData?.studies?.length > 0) {\n      clinicalData = productData.studies[0];\n    }\n  }\n  \n  if (clinicalData) {\n    enrichedData.clinical_trial_data = {\n      nct_id: clinicalData.protocolSection?.identificationModule?.nctId,\n      official_title: clinicalData.protocolSection?.identificationModule?.officialTitle,\n      brief_title: clinicalData.protocolSection?.identificationModule?.briefTitle,\n      overall_status: clinicalData.protocolSection?.statusModule?.overallStatus,\n      phase: clinicalData.protocolSection?.designModule?.phases,\n      primary_completion_date: clinicalData.protocolSection?.statusModule?.primaryCompletionDateStruct?.date,\n      study_sponsor: clinicalData.protocolSection?.sponsorCollaboratorsModule?.leadSponsor?.name,\n      conditions: clinicalData.protocolSection?.conditionsModule?.conditions,\n      interventions: clinicalData.protocolSection?.armsInterventionsModule?.interventions,\n      primary_outcomes: clinicalData.protocolSection?.outcomesModule?.primaryOutcomes,\n      enrollment: clinicalData.protocolSection?.designModule?.enrollmentInfo?.count\n    };\n  }\n} catch (error) {\n  console.log('Clinical trials lookup failed:', error);\n}\n\n// 2. DRUG APPROVAL DATA (Drugs@FDA)\ntry {\n  const searchTerms = [productName, genericName].filter(Boolean);\n  for (const term of searchTerms) {\n    const approvalData = await fetchWithDelay(`https://api.fda.gov/drug/drugsfda.json?search=products.active_ingredients.name:\"${term}\"&limit=5`);\n    if (approvalData?.results?.length > 0) {\n      const latest = approvalData.results[0];\n      enrichedData.drug_approval_data = {\n        application_number: latest.application_number,\n        sponsor_name: latest.sponsor_name,\n        approval_date: latest.products?.[0]?.approval_date,\n        marketing_status: latest.products?.[0]?.marketing_status,\n        dosage_form: latest.products?.[0]?.dosage_form,\n        route: latest.products?.[0]?.route,\n        active_ingredients: latest.products?.[0]?.active_ingredients\n      };\n      break;\n    }\n  }\n} catch (error) {\n  console.log('Drug approval lookup failed:', error);\n}\n\n// 3. DRUG LABELING DATA (SPL)\ntry {\n  const searchTerms = [productName, genericName].filter(Boolean);\n  for (const term of searchTerms) {\n    const labelData = await fetchWithDelay(`https://api.fda.gov/drug/label.json?search=openfda.brand_name:\"${term}\"+openfda.generic_name:\"${term}\"&limit=3`);\n    if (labelData?.results?.length > 0) {\n      const label = labelData.results[0];\n      enrichedData.drug_labeling_data = {\n        indications_and_usage: label.indications_and_usage?.[0],\n        contraindications: label.contraindications?.[0],\n        warnings_and_cautions: label.warnings_and_cautions?.[0],\n        adverse_reactions: label.adverse_reactions?.[0],\n        drug_interactions: label.drug_interactions?.[0]\n      };\n      break;\n    }\n  }\n} catch (error) {\n  console.log('Drug labeling lookup failed:', error);\n}\n\n// Compile comprehensive FDA data\nconst enrichedRecord = {\n  ...record,\n  fda_comprehensive_data: enrichedData,\n  fda_data_sources: Object.keys(enrichedData).filter(key => enrichedData[key] !== null),\n  fda_enrichment_timestamp: new Date().toISOString()\n};\n\nreturn {\n  phase: $node['Validate Phase'].json.phase,\n  record: enrichedRecord,\n  submission_id: record.id\n};"
+      },
+      "id": "fda-data-enrichment",
+      "name": "FDA Data Enrichment",
+      "type": "n8n-nodes-base.code",
+      "position": [-200, 200],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.perplexity.ai/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "perplexityApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer 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"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  \"model\": \"sonar\",\n  \"messages\": [{\n    \"role\": \"system\",\n    \"content\": \"You are an expert pharmaceutical SEO and GEO content writer with access to official FDA database information. Generate comprehensive, medically accurate content optimized for both traditional search engines and AI-powered search systems while maintaining strict pharmaceutical regulatory compliance.\"\n  }, {\n    \"role\": \"user\",\n    \"content\": `Generate comprehensive SEO and GEO-optimized content for a pharmaceutical product with the following details:\\n\\nCORE INFORMATION:\\n- Product: ${$json.record.product_name}\\n- Generic Name: ${$json.record.generic_name}\\n- Therapeutic Area: ${$json.record.therapeutic_area}\\n- Indication: ${$json.record.indication}\\n\\nCLINICAL DETAILS:\\n- Development Stage: ${$json.record.development_stage || 'Phase III'}\\n- NCT Number: ${$json.record.nct_number || 'Not provided'}\\n- Sponsor: ${$json.record.sponsor || 'Not provided'}\\n\\nFDA DATABASE ENRICHMENT:\\n${$json.record.fda_comprehensive_data?.clinical_trial_data ? `\\nOFFICIAL CLINICAL TRIAL DATA (ClinicalTrials.gov):\\n- NCT ID: ${$json.record.fda_comprehensive_data.clinical_trial_data.nct_id}\\n- Study Title: ${$json.record.fda_comprehensive_data.clinical_trial_data.official_title}\\n- Study Status: ${$json.record.fda_comprehensive_data.clinical_trial_data.overall_status}\\n- Phase: ${Array.isArray($json.record.fda_comprehensive_data.clinical_trial_data.phase) ? $json.record.fda_comprehensive_data.clinical_trial_data.phase.join(', ') : 'Phase III'}\\n- Enrollment: ${$json.record.fda_comprehensive_data.clinical_trial_data.enrollment || 'Not available'} participants\\n- Primary Outcomes: ${Array.isArray($json.record.fda_comprehensive_data.clinical_trial_data.primary_outcomes) ? $json.record.fda_comprehensive_data.clinical_trial_data.primary_outcomes.map(o => o.measure).join('; ') : 'See study protocol'}` : ''}\\n\\n${$json.record.fda_comprehensive_data?.drug_approval_data ? `\\nFDA APPROVAL DATA (Drugs@FDA):\\n- Application Number: ${$json.record.fda_comprehensive_data.drug_approval_data.application_number}\\n- Sponsor: ${$json.record.fda_comprehensive_data.drug_approval_data.sponsor_name}\\n- Approval Date: ${$json.record.fda_comprehensive_data.drug_approval_data.approval_date}\\n- Marketing Status: ${$json.record.fda_comprehensive_data.drug_approval_data.marketing_status}\\n- Dosage Form: ${$json.record.fda_comprehensive_data.drug_approval_data.dosage_form}` : ''}\\n\\n${$json.record.fda_comprehensive_data?.drug_labeling_data ? `\\nOFFICIAL FDA LABELING DATA:\\n- Indications: ${$json.record.fda_comprehensive_data.drug_labeling_data.indications_and_usage ? $json.record.fda_comprehensive_data.drug_labeling_data.indications_and_usage.substring(0, 200) + '...' : 'See prescribing information'}\\n- Contraindications: ${$json.record.fda_comprehensive_data.drug_labeling_data.contraindications ? $json.record.fda_comprehensive_data.drug_labeling_data.contraindications.substring(0, 200) + '...' : 'See prescribing information'}` : ''}\\n\\nIMPORTANT FDA COMPLIANCE REQUIREMENTS:\\n- Use ONLY official FDA data provided above for clinical claims\\n- Reference NCT numbers when discussing trial results\\n- Include \\\"See full prescribing information\\\" disclaimers\\n- Do NOT make comparative claims with other products\\n- Base all efficacy statements on FDA-approved labeling only\\n\\nStructure your response with these exact headers:\\n\\n### Title Tag:\\n[CRITICAL: Must be EXACTLY 60 characters or less including spaces]\\n\\n### Meta Description:\\n[CRITICAL: Must be EXACTLY 155 characters or less including spaces]\\n\\n### H1 Tag:\\n[Main heading for the page]\\n\\n### Keywords:\\n[Comma-separated list of 10-15 relevant SEO keywords including long-tail variations]\\n\\n### Body Content:\\n[500-800 words of engaging, informative content with official FDA data integration]\\n\\n### Schema Markup:\\n[Provide schema markup as properly formatted JSON-LD code block]\\n\\nGENERATIVE ENGINE OPTIMIZATION (GEO) REQUIREMENTS:\\n- Structure content with clear, question-based headings\\n- Include direct answers to common patient and HCP questions\\n- Use bullet points and numbered lists for key information\\n- Include FDA-verified clinical data and trial information\\n- Optimize for voice search queries like \\\"What is ${$json.record.product_name} approved for?\\\"\\n- Reference official NCT numbers and FDA application numbers for authority\\n\\nEnsure all content is medically accurate, compliant with FDA promotional guidelines, and enhanced with the official government database information provided.`\n  }]\n}) }}"
+      },
+      "id": "generate-content-perplexity",
+      "name": "Generate Content - Perplexity (FDA Enhanced)",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [0, 200],
+      "typeVersion": 4.2
+    }
+  ],
+  "connections": {
+    "webhook-trigger": {
+      "main": [
+        [
+          {
+            "node": "extract-submission-id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "extract-submission-id": {
+      "main": [
+        [
+          {
+            "node": "fetch-submission-data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "fetch-submission-data": {
+      "main": [
+        [
+          {
+            "node": "validate-phase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "validate-phase": {
+      "main": [
+        [
+          {
+            "node": "fda-data-enrichment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "fda-data-enrichment": {
+      "main": [
+        [
+          {
+            "node": "generate-content-perplexity",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "id": "enhanced-fda-workflow"
+}
