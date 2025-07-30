@@ -163,52 +163,40 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
     setIsSubmitting(true);
     setError(null);
 
-    // Validate required fields
-    if (!section1Complete) {
-      setError('Please complete all required product information fields');
-      setIsSubmitting(false);
-      return;
-    }
+    // Validate only the 6 mandatory fields
+    const mandatoryFields = {
+      'Product Name': formData.product_name,
+      'Generic/INN Name': formData.generic_name,
+      'Indication': formData.indication,
+      'Therapeutic Area': formData.therapeutic_area,
+      'Submitter Name': formData.seo_reviewer_name,
+      'Submitter Email': formData.seo_reviewer_email
+    };
 
-    if (!section4Complete) {
-      setError('Please provide SEO reviewer name and email');
+    const missingFields = Object.entries(mandatoryFields)
+      .filter(([_, value]) => !value)
+      .map(([key, _]) => key);
+
+    if (missingFields.length > 0) {
+      setError(`Please complete these required fields: ${missingFields.join(', ')}`);
       setIsSubmitting(false);
       return;
     }
 
     try {
-      const submissionData = {
+      // Build submission data - only include fields that have values
+      const submissionData: any = {
+        // Mandatory fields (always included)
         product_name: formData.product_name,
         generic_name: formData.generic_name,
         indication: formData.indication,
         therapeutic_area: formData.therapeutic_area,
-        nct_number: formData.nct_number,
-        sponsor: formData.sponsor,
-        development_stage: formData.development_stage,
-        line_of_therapy: formData.line_of_therapy,
-        patient_population: formData.patient_population,
-        route_of_administration: formData.route_of_administration,
-        combination_partners: formData.combination_partners,
-        primary_endpoints: formData.primary_endpoints,
-        geographic_markets: formData.geographic_markets,
-        key_biomarkers: formData.key_biomarkers,
-        target_age_groups: formData.target_age_groups,
-        seo_reviewer_name: formData.seo_reviewer_name,
-        seo_reviewer_email: formData.seo_reviewer_email,
-        client_reviewer_name: formData.client_reviewer_name,
-        client_reviewer_email: formData.client_reviewer_email,
-        mlr_reviewer_name: formData.mlr_reviewer_name,
-        mlr_reviewer_email: formData.mlr_reviewer_email,
-        
-        // Legacy fields for compatibility
         submitter_name: formData.seo_reviewer_name,
         submitter_email: formData.seo_reviewer_email,
         
-        // Required fields that might be missing
-        target_audience: ['Healthcare Professionals'], // Default value
-        stage: formData.development_stage, // Map development_stage to stage
-        
-        // Default values
+        // Required database fields with defaults
+        target_audience: ['Healthcare Professionals'],
+        stage: formData.development_stage || 'Not Specified',
         priority_level: 'Medium',
         langchain_status: 'needs_processing',
         workflow_stage: 'draft',
@@ -216,6 +204,45 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         compliance_id: `COMP-${Date.now()}`,
         raw_input_content: JSON.stringify(formData)
       };
+
+      // Optional fields - only include if they have values
+      const optionalFields = {
+        nct_number: formData.nct_number,
+        sponsor: formData.sponsor,
+        development_stage: formData.development_stage,
+        line_of_therapy: formData.line_of_therapy,
+        route_of_administration: formData.route_of_administration,
+        seo_reviewer_name: formData.seo_reviewer_name,
+        seo_reviewer_email: formData.seo_reviewer_email,
+        client_reviewer_name: formData.client_reviewer_name,
+        client_reviewer_email: formData.client_reviewer_email,
+        mlr_reviewer_name: formData.mlr_reviewer_name,
+        mlr_reviewer_email: formData.mlr_reviewer_email
+      };
+
+      // Optional arrays - only include if they have items
+      const optionalArrays = {
+        patient_population: formData.patient_population,
+        combination_partners: formData.combination_partners,
+        primary_endpoints: formData.primary_endpoints,
+        geographic_markets: formData.geographic_markets,
+        key_biomarkers: formData.key_biomarkers,
+        target_age_groups: formData.target_age_groups
+      };
+
+      // Add optional fields that have values
+      Object.entries(optionalFields).forEach(([key, value]) => {
+        if (value && value.trim()) {
+          submissionData[key] = value;
+        }
+      });
+
+      // Add optional arrays that have items
+      Object.entries(optionalArrays).forEach(([key, value]) => {
+        if (value && value.length > 0) {
+          submissionData[key] = value;
+        }
+      });
 
       const { error: supabaseError } = await supabase
         .from('submissions')
