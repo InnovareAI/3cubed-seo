@@ -194,6 +194,8 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         therapeutic_area: formData.therapeutic_area,
         submitter_name: formData.seo_reviewer_name,
         submitter_email: formData.seo_reviewer_email,
+        seo_reviewer_name: formData.seo_reviewer_name,  // Required in DB
+        seo_reviewer_email: formData.seo_reviewer_email, // Required in DB
         
         // Only the absolutely essential fields
         priority_level: 'medium',  // lowercase - check constraint might require this
@@ -207,8 +209,6 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         development_stage: formData.development_stage,
         line_of_therapy: formData.line_of_therapy,
         route_of_administration: formData.route_of_administration,
-        seo_reviewer_name: formData.seo_reviewer_name,
-        seo_reviewer_email: formData.seo_reviewer_email,
         client_reviewer_name: formData.client_reviewer_name,
         client_reviewer_email: formData.client_reviewer_email,
         mlr_reviewer_name: formData.mlr_reviewer_name,
