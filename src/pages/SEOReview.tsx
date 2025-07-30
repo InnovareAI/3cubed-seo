@@ -1,8 +1,7 @@
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { mockSEOReviews } from '../data/mockSEOReviews'
 import CTAButton from '../components/CTAButton'
 import { THERAPEUTIC_AREAS } from '../constants/therapeuticAreas'
 import { 
@@ -55,7 +54,6 @@ export default function SEOReview() {
   const [searchTerm, setSearchTerm] = useState('')
   const [priorityFilter, setPriorityFilter] = useState<string>('all')
   const [therapeuticAreaFilter, setTherapeuticAreaFilter] = useState<string>('all')
-  const [useDummyData, setUseDummyData] = useState(true)
 
   const { data: dbSubmissions, isLoading } = useQuery({
     queryKey: ['seo-review-queue'],
@@ -70,14 +68,10 @@ export default function SEOReview() {
       return data as Submission[]
     },
     refetchInterval: 30000,
-    enabled: !useDummyData
+    enabled: true
   })
 
-  // Use dummy data or live data based on toggle
-  const submissions = useMemo(() => {
-    if (useDummyData) return mockSEOReviews
-    return dbSubmissions || []
-  }, [useDummyData, dbSubmissions])
+  const submissions = dbSubmissions || []
 
   const filteredSubmissions = submissions?.filter(submission => {
     if (searchTerm && !submission.product_name.toLowerCase().includes(searchTerm.toLowerCase()) &&
@@ -122,7 +116,7 @@ export default function SEOReview() {
     }).length || 0
   }
 
-  if (!useDummyData && isLoading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -139,16 +133,6 @@ export default function SEOReview() {
           <p className="text-sm text-gray-600 mt-1">Review and optimize AI-generated content for search performance</p>
         </div>
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => setUseDummyData(!useDummyData)}
-            className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
-              useDummyData 
-                ? 'bg-amber-100 text-amber-700' 
-                : 'bg-green-100 text-green-700'
-            }`}
-          >
-            {useDummyData ? 'Demo Data' : 'Live Data'}
-          </button>
           <CTAButton variant="primary" icon={<FileText className="h-4 w-4" />}>
             Export Report
           </CTAButton>

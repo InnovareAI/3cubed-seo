@@ -44,69 +44,14 @@ interface ExtendedClient extends Client {
   phone?: string
 }
 
-const mockClients: ExtendedClient[] = [
-  {
-    id: 'client-001',
-    name: 'Global Pharma Corp',
-    company_domain: 'globalpharma.com',
-    contact_name: 'Sarah Johnson',
-    contact_email: 'sarah.johnson@globalpharma.com',
-    status: 'active',
-    created_at: new Date('2023-06-15').toISOString(),
-    updated_at: new Date().toISOString(),
-    projects_count: 12,
-    submissions_count: 156,
-    active_campaigns: 5,
-    compliance_score: 94,
-    last_submission: new Date('2024-01-15').toISOString(),
-    contract_value: 2500000,
-    therapeutic_areas: ['Oncology', 'Cardiology', 'Neurology']
-  },
-  {
-    id: 'client-002',
-    name: 'BioMed Solutions',
-    company_domain: 'biomedsolutions.com',
-    contact_name: 'Dr. Michael Chen',
-    contact_email: 'mchen@biomedsolutions.com',
-    status: 'active',
-    created_at: new Date('2023-09-20').toISOString(),
-    updated_at: new Date().toISOString(),
-    projects_count: 8,
-    submissions_count: 89,
-    active_campaigns: 3,
-    compliance_score: 88,
-    last_submission: new Date('2024-01-14').toISOString(),
-    contract_value: 1200000,
-    therapeutic_areas: ['Rheumatology', 'Immunology']
-  },
-  {
-    id: 'client-003',
-    name: 'NeuroPharma Inc',
-    company_domain: 'neuropharma.com',
-    contact_name: 'Jennifer Williams',
-    contact_email: 'jwilliams@neuropharma.com',
-    status: 'paused',
-    created_at: new Date('2023-11-10').toISOString(),
-    updated_at: new Date().toISOString(),
-    projects_count: 4,
-    submissions_count: 32,
-    active_campaigns: 0,
-    compliance_score: 91,
-    last_submission: new Date('2023-12-20').toISOString(),
-    contract_value: 750000,
-    therapeutic_areas: ['Neurology', 'Psychiatry']
-  }
-]
 
 export default function ClientManagement() {
   const [isAddingClient, setIsAddingClient] = useState(false)
   const [expandedClient, setExpandedClient] = useState<string | null>(null)
-  const [useDemoData] = useState(true)
   const [activeTab, setActiveTab] = useState<'overview' | 'details' | 'compliance' | 'billing'>('overview')
   const [showSuccessMessage, setShowSuccessMessage] = useState(false)
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null)
+  // const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null)
   const [editingClient, setEditingClient] = useState<ExtendedClient | null>(null)
-  const [localClients, setLocalClients] = useState<ExtendedClient[]>(mockClients)
   
   const [newClient, setNewClient] = useState({
     name: '',
@@ -136,10 +81,10 @@ export default function ClientManagement() {
       if (error) throw error
       return data as Client[]
     },
-    enabled: !useDemoData
+    enabled: true
   })
 
-  const clients = useDemoData ? localClients : dbClients || []
+  const clients = dbClients || []
 
   const handleCreateClient = async () => {
     // Validate required fields
@@ -148,43 +93,21 @@ export default function ClientManagement() {
       return
     }
 
-    if (!useDemoData) {
-      const { error } = await supabase
-        .from('clients')
-        .insert([newClient])
-      
-      if (!error) {
-        setIsAddingClient(false)
-        resetNewClient()
-        refetch()
-        showSuccess('Client created successfully!')
-      } else {
-        alert('Error creating client: ' + error.message)
-      }
-    } else {
-      // Demo mode - add to local state
-      const newExtendedClient: ExtendedClient = {
-        ...newClient,
-        id: `client-${Date.now()}`,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        projects_count: 0,
-        submissions_count: 0,
-        active_campaigns: 0,
-        compliance_score: 100,
-        last_submission: null,
-        contract_value: 0,
-        therapeutic_areas: newClient.therapeutic_areas
-      }
-      
-      setLocalClients([newExtendedClient, ...localClients])
+    const { error } = await supabase
+      .from('clients')
+      .insert([newClient])
+    
+    if (!error) {
       setIsAddingClient(false)
       resetNewClient()
+      refetch()
       showSuccess('Client created successfully!')
+    } else {
+      alert('Error creating client: ' + error.message)
     }
   }
 
-  const showSuccess = (message: string) => {
+  const showSuccess = (_message: string) => {
     setShowSuccessMessage(true)
     setTimeout(() => setShowSuccessMessage(false), 3000)
   }
@@ -273,7 +196,7 @@ export default function ClientManagement() {
     'Endocrinology', 'Psychiatry', 'Dermatology', 'Pulmonology', 'Gastroenterology'
   ]
 
-  if (!useDemoData && isLoading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>

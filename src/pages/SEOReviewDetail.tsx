@@ -3,7 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import CTAButton from '@/components/CTAButton'
-import { mockSEOReviews } from '@/data/mockSEOReviews'
 import { 
   ArrowLeft,
   CheckCircle,
@@ -60,7 +59,6 @@ export default function SEOReviewDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const [useDemoData] = useState(true)
   
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     'overview': true,
@@ -82,47 +80,6 @@ export default function SEOReviewDetail() {
   const { data: submission, isLoading } = useQuery({
     queryKey: ['seo-review-detail', id],
     queryFn: async () => {
-      if (useDemoData) {
-        const mockSubmission = mockSEOReviews.find(s => s.id === id)
-        if (!mockSubmission) throw new Error('Submission not found')
-        
-        // Add demo data for new fields
-        return {
-          ...mockSubmission,
-          seo_title: mockSubmission.seo_title || `${mockSubmission.product_name}: Revolutionary Treatment for ${mockSubmission.therapeutic_area}`,
-          h2_tags: mockSubmission.h2_tags || [
-            'Understanding the Mechanism of Action',
-            'Clinical Trial Results and Efficacy',
-            'Safety Profile and Administration',
-            'Patient Support Programs'
-          ],
-          geo_event_tags: mockSubmission.geo_event_tags || [
-            'FDA approval announcement',
-            'Phase 3 trial results',
-            'New indication launch'
-          ],
-          geo_optimization: mockSubmission.geo_optimization || {
-            ai_friendly_summary: `${mockSubmission.product_name} is a breakthrough therapy for ${mockSubmission.therapeutic_area}, offering superior efficacy with convenient dosing.`,
-            structured_data: {
-              "@context": "https://schema.org",
-              "@type": "Drug",
-              "name": mockSubmission.product_name
-            },
-            key_facts: [
-              'First-in-class therapy',
-              'Once-daily oral dosing',
-              'Proven efficacy in clinical trials'
-            ],
-            event_tags: {
-              perplexity: ['medical breakthrough', 'FDA approval'],
-              claude: ['innovative therapy', 'clinical efficacy'],
-              chatgpt: ['treatment option', 'patient outcomes'],
-              gemini: ['pharmaceutical innovation', 'therapeutic advancement']
-            }
-          },
-          seo_strategy_outline: 'Focus on long-tail keywords targeting specific patient populations. Build authority through clinical trial content and KOL partnerships.'
-        }
-      }
       
       const { data, error } = await supabase
         .from('submissions')
@@ -156,14 +113,12 @@ export default function SEOReviewDetail() {
         updateData.rejected_at = new Date().toISOString()
       }
 
-      if (!useDemoData) {
-        const { error } = await supabase
-          .from('submissions')
-          .update(updateData)
-          .eq('id', id)
-        
-        if (error) throw error
-      }
+      const { error } = await supabase
+        .from('submissions')
+        .update(updateData)
+        .eq('id', id)
+      
+      if (error) throw error
       
       queryClient.invalidateQueries({ queryKey: ['seo-review-content'] })
       navigate('/seo-review')
@@ -421,7 +376,7 @@ export default function SEOReviewDetail() {
                 </label>
               </div>
               <div className="space-y-2">
-                {submission.h2_tags?.map((tag, idx) => (
+                {submission.h2_tags?.map((tag: string, idx: number) => (
                   <div key={idx} className="bg-gray-50 rounded p-3">
                     <p className="text-sm text-gray-700">{tag}</p>
                   </div>
@@ -452,7 +407,7 @@ export default function SEOReviewDetail() {
                 </label>
               </div>
               <div className="flex flex-wrap gap-2">
-                {submission.seo_keywords?.map((keyword, idx) => (
+                {submission.seo_keywords?.map((keyword: string, idx: number) => (
                   <span key={idx} className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
                     <Hash className="h-3 w-3 mr-1" />
                     {keyword}
@@ -501,7 +456,7 @@ export default function SEOReviewDetail() {
               <div className="bg-purple-50 rounded-lg p-4">
                 {submission.geo_event_tags && submission.geo_event_tags.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
-                    {submission.geo_event_tags.map((tag, idx) => (
+                    {submission.geo_event_tags.map((tag: string, idx: number) => (
                       <span key={idx} className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
                         {tag}
                       </span>

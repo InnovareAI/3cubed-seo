@@ -3,7 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import CTAButton from '@/components/CTAButton'
-import { mockSEOReviews } from '@/data/mockSEOReviews'
 import { 
   ArrowLeft,
   Download,
@@ -65,7 +64,6 @@ export default function ClientReviewDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const [useDemoData] = useState(true)
   
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set(['overview', 'strategy', 'keywords'])
@@ -101,34 +99,6 @@ export default function ClientReviewDetail() {
   const { data: submission, isLoading } = useQuery({
     queryKey: ['client-review-detail', id],
     queryFn: async () => {
-      if (useDemoData) {
-        const mockSubmission = mockSEOReviews.find(s => s.id === id)
-        if (!mockSubmission) throw new Error('Submission not found')
-        
-        // Add client-specific fields
-        return {
-          ...mockSubmission,
-          client_review_status: 'pending',
-          client_comments: [
-            {
-              id: '1',
-              section: 'h1_tag',
-              comment: 'Can we make this more specific to our brand?',
-              status: 'pending' as const,
-              created_at: new Date().toISOString(),
-              author: 'John Smith (Client)'
-            },
-            {
-              id: '2',
-              section: 'keywords',
-              comment: 'Please add our branded terms',
-              status: 'resolved' as const,
-              created_at: new Date().toISOString(),
-              author: 'Jane Doe (Client)'
-            }
-          ]
-        }
-      }
       
       const { data, error } = await supabase
         .from('submissions')
@@ -287,7 +257,7 @@ export default function ClientReviewDetail() {
           </div>
           {hasComments && (
             <span className="text-sm font-medium text-blue-900">
-              {submission.client_comments?.filter(c => c.status === 'pending').length || 0} pending comments
+              {submission.client_comments?.filter((c: any) => c.status === 'pending').length || 0} pending comments
             </span>
           )}
         </div>
@@ -335,7 +305,7 @@ export default function ClientReviewDetail() {
               <div>
                 <h3 className="text-sm font-semibold text-gray-900 mb-2">Target Audience</h3>
                 <ul className="space-y-1">
-                  {submission.target_audience?.map((audience, index) => (
+                  {submission.target_audience?.map((audience: string, index: number) => (
                     <li key={index} className="flex items-center text-sm text-gray-700">
                       <Target className="h-4 w-4 text-gray-400 mr-2" />
                       {audience}
@@ -440,7 +410,7 @@ export default function ClientReviewDetail() {
             <div>
               <h3 className="text-sm font-semibold text-gray-900 mb-3">Primary Keywords</h3>
               <div className="flex flex-wrap gap-2">
-                {submission.seo_keywords?.map((keyword, index) => (
+                {submission.seo_keywords?.map((keyword: string, index: number) => (
                   <span key={index} className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
                     {keyword}
                   </span>

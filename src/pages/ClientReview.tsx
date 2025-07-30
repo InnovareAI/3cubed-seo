@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
-import { mockSEOReviews } from '@/data/mockSEOReviews'
 import CTAButton from '@/components/CTAButton'
 import { 
   Search, 
@@ -35,7 +34,7 @@ export default function ClientReview() {
     queryFn: async () => {
       if (useDemoData) {
         // Transform SEO Review mock data into Client Review data
-        return mockSEOReviews.slice(0, 6).map(s => ({
+        return [].map((s: any) => ({
           ...s,
           workflow_stage: 'client_review',
           client_review_status: Math.random() > 0.5 ? 'pending' : Math.random() > 0.5 ? 'approved' : 'revision_requested',
