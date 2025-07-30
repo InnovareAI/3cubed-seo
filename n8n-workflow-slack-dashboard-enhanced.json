@@ -1,0 +1,521 @@
+{
+  "name": "3cubed-SEO - FDA + Slack + Dashboard Enhanced",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "hP9yZxUjmBKJmrZt",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "position": [-1200, 300],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "jsCode": "const webhookData = $input.all()[0].json;\nlet submission_id;\nif (webhookData?.body?.submission_id) {\n  submission_id = webhookData.body.submission_id;\n} else if (webhookData?.submission_id) {\n  submission_id = webhookData.submission_id;\n} else {\n  throw new Error('No submission_id found');\n}\nreturn { submission_id, webhook_data: webhookData };"
+      },
+      "id": "extract-submission-id",
+      "name": "Extract Submission ID",
+      "type": "n8n-nodes-base.code",
+      "position": [-1000, 300],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "submissions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $json.submission_id }}"
+            }
+          ]
+        }
+      },
+      "id": "fetch-submission-data",
+      "name": "Fetch Submission Data",
+      "type": "n8n-nodes-base.supabase",
+      "position": [-800, 300],
+      "typeVersion": 1,
+      "credentials": {
+        "supabaseApi": {
+          "id": "pgPh6lGomFMfn2ju",
+          "name": "Supabase account 3C SEO"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const record = $input.all()[0].json;\nconst stage = (record.development_stage?.toLowerCase() || '');\nlet phase = 'marketLaunch';\nif (stage.includes('phase 3') || stage.includes('phase iii')) {\n  phase = 'phase3';\n}\nreturn { phase, record, submission_id: record.id };"
+      },
+      "id": "validate-phase",
+      "name": "Validate Phase",
+      "type": "n8n-nodes-base.code",
+      "position": [-600, 300],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "jsCode": "// FDA Multi-Database Enrichment with Error Tracking\nconst record = $input.all()[0].json.record;\nconst productName = record.product_name;\nconst genericName = record.generic_name;\n\nlet enrichedData = {\n  clinical_trial_data: null,\n  drug_approval_data: null,\n  drug_labeling_data: null,\n  adverse_events_data: null,\n  recall_data: null,\n  shortage_data: null\n};\n\nlet apiErrors = [];\nlet successfulAPIs = [];\n\nasync function fetchWithDelay(url, apiName, delay = 1000) {\n  await new Promise(resolve => setTimeout(resolve, delay));\n  try {\n    const response = await fetch(url);\n    if (response.ok) {\n      successfulAPIs.push(apiName);\n      return await response.json();\n    } else {\n      apiErrors.push(`${apiName}: HTTP ${response.status}`);\n      return null;\n    }\n  } catch (error) {\n    apiErrors.push(`${apiName}: ${error.message}`);\n    return null;\n  }\n}\n\n// 1. Clinical Trials Data\nif (record.nct_number) {\n  const nctData = await fetchWithDelay(\n    `https://clinicaltrials.gov/api/v2/studies?query.id=${record.nct_number}&format=json`,\n    'ClinicalTrials.gov'\n  );\n  if (nctData?.studies?.length > 0) {\n    const trial = nctData.studies[0];\n    enrichedData.clinical_trial_data = {\n      nct_id: trial.protocolSection?.identificationModule?.nctId,\n      official_title: trial.protocolSection?.identificationModule?.officialTitle,\n      overall_status: trial.protocolSection?.statusModule?.overallStatus,\n      phase: trial.protocolSection?.designModule?.phases,\n      enrollment: trial.protocolSection?.designModule?.enrollmentInfo?.count\n    };\n  }\n}\n\n// 2. Drug Approval Data\nif (productName) {\n  const approvalData = await fetchWithDelay(\n    `https://api.fda.gov/drug/drugsfda.json?search=products.active_ingredients.name:\"${productName}\"&limit=3`,\n    'Drugs@FDA'\n  );\n  if (approvalData?.results?.length > 0) {\n    const latest = approvalData.results[0];\n    enrichedData.drug_approval_data = {\n      application_number: latest.application_number,\n      sponsor_name: latest.sponsor_name,\n      approval_date: latest.products?.[0]?.approval_date,\n      marketing_status: latest.products?.[0]?.marketing_status\n    };\n  }\n}\n\n// 3. Drug Labeling Data\nif (productName) {\n  const labelData = await fetchWithDelay(\n    `https://api.fda.gov/drug/label.json?search=openfda.brand_name:\"${productName}\"&limit=2`,\n    'FDA Drug Labels'\n  );\n  if (labelData?.results?.length > 0) {\n    const label = labelData.results[0];\n    enrichedData.drug_labeling_data = {\n      indications_and_usage: label.indications_and_usage?.[0],\n      contraindications: label.contraindications?.[0],\n      warnings_and_cautions: label.warnings_and_cautions?.[0]\n    };\n  }\n}\n\n// Calculate FDA data quality\nconst dataQuality = Object.values(enrichedData).filter(data => data !== null).length;\nconst fdaSuccess = successfulAPIs.length > 0;\n\nconst enrichedRecord = {\n  ...record,\n  fda_comprehensive_data: enrichedData,\n  fda_data_sources: successfulAPIs,\n  fda_api_errors: apiErrors,\n  fda_data_quality_score: (dataQuality / 6) * 100,\n  fda_enrichment_timestamp: new Date().toISOString(),\n  fda_enrichment_success: fdaSuccess\n};\n\nreturn {\n  phase: $node['Validate Phase'].json.phase,\n  record: enrichedRecord,\n  submission_id: record.id,\n  fda_success: fdaSuccess,\n  fda_errors: apiErrors\n};"
+      },
+      "id": "fda-data-enrichment",
+      "name": "FDA Data Enrichment",
+      "type": "n8n-nodes-base.code",
+      "position": [-400, 300],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "value1": "={{ $json.fda_errors.length }}",
+              "value2": "6",
+              "operation": "equal"
+            }
+          ]
+        }
+      },
+      "id": "check-fda-errors",
+      "name": "Check FDA Errors",
+      "type": "n8n-nodes-base.if",
+      "position": [-200, 400],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "jsCode": "const submission = $input.all()[0].json;\nconst slackPayload = {\n  text: '🚨 FDA API Integration Warning',\n  attachments: [{\n    color: 'warning',\n    fields: [\n      {\n        title: 'Product',\n        value: submission.record?.product_name || 'Unknown',\n        short: true\n      },\n      {\n        title: 'Submission ID',\n        value: submission.submission_id,\n        short: true\n      },\n      {\n        title: 'FDA APIs Status',\n        value: 'All 6 FDA databases unreachable',\n        short: false\n      },\n      {\n        title: 'Error Details',\n        value: submission.fda_errors.join('\\n'),\n        short: false\n      },\n      {\n        title: 'Action Required',\n        value: 'Check FDA API status and rate limits',\n        short: false\n      },\n      {\n        title: 'Workflow Status',\n        value: 'Continuing with standard content generation',\n        short: false\n      }\n    ]\n  }]\n};\nreturn { json: slackPayload };"
+      },
+      "id": "prepare-fda-error-slack",
+      "name": "Prepare FDA Error Slack",
+      "type": "n8n-nodes-base.code",
+      "position": [-100, 600],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "YOUR_SLACK_WEBHOOK_URL_HERE",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "payload",
+              "value": "={{ JSON.stringify($json) }}"
+            }
+          ]
+        }
+      },
+      "id": "send-fda-error-slack",
+      "name": "Send FDA Error to Slack",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [100, 600],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.perplexity.ai/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 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"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  \"model\": \"sonar\",\n  \"messages\": [{\n    \"role\": \"system\",\n    \"content\": \"You are an expert pharmaceutical SEO writer with access to official FDA database information.\"\n  }, {\n    \"role\": \"user\",\n    \"content\": `Generate comprehensive SEO content for:\\n\\nPRODUCT: ${$json.record.product_name}\\nGENERIC: ${$json.record.generic_name}\\nINDICATION: ${$json.record.indication}\\n\\nFDA DATA INTEGRATION:\\n${$json.record.fda_comprehensive_data?.clinical_trial_data ? `\\nCLINICAL TRIAL: ${$json.record.fda_comprehensive_data.clinical_trial_data.nct_id}\\nSTUDY: ${$json.record.fda_comprehensive_data.clinical_trial_data.official_title}\\nSTATUS: ${$json.record.fda_comprehensive_data.clinical_trial_data.overall_status}` : ''}\\n${$json.record.fda_comprehensive_data?.drug_approval_data ? `\\nFDA APPROVAL: ${$json.record.fda_comprehensive_data.drug_approval_data.application_number}\\nSPONSOR: ${$json.record.fda_comprehensive_data.drug_approval_data.sponsor_name}\\nAPPROVED: ${$json.record.fda_comprehensive_data.drug_approval_data.approval_date}` : ''}\\n\\nProvide exactly:\\n### Title Tag:\\n[60 chars max]\\n### Meta Description:\\n[155 chars max]\\n### Keywords:\\n[10-15 terms]\\n### Body Content:\\n[500-800 words with FDA data integration]`\n  }]\n}) }}"
+      },
+      "id": "generate-content-perplexity",
+      "name": "Generate Content - Perplexity",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [-200, 200],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse Perplexity response and prepare for dashboard\nconst perplexityResponse = $input.all()[0].json;\nconst record = $node['FDA Data Enrichment'].json.record;\n\nlet content = perplexityResponse.choices?.[0]?.message?.content || '';\n\n// Parse structured sections\nconst titleMatch = content.match(/Title Tag:\\s*([^\\n]+)/i);\nconst metaMatch = content.match(/Meta Description:\\s*([^\\n]+)/i);\nconst keywordsMatch = content.match(/Keywords:\\s*([^\\n]+)/i);\nconst bodyMatch = content.match(/Body Content:\\s*([\\s\\S]+?)(?=###|$)/i);\n\nconst structuredSections = {\n  title_tag: titleMatch?.[1]?.trim() || '',\n  meta_description: metaMatch?.[1]?.trim() || '',\n  keywords: keywordsMatch?.[1]?.split(',').map(k => k.trim()) || [],\n  body_content: bodyMatch?.[1]?.trim() || ''\n};\n\n// Calculate content metrics for dashboard\nconst contentMetrics = {\n  word_count: content.split(' ').length,\n  title_length: structuredSections.title_tag.length,\n  meta_description_length: structuredSections.meta_description.length,\n  keyword_count: structuredSections.keywords.length,\n  fda_references_count: (content.match(/NCT\\d{8}|FDA|BLA|NDA/g) || []).length,\n  question_headings_count: (content.match(/\\?\\s*$/gm) || []).length\n};\n\nreturn {\n  submission_id: record.id,\n  record: record,\n  ai_content: content,\n  structured_sections: structuredSections,\n  content_metrics: contentMetrics,\n  processing_timestamp: new Date().toISOString()\n};"
+      },
+      "id": "parse-perplexity-response",
+      "name": "Parse Perplexity Response",
+      "type": "n8n-nodes-base.code",
+      "position": [0, 200],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "submissions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $json.submission_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "ai_processing_status",
+              "fieldValue": "processing"
+            },
+            {
+              "fieldId": "ai_generated_content",
+              "fieldValue": "={{ JSON.stringify($json.structured_sections) }}"
+            },
+            {
+              "fieldId": "meta_title",
+              "fieldValue": "={{ $json.structured_sections.title_tag }}"
+            },
+            {
+              "fieldId": "meta_description",
+              "fieldValue": "={{ $json.structured_sections.meta_description }}"
+            },
+            {
+              "fieldId": "seo_keywords",
+              "fieldValue": "={{ $json.structured_sections.keywords }}"
+            },
+            {
+              "fieldId": "workflow_stage",
+              "fieldValue": "qa_review"
+            }
+          ]
+        }
+      },
+      "id": "update-db-with-content",
+      "name": "Update DB with AI Content",
+      "type": "n8n-nodes-base.supabase",
+      "position": [200, 200],
+      "typeVersion": 1,
+      "credentials": {
+        "supabaseApi": {
+          "id": "pgPh6lGomFMfn2ju",
+          "name": "Supabase account 3C SEO"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Prepare QA request for Claude\nconst data = $input.all()[0].json;\n\nconst claudeRequestBody = {\n  model: 'claude-3-5-sonnet-20241022',\n  max_tokens: 4000,\n  temperature: 0.1,\n  messages: [{\n    role: 'user',\n    content: `Review this pharmaceutical SEO content for regulatory compliance:\\n\\nPRODUCT: ${data.record.product_name}\\nCONTENT: ${data.ai_content}\\n\\nProvide JSON response with:\\n{\\n  \"qa_score\": [0-100],\\n  \"compliance_score\": [0-100],\\n  \"medical_accuracy\": [0-100],\\n  \"seo_effectiveness\": [0-100],\\n  \"critical_issues\": [],\\n  \"required_changes\": [],\\n  \"recommendation\": \"PASS\" or \"FAIL\",\\n  \"detailed_feedback\": \"...\"\\n}`\n  }]\n};\n\nreturn {\n  claudeRequestBody,\n  submission_id: data.submission_id,\n  record: data.record,\n  ai_content: data.ai_content,\n  structured_sections: data.structured_sections,\n  content_metrics: data.content_metrics\n};"
+      },
+      "id": "prep-claude-request",
+      "name": "Prep Claude Request",
+      "type": "n8n-nodes-base.code",
+      "position": [400, 200],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "x-api-key",
+              "value": "YOUR_ANTHROPIC_API_KEY"
+            },
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.claudeRequestBody) }}"
+      },
+      "id": "qa-review-claude",
+      "name": "QA Review - Claude",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [600, 200],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse Claude QA response and prepare dashboard data\nconst claudeResponse = $input.all()[0].json;\nconst prevData = $node['Prep Claude Request'].json;\n\nlet responseContent = claudeResponse.content?.[0]?.text || claudeResponse.text || '';\nlet qaResult;\n\ntry {\n  const jsonMatch = responseContent.match(/\\{[\\s\\S]*\\}/);\n  qaResult = jsonMatch ? JSON.parse(jsonMatch[0]) : {\n    qa_score: 0,\n    compliance_score: 0,\n    medical_accuracy: 0,\n    seo_effectiveness: 0,\n    critical_issues: ['Failed to parse QA response'],\n    required_changes: [],\n    recommendation: 'FAIL',\n    detailed_feedback: 'QA parsing error'\n  };\n} catch (e) {\n  qaResult = {\n    qa_score: 0,\n    compliance_score: 0,\n    medical_accuracy: 0,\n    seo_effectiveness: 0,\n    critical_issues: ['QA system error'],\n    required_changes: [],\n    recommendation: 'FAIL',\n    detailed_feedback: e.message\n  };\n}\n\n// Prepare comprehensive dashboard data\nconst dashboardData = {\n  content_metrics: prevData.content_metrics,\n  fda_integration: {\n    databases_queried: prevData.record.fda_data_sources?.length || 0,\n    clinical_trial_found: !!prevData.record.fda_comprehensive_data?.clinical_trial_data,\n    approval_data_found: !!prevData.record.fda_comprehensive_data?.drug_approval_data,\n    labeling_data_found: !!prevData.record.fda_comprehensive_data?.drug_labeling_data,\n    quality_score: prevData.record.fda_data_quality_score || 0,\n    nct_verified: !!prevData.record.fda_comprehensive_data?.clinical_trial_data?.nct_id\n  },\n  qa_assessment: {\n    overall_score: qaResult.qa_score,\n    compliance_score: qaResult.compliance_score,\n    medical_accuracy: qaResult.medical_accuracy,\n    seo_effectiveness: qaResult.seo_effectiveness,\n    critical_issues_count: qaResult.critical_issues?.length || 0,\n    required_changes_count: qaResult.required_changes?.length || 0,\n    recommendation: qaResult.recommendation\n  },\n  processing_timeline: {\n    submission_time: prevData.record.created_at,\n    fda_enrichment_time: prevData.record.fda_enrichment_timestamp,\n    content_generation_time: prevData.processing_timestamp,\n    qa_completion_time: new Date().toISOString()\n  }\n};\n\nreturn {\n  ...qaResult,\n  submission_id: prevData.submission_id,\n  dashboard_data: dashboardData,\n  content_status: qaResult.recommendation === 'PASS' ? 'approved' : 'requires_review',\n  qa_completion_date: new Date().toISOString()\n};"
+      },
+      "id": "parse-qa-response",
+      "name": "Parse QA Response",
+      "type": "n8n-nodes-base.code",
+      "position": [800, 200],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "submissions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $json.submission_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "ai_processing_status",
+              "fieldValue": "={{ $json.recommendation === 'PASS' ? 'completed' : 'requires_review' }}"
+            },
+            {
+              "fieldId": "qa_status",
+              "fieldValue": "={{ $json.recommendation === 'PASS' ? 'passed' : 'failed' }}"
+            },
+            {
+              "fieldId": "qa_score",
+              "fieldValue": "={{ $json.qa_score }}"
+            },
+            {
+              "fieldId": "qa_feedback",
+              "fieldValue": "={{ JSON.stringify($json) }}"
+            },
+            {
+              "fieldId": "dashboard_data",
+              "fieldValue": "={{ JSON.stringify($json.dashboard_data) }}"
+            },
+            {
+              "fieldId": "content_status",
+              "fieldValue": "={{ $json.content_status }}"
+            },
+            {
+              "fieldId": "qa_completion_date",
+              "fieldValue": "={{ $json.qa_completion_date }}"
+            },
+            {
+              "fieldId": "workflow_stage",
+              "fieldValue": "completed"
+            }
+          ]
+        }
+      },
+      "id": "final-db-update",
+      "name": "Final DB Update with Dashboard Data",
+      "type": "n8n-nodes-base.supabase",
+      "position": [1000, 200],
+      "typeVersion": 1,
+      "credentials": {
+        "supabaseApi": {
+          "id": "pgPh6lGomFMfn2ju",
+          "name": "Supabase account 3C SEO"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const result = $input.all()[0].json;\n\nreturn {\n  success: true,\n  submission_id: result.submission_id,\n  status: result.content_status,\n  qa_recommendation: result.recommendation,\n  qa_score: result.qa_score,\n  dashboard_data: result.dashboard_data,\n  message: 'Pharmaceutical SEO content generated with FDA integration'\n};"
+      },
+      "id": "prepare-webhook-response",
+      "name": "Prepare Webhook Response",
+      "type": "n8n-nodes-base.code",
+      "position": [1200, 200],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {},
+      "id": "webhook-response",
+      "name": "Webhook Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [1400, 200],
+      "typeVersion": 1.1
+    }
+  ],
+  "connections": {
+    "webhook-trigger": {
+      "main": [
+        [
+          {
+            "node": "extract-submission-id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "extract-submission-id": {
+      "main": [
+        [
+          {
+            "node": "fetch-submission-data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "fetch-submission-data": {
+      "main": [
+        [
+          {
+            "node": "validate-phase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "validate-phase": {
+      "main": [
+        [
+          {
+            "node": "fda-data-enrichment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "fda-data-enrichment": {
+      "main": [
+        [
+          {
+            "node": "check-fda-errors",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "generate-content-perplexity",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "check-fda-errors": {
+      "main": [
+        [
+          {}
+        ],
+        [
+          {
+            "node": "prepare-fda-error-slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "prepare-fda-error-slack": {
+      "main": [
+        [
+          {
+            "node": "send-fda-error-slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "generate-content-perplexity": {
+      "main": [
+        [
+          {
+            "node": "parse-perplexity-response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "parse-perplexity-response": {
+      "main": [
+        [
+          {
+            "node": "update-db-with-content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "update-db-with-content": {
+      "main": [
+        [
+          {
+            "node": "prep-claude-request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "prep-claude-request": {
+      "main": [
+        [
+          {
+            "node": "qa-review-claude",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "qa-review-claude": {
+      "main": [
+        [
+          {
+            "node": "parse-qa-response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "parse-qa-response": {
+      "main": [
+        [
+          {
+            "node": "final-db-update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "final-db-update": {
+      "main": [
+        [
+          {
+            "node": "prepare-webhook-response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "prepare-webhook-response": {
+      "main": [
+        [
+          {
+            "node": "webhook-response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "id": "enhanced-slack-dashboard-workflow"
+}
