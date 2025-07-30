@@ -1,5 +1,4 @@
 import React, { useState, useMemo } from 'react';
-import { supabase } from '../lib/supabase';
 import { THERAPEUTIC_AREAS } from '../constants/therapeuticAreas';
 import { CheckCircle } from 'lucide-react';
 
@@ -239,17 +238,24 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         }
       });
 
-      console.log('🚀 About to submit data to Supabase:', submissionData);
+      console.log('🚀 About to submit data to n8n webhook:', submissionData);
 
       try {
-        const { data: insertedData, error: supabaseError } = await supabase
-        .from('submissions')
-        .insert([submissionData])
-        .select();
+        // Submit to n8n webhook for processing
+        const webhookResponse = await fetch('https://innovareai.app.n8n.cloud/webhook/generate-pharma-content', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(submissionData)
+        });
 
-        if (supabaseError) throw supabaseError;
+        if (!webhookResponse.ok) {
+          throw new Error(`Webhook failed: ${webhookResponse.status} ${webhookResponse.statusText}`);
+        }
 
-        console.log('✅ Data successfully inserted into Supabase:', insertedData);
+        const webhookData = await webhookResponse.json();
+        console.log('✅ Data successfully sent to n8n webhook:', webhookData);
 
         // Show success modal (user must dismiss manually)
         setShowSuccessMessage(true);
@@ -282,7 +288,7 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         if (onSuccess) onSuccess();
         if (onClose) onClose();
       } catch (err) {
-        console.error('❌ Form submission error:', err);
+        console.error('❌ Webhook submission error:', err);
         console.error('Submission data that failed:', submissionData);
         
         let errorMessage = 'Unable to process request. Please try again.';
