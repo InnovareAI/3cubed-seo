@@ -7,7 +7,12 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "deploy": "netlify deploy --prod"
+    "deploy": "netlify deploy --prod",
+    "netlify:dev": "netlify dev",
+    "test:load": "node scripts/load-test-data.mjs",
+    "test:load:clear": "node scripts/load-test-data.mjs --clear",
+    "test:load:process": "node scripts/load-test-data.mjs --process",
+    "test:quick": "node scripts/quick-test-submission.mjs"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.19",

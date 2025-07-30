@@ -1,0 +1,79 @@
+{
+  "test_submissions": [
+    {
+      "product_name": "Keytruda",
+      "generic_name": "pembrolizumab",
+      "indication": "Non-Small Cell Lung Cancer",
+      "therapeutic_area": "Oncology",
+      "development_stage": "Marketed",
+      "nct_number": "NCT02220894",
+      "sponsor": "Merck Sharp & Dohme",
+      "line_of_therapy": "First-line",
+      "patient_population": ["Advanced NSCLC", "PD-L1 positive"],
+      "route_of_administration": "Intravenous",
+      "submitter_name": "Test User",
+      "submitter_email": "test@3cubed.com",
+      "priority_level": "High"
+    },
+    {
+      "product_name": "Ozempic",
+      "generic_name": "semaglutide",
+      "indication": "Type 2 Diabetes",
+      "therapeutic_area": "Endocrinology",
+      "development_stage": "Marketed",
+      "nct_number": "NCT01720446",
+      "sponsor": "Novo Nordisk",
+      "line_of_therapy": "Second-line",
+      "patient_population": ["Adults with T2D", "Inadequate glycemic control"],
+      "route_of_administration": "Subcutaneous",
+      "submitter_name": "Test User",
+      "submitter_email": "test@3cubed.com",
+      "priority_level": "High"
+    },
+    {
+      "product_name": "Leqembi",
+      "generic_name": "lecanemab",
+      "indication": "Alzheimer's Disease",
+      "therapeutic_area": "Neurology",
+      "development_stage": "Recently Approved",
+      "nct_number": "NCT01767311",
+      "sponsor": "Eisai",
+      "line_of_therapy": "First-line",
+      "patient_population": ["Early Alzheimer's", "Mild cognitive impairment"],
+      "route_of_administration": "Intravenous",
+      "submitter_name": "Test User",
+      "submitter_email": "test@3cubed.com",
+      "priority_level": "High"
+    },
+    {
+      "product_name": "TestDrug-001",
+      "generic_name": "testmab",
+      "indication": "Advanced Melanoma",
+      "therapeutic_area": "Oncology",
+      "development_stage": "Phase III",
+      "nct_number": "NCT05123456",
+      "sponsor": "Test Pharma Inc",
+      "line_of_therapy": "Third-line",
+      "patient_population": ["BRAF-mutant melanoma", "Previously treated"],
+      "route_of_administration": "Intravenous",
+      "submitter_name": "Test User",
+      "submitter_email": "test@3cubed.com",
+      "priority_level": "Medium"
+    },
+    {
+      "product_name": "BioTest-202",
+      "generic_name": "biotestuzumab",
+      "indication": "Rheumatoid Arthritis",
+      "therapeutic_area": "Rheumatology",
+      "development_stage": "Phase II",
+      "nct_number": "",
+      "sponsor": "BioTest Therapeutics",
+      "line_of_therapy": "Second-line",
+      "patient_population": ["Moderate to severe RA", "TNF-inadequate responders"],
+      "route_of_administration": "Subcutaneous",
+      "submitter_name": "Test User",
+      "submitter_email": "test@3cubed.com",
+      "priority_level": "Low"
+    }
+  ]
+}

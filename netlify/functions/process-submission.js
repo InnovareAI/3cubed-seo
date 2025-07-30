@@ -84,8 +84,11 @@ exports.handler = async (event, context) => {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
 
+  let submission_id;
+  
   try {
-    const { submission_id } = JSON.parse(event.body);
+    const body = JSON.parse(event.body);
+    submission_id = body.submission_id;
     console.log('Processing submission:', submission_id);
 
     // 1. Get submission data
@@ -302,15 +305,17 @@ Return JSON with: compliance_score, medical_accuracy, seo_effectiveness, qa_scor
   } catch (error) {
     console.error('Error:', error);
     
-    // Update status to failed
-    await supabase
-      .from('submissions')
-      .update({
-        ai_processing_status: 'failed',
-        workflow_stage: 'failed',
-        error_message: error.message
-      })
-      .eq('id', submission_id);
+    // Update status to failed (only if we have a submission_id)
+    if (submission_id) {
+      await supabase
+        .from('submissions')
+        .update({
+          ai_processing_status: 'failed',
+          workflow_stage: 'failed',
+          error_message: error.message
+        })
+        .eq('id', submission_id);
+    }
 
     return {
       statusCode: 500,
