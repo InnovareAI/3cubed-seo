@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import CTAButton from '@/components/CTAButton'
+import ComprehensiveApprovalForm from '@/components/ComprehensiveApprovalForm'
+import { ApprovalFormSections } from '@/types/approval.types'
 import { 
   ArrowLeft,
   CheckCircle,
@@ -61,9 +63,10 @@ export default function SEOReviewDetail() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   
+  const [showApprovalForm, setShowApprovalForm] = useState(false)
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     'overview': true,
-    'seo-analysis': true,
+    'seo-analysis': !showApprovalForm,
     'geo-optimization': false,
     'seo-strategy': false,
     'compliance': false
@@ -242,11 +245,13 @@ export default function SEOReviewDetail() {
     }))
   }
 
-  const handleApprove = () => {
-    const allApproved = Object.values(approvals).every(v => v === true)
-    if (!allApproved) {
-      alert('Please approve all required items before sending to client review')
-      return
+  const handleApprove = (approvalData?: any) => {
+    if (!showApprovalForm) {
+      const allApproved = Object.values(approvals).every(v => v === true)
+      if (!allApproved) {
+        alert('Please approve all required items before sending to client review')
+        return
+      }
     }
     updateStatus.mutate({ newStatus: 'pending_client_review' })
   }
@@ -827,39 +832,71 @@ export default function SEOReviewDetail() {
         </div>
       </div>
 
-      {/* Action Buttons */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      {/* Toggle Approval Form Button */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
         <div className="flex items-center justify-between">
-          <div className="text-sm text-gray-600">
-            {Object.values(approvals).filter(v => v).length < Object.keys(approvals).length && (
-              <div className="flex items-center gap-2 text-amber-700">
-                <AlertCircle className="h-4 w-4" />
-                <span>Approve all required items before sending to client</span>
-              </div>
-            )}
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900">Content Approval</h2>
+            <p className="text-sm text-gray-600 mt-1">Review and approve each content section</p>
           </div>
-          
-          <div className="flex gap-3">
-            <CTAButton
-              variant="secondary"
-              icon={<XCircle className="h-4 w-4" />}
-              onClick={handleRequestRevision}
-              disabled={updateStatus.isPending || !revisionNotes.trim()}
-            >
-              Request Revision
-            </CTAButton>
-            <CTAButton
-              variant="primary"
-              icon={<CheckCircle className="h-4 w-4" />}
-              onClick={handleApprove}
-              disabled={updateStatus.isPending || !Object.values(approvals).every(v => v)}
-              loading={updateStatus.isPending}
-            >
-              Approve & Send to Client
-            </CTAButton>
-          </div>
+          <CTAButton
+            variant={showApprovalForm ? "secondary" : "primary"}
+            onClick={() => setShowApprovalForm(!showApprovalForm)}
+          >
+            {showApprovalForm ? 'Hide Approval Form' : 'Show Approval Form'}
+          </CTAButton>
         </div>
       </div>
+
+      {/* Comprehensive Approval Form */}
+      {showApprovalForm && (
+        <div className="mb-6">
+          <ComprehensiveApprovalForm 
+            submission={submission}
+            onSubmit={(approvals: ApprovalFormSections) => {
+              console.log('Approvals submitted:', approvals)
+              // Handle submission to Supabase
+              handleApprove()
+            }}
+          />
+        </div>
+      )}
+
+      {/* Original Action Buttons */}
+      {!showApprovalForm && (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-gray-600">
+              {Object.values(approvals).filter(v => v).length < Object.keys(approvals).length && (
+                <div className="flex items-center gap-2 text-amber-700">
+                  <AlertCircle className="h-4 w-4" />
+                  <span>Approve all required items before sending to client</span>
+                </div>
+              )}
+            </div>
+            
+            <div className="flex gap-3">
+              <CTAButton
+                variant="secondary"
+                icon={<XCircle className="h-4 w-4" />}
+                onClick={handleRequestRevision}
+                disabled={updateStatus.isPending || !revisionNotes.trim()}
+              >
+                Request Revision
+              </CTAButton>
+              <CTAButton
+                variant="primary"
+                icon={<CheckCircle className="h-4 w-4" />}
+                onClick={handleApprove}
+                disabled={updateStatus.isPending || !Object.values(approvals).every(v => v)}
+                loading={updateStatus.isPending}
+              >
+                Approve & Send to Client
+              </CTAButton>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
