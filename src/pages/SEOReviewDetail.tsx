@@ -88,7 +88,8 @@ export default function SEOReviewDetail() {
       id: 'demo-1',
       product_name: 'Keytruda',
       therapeutic_area: 'Oncology',
-      stage: 'launch',
+      stage: 'Market Launch',
+      development_stage: 'Market Launch',
       workflow_stage: 'ai_completed',
       target_audience: ['HCPs', 'Patients'],
       created_at: new Date().toISOString(),
@@ -120,7 +121,8 @@ export default function SEOReviewDetail() {
       id: 'demo-2',
       product_name: 'Ozempic',
       therapeutic_area: 'Diabetes',
-      stage: 'post-launch',
+      stage: 'Market Launch',
+      development_stage: 'Market Launch',
       workflow_stage: 'seo_review',
       target_audience: ['Patients', 'Caregivers'],
       created_at: new Date(Date.now() - 3600000).toISOString(),
@@ -142,7 +144,8 @@ export default function SEOReviewDetail() {
       id: 'demo-3',
       product_name: 'Humira',
       therapeutic_area: 'Immunology',
-      stage: 'pre-launch',
+      stage: 'Phase III',
+      development_stage: 'Phase III',
       workflow_stage: 'pending',
       target_audience: ['HCPs', 'Patients', 'Payers'],
       created_at: new Date(Date.now() - 7200000).toISOString(),
@@ -421,7 +424,7 @@ export default function SEOReviewDetail() {
                 <div>
                   <span className="text-gray-600">2. Product Name:</span>
                   <span className="ml-2 font-medium text-gray-900">
-                    {(submission.development_stage === 'Market Launch' || submission.stage === 'launch' || submission.stage === 'post-launch') 
+                    {(submission.development_stage === 'Market Launch') 
                       ? (submission.product_name || 'Brand name required')
                       : (submission.generic_name || 'Generic name required')}
                   </span>
@@ -437,7 +440,7 @@ export default function SEOReviewDetail() {
               </div>
               <div className="mt-3 pt-3 border-t border-blue-200">
                 <p className="text-xs text-blue-800">
-                  <strong>Note:</strong> {(submission.development_stage === 'Market Launch' || submission.stage === 'launch' || submission.stage === 'post-launch') 
+                  <strong>Note:</strong> {(submission.development_stage === 'Market Launch') 
                     ? 'Market Launch phase uses brand name for optimization'
                     : 'Phase III/Market Shaping uses generic name for optimization'}
                 </p>
@@ -832,18 +835,18 @@ export default function SEOReviewDetail() {
         </div>
       </div>
 
-      {/* Toggle Approval Form Button */}
+      {/* Toggle Strategy & Tactics Form Button */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-gray-900">Content Approval</h2>
-            <p className="text-sm text-gray-600 mt-1">Review and approve each content section</p>
+            <h2 className="text-lg font-semibold text-gray-900">Strategy & Tactics Approval</h2>
+            <p className="text-sm text-gray-600 mt-1">Review and approve SEO/GEO strategy and implementation tactics</p>
           </div>
           <CTAButton
             variant={showApprovalForm ? "secondary" : "primary"}
             onClick={() => setShowApprovalForm(!showApprovalForm)}
           >
-            {showApprovalForm ? 'Hide Approval Form' : 'Show Approval Form'}
+            {showApprovalForm ? 'Hide Strategy Form' : 'Show Strategy Form'}
           </CTAButton>
         </div>
       </div>
