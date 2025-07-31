@@ -57,13 +57,18 @@ export default function SEOReview() {
   const [priorityFilter, setPriorityFilter] = useState<string>('all')
   const [therapeuticAreaFilter, setTherapeuticAreaFilter] = useState<string>('all')
 
+  // Track viewed submissions
+  const [viewedSubmissions, setViewedSubmissions] = useState<Set<string>>(
+    new Set(JSON.parse(localStorage.getItem('viewedSubmissions') || '[]'))
+  )
+
   const { data: dbSubmissions, isLoading } = useQuery({
     queryKey: ['seo-review-queue'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('submissions')
         .select('*')
-        .order('created_at', { ascending: false })
+        .order('created_at', { ascending: false }) // Always newest first
       
       if (error) throw error
       return data as Submission[]
@@ -112,6 +117,12 @@ export default function SEOReview() {
   }) || []
 
   const handleCardClick = (submissionId: string) => {
+    // Mark as viewed
+    const newViewedSet = new Set(viewedSubmissions)
+    newViewedSet.add(submissionId)
+    setViewedSubmissions(newViewedSet)
+    localStorage.setItem('viewedSubmissions', JSON.stringify(Array.from(newViewedSet)))
+    
     navigate(`/seo-review/${submissionId}`)
   }
 
@@ -272,8 +283,15 @@ export default function SEOReview() {
           <div
             key={submission.id}
             onClick={() => handleCardClick(submission.id)}
-            className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all cursor-pointer group"
+            className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all cursor-pointer group relative"
           >
+            {/* NEW Badge */}
+            {!viewedSubmissions.has(submission.id) && (
+              <div className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg animate-pulse">
+                NEW
+              </div>
+            )}
+            
             <div className="flex justify-between items-start mb-4">
               <div className="flex-1">
                 <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
