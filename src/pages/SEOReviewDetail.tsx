@@ -6,6 +6,7 @@ import CTAButton from '@/components/CTAButton'
 import ComprehensiveApprovalForm from '@/components/ComprehensiveApprovalForm'
 import FieldApprovalControl, { FieldApproval } from '@/components/FieldApprovalControl'
 import IndividualKeywordApproval, { KeywordApprovalData } from '@/components/IndividualKeywordApproval'
+import ComplianceStatusVisual from '@/components/ComplianceStatusVisual'
 import { ApprovalFormSections } from '@/types/approval.types'
 import { exportToCSV, exportToPDF } from '@/utils/exportUtils'
 import { 
@@ -803,15 +804,10 @@ export default function SEOReviewDetail() {
         
         {expandedSections['compliance'] && (
           <div className="px-6 pb-6">
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5 text-green-600" />
-                <span className="font-medium text-green-900">AI Compliance Check Passed</span>
-              </div>
-              <p className="text-sm text-green-800 mt-2">
-                Content has been reviewed for basic compliance requirements. Final MLR review pending.
-              </p>
-            </div>
+            <ComplianceStatusVisual 
+              submission={submission} 
+              fieldApprovals={fieldApprovals}
+            />
           </div>
         )}
       </div>
