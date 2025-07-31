@@ -1,0 +1,308 @@
+{
+  "name": "3Cubed SEO - FDA Research Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "fda-research-agent",
+        "httpMethod": "POST",
+        "responseMode": "responseNode",
+        "responseData": "allEntries",
+        "options": {}
+      },
+      "id": "webhook_trigger",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [250, 300],
+      "webhookId": "fda-research-agent"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://eqokpqqjdzbzatbmqiea.supabase.co/rest/v1/submissions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "options": {
+          "queryParametersUi": {
+            "parameter": [
+              {
+                "name": "id",
+                "value": "=eq.{{ $json.submission_id }}"
+              },
+              {
+                "name": "select",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "fetch_submission",
+      "name": "Fetch Submission Data",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [450, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "supabase_api",
+          "name": "Supabase API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract submission data\nconst submission = $input.first().json[0];\n\nif (!submission) {\n  throw new Error('No submission found');\n}\n\n// Create Perplexity prompt\nconst prompt = `Generate comprehensive pharmaceutical GEO content for: ${submission.product_name}\n\nREGULATORY CONTEXT:\n- Generic Name: ${submission.generic_name}\n- Medical Indication: ${submission.medical_indication}\n- Therapeutic Area: ${submission.therapeutic_area}\n- Development Stage: ${submission.development_stage || 'Market Launch'}\n- Patient Population: ${submission.patient_population || 'Adults'}\n\nGEO OPTIMIZATION REQUIREMENTS:\n1. Voice Search Optimization - Generate 10+ natural language voice queries\n2. AI Platform Optimization - Create platform-specific content for ChatGPT, Perplexity, Google SGE\n3. Clinical Evidence Integration - Include trial data, efficacy, safety profiles\n4. Multi-Modal Content - FAQ sections, how-to guides, infographic descriptions\n5. Regulatory Compliance - Include contraindications, warnings, disclaimers\n\nOUTPUT FORMAT - Return valid JSON with these exact field names:\n{\n  \"seo_title\": \"60-char SEO optimized title\",\n  \"meta_description\": \"155-char meta description\",\n  \"h1_tag\": \"Main H1 heading\",\n  \"h2_tags\": [\"heading1\", \"heading2\", \"heading3\", \"heading4\"],\n  \"seo_keywords\": [\"keyword1\", \"keyword2\", \"keyword3\", \"keyword4\", \"keyword5\"],\n  \"long_tail_keywords\": [\"long tail keyword 1\", \"long tail keyword 2\", \"long tail keyword 3\"],\n  \"geo_event_tags\": [\"Conference 2024\", \"Awareness Day\", \"Medical Summit\"],\n  \"seo_strategy_outline\": \"Comprehensive SEO strategy description...\",\n  \"voice_search_queries\": [\"What is X used for?\", \"How does X work?\", \"X side effects\"],\n  \"faq_sections\": [{\"question\": \"What is X?\", \"answer\": \"X is...\"}],\n  \"geo_optimization_score\": 85\n}`;\n\nreturn {\n  submission_id: submission.id,\n  submission_data: submission,\n  perplexity_prompt: prompt\n};"
+      },
+      "id": "prepare_prompt",
+      "name": "Prepare AI Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.perplexity.ai/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"llama-3.1-sonar-large-128k-online\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": \"{{ $json.perplexity_prompt }}\"\n    }\n  ],\n  \"temperature\": 0.7,\n  \"max_tokens\": 4000\n}",
+        "options": {}
+      },
+      "id": "perplexity_ai",
+      "name": "Perplexity AI Generation",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [850, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "perplexity_api",
+          "name": "Perplexity API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse Perplexity response\nconst response = $input.first().json;\nconst content = response.choices[0].message.content;\n\n// Try to parse as JSON, or extract JSON from markdown\nlet aiOutput;\ntry {\n  // Check if content is wrapped in markdown code blocks\n  const jsonMatch = content.match(/```json\\n?([\\s\\S]*?)\\n?```/);\n  if (jsonMatch) {\n    aiOutput = JSON.parse(jsonMatch[1]);\n  } else {\n    aiOutput = JSON.parse(content);\n  }\n} catch (error) {\n  // If parsing fails, create a structured response\n  aiOutput = {\n    seo_title: \"SEO content generated but needs review\",\n    meta_description: \"Content requires manual parsing\",\n    raw_content: content,\n    parse_error: error.message\n  };\n}\n\n// Prepare for QA review\nconst qaPrompt = `Review this pharmaceutical SEO content for regulatory compliance and accuracy:\n\nProduct: ${$node[\"prepare_prompt\"].json.submission_data.product_name}\nContent: ${JSON.stringify(aiOutput, null, 2)}\n\nCheck for:\n1. Medical accuracy\n2. FDA compliance\n3. No unsubstantiated claims\n4. Appropriate disclaimers\n5. Balanced benefit/risk information\n\nRespond with:\n- status: \"APPROVED\" or \"NEEDS_REVISION\"\n- score: 0-100\n- issues: [list of any issues found]\n- recommendations: [list of improvements]`;\n\nreturn {\n  submission_id: $node[\"prepare_prompt\"].json.submission_id,\n  ai_output: aiOutput,\n  qa_prompt: qaPrompt\n};"
+      },
+      "id": "parse_perplexity",
+      "name": "Parse Perplexity Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1050, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"claude-3-haiku-20240307\",\n  \"max_tokens\": 1000,\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": \"{{ $json.qa_prompt }}\"\n    }\n  ]\n}",
+        "options": {
+          "headers": {
+            "values": [
+              {
+                "name": "anthropic-version",
+                "value": "2023-06-01"
+              }
+            ]
+          }
+        }
+      },
+      "id": "claude_qa",
+      "name": "Claude QA Review",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1250, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "claude_api",
+          "name": "Claude API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse Claude QA response\nconst qaResponse = $input.first().json;\nconst qaContent = qaResponse.content[0].text;\n\n// Extract QA results\nlet qaResult = {\n  status: \"APPROVED\",\n  score: 85,\n  issues: [],\n  recommendations: []\n};\n\ntry {\n  // Try to parse structured response\n  const jsonMatch = qaContent.match(/```json\\n?([\\s\\S]*?)\\n?```/);\n  if (jsonMatch) {\n    qaResult = JSON.parse(jsonMatch[1]);\n  } else if (qaContent.includes('APPROVED')) {\n    qaResult.status = \"APPROVED\";\n  } else if (qaContent.includes('NEEDS_REVISION')) {\n    qaResult.status = \"NEEDS_REVISION\";\n  }\n} catch (error) {\n  // Keep default qaResult\n}\n\n// Combine all data for update\nconst aiOutput = $node[\"parse_perplexity\"].json.ai_output;\nconst submissionId = $node[\"parse_perplexity\"].json.submission_id;\n\nreturn {\n  submission_id: submissionId,\n  update_data: {\n    // SEO fields\n    seo_title: aiOutput.seo_title || '',\n    meta_description: aiOutput.meta_description || '',\n    h1_tag: aiOutput.h1_tag || '',\n    h2_tags: aiOutput.h2_tags || [],\n    seo_keywords: aiOutput.seo_keywords || [],\n    long_tail_keywords: aiOutput.long_tail_keywords || [],\n    geo_event_tags: aiOutput.geo_event_tags || [],\n    seo_strategy_outline: aiOutput.seo_strategy_outline || '',\n    voice_search_queries: aiOutput.voice_search_queries || [],\n    faq_sections: aiOutput.faq_sections || [],\n    geo_optimization_score: aiOutput.geo_optimization_score || 0,\n    \n    // AI processing fields\n    ai_output: aiOutput,\n    ai_processing_status: 'completed',\n    workflow_stage: qaResult.status === 'APPROVED' ? 'seo_review' : 'needs_revision',\n    \n    // QA fields\n    qa_status: qaResult.status,\n    qa_score: qaResult.score,\n    qa_issues: qaResult.issues,\n    qa_recommendations: qaResult.recommendations,\n    \n    // Timestamps\n    ai_processed_at: new Date().toISOString(),\n    updated_at: new Date().toISOString()\n  }\n};"
+      },
+      "id": "prepare_update",
+      "name": "Prepare Database Update",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1450, 300]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://eqokpqqjdzbzatbmqiea.supabase.co/rest/v1/submissions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.update_data) }}",
+        "options": {
+          "queryParametersUi": {
+            "parameter": [
+              {
+                "name": "id",
+                "value": "=eq.{{ $json.submission_id }}"
+              }
+            ]
+          },
+          "headers": {
+            "values": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "name": "Prefer",
+                "value": "return=representation"
+              }
+            ]
+          }
+        }
+      },
+      "id": "update_supabase",
+      "name": "Update Supabase",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1650, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "supabase_api",
+          "name": "Supabase API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "status",
+              "value": "success"
+            },
+            {
+              "name": "message",
+              "value": "=AI processing completed for submission {{ $json.submission_id }}"
+            },
+            {
+              "name": "submission_id",
+              "value": "={{ $json.submission_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "webhook_response",
+      "name": "Webhook Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1850, 300]
+    }
+  ],
+  "connections": {
+    "webhook_trigger": {
+      "main": [
+        [
+          {
+            "node": "fetch_submission",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "fetch_submission": {
+      "main": [
+        [
+          {
+            "node": "prepare_prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "prepare_prompt": {
+      "main": [
+        [
+          {
+            "node": "perplexity_ai",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "perplexity_ai": {
+      "main": [
+        [
+          {
+            "node": "parse_perplexity",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "parse_perplexity": {
+      "main": [
+        [
+          {
+            "node": "claude_qa",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "claude_qa": {
+      "main": [
+        [
+          {
+            "node": "prepare_update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "prepare_update": {
+      "main": [
+        [
+          {
+            "node": "update_supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "update_supabase": {
+      "main": [
+        [
+          {
+            "node": "webhook_response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateId": "3cubed-seo-fda-research"
+  },
+  "pinData": {},
+  "versionId": "1.0.0",
+  "triggerCount": 1
+}

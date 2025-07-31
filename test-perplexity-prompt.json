@@ -1,0 +1,12 @@
+{
+  "test_submission": {
+    "submission_id": "test-001",
+    "product_name": "Keytruda",
+    "generic_name": "pembrolizumab",
+    "therapeutic_area": "Oncology",
+    "medical_indication": "Non-Small Cell Lung Cancer",
+    "development_stage": "Market Launch",
+    "patient_population": "Adults with metastatic NSCLC"
+  },
+  "perplexity_prompt": "Generate comprehensive pharmaceutical GEO content for: Keytruda\n\nREGULATORY CONTEXT:\n- FDA/EMA Status: Approved\n- Development Stage: Market Launch\n- Patient Population: Adults with metastatic NSCLC\n- Therapeutic Area: Oncology\n\nGEO OPTIMIZATION REQUIREMENTS:\n1. Voice Search Optimization - Generate 10+ natural language voice queries\n2. AI Platform Optimization - Create platform-specific content for ChatGPT, Perplexity, Google SGE, Claude\n3. Clinical Evidence Integration - Include trial data, efficacy, safety profiles\n4. Multi-Modal Content - FAQ sections, how-to guides, infographic descriptions\n5. Regulatory Compliance - Include contraindications, warnings, disclaimers\n\nOUTPUT FORMAT - Return valid JSON with these exact field names:\n{\n  \"seo_title\": \"60-char SEO title\",\n  \"meta_description\": \"155-char meta description\",\n  \"h1_tag\": \"Main H1 heading\",\n  \"h2_tags\": [\"heading1\", \"heading2\", \"heading3\", \"heading4\"],\n  \"seo_keywords\": [\"keyword1\", \"keyword2\", \"keyword3\", \"keyword4\", \"keyword5\"],\n  \"long_tail_keywords\": [\"long tail keyword 1\", \"long tail keyword 2\", \"long tail keyword 3\"],\n  \"geo_event_tags\": [\"ASCO 2024\", \"ESMO 2024\", \"World Lung Cancer Day\"],\n  \"seo_strategy_outline\": \"Comprehensive SEO strategy focusing on...\",\n  \"voice_search_queries\": [\n    \"What is Keytruda used for?\",\n    \"How does pembrolizumab work?\",\n    \"Keytruda side effects lung cancer\",\n    \"Is Keytruda chemotherapy?\",\n    \"How long does Keytruda treatment last?\",\n    \"Keytruda success rate NSCLC\",\n    \"Can Keytruda cure lung cancer?\",\n    \"Keytruda vs chemotherapy effectiveness\",\n    \"Who qualifies for Keytruda treatment?\",\n    \"Keytruda infusion schedule\"\n  ],\n  \"faq_sections\": [\n    {\n      \"question\": \"What is Keytruda?\",\n      \"answer\": \"Keytruda (pembrolizumab) is an immunotherapy drug...\"\n    },\n    {\n      \"question\": \"How does Keytruda work?\",\n      \"answer\": \"Keytruda works by blocking the PD-1 pathway...\"\n    }\n  ],\n  \"geo_optimization_score\": 92\n}"
+}
