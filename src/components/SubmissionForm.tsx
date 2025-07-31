@@ -377,55 +377,28 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         {expandedSections.section1 && (
           <div className="p-6 space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Development Stage - FIRST FIELD */}
               <div>
-                <label htmlFor="generic_name" className="block text-sm font-medium text-gray-700 mb-1">
-                  Generic/INN Name <span className="text-red-500">*</span>
+                <label htmlFor="development_stage" className="block text-sm font-medium text-gray-700 mb-1">
+                  Development Stage <span className="text-red-500">*</span>
                 </label>
-                <input
-                  type="text"
-                  id="generic_name"
-                  name="generic_name"
-                  value={formData.generic_name}
+                <select
+                  id="development_stage"
+                  name="development_stage"
+                  value={formData.development_stage}
                   onChange={handleChange}
                   required
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="e.g., pembrolizumab"
-                />
-                <p className="text-xs text-gray-500 mt-1">International nonproprietary name</p>
+                >
+                  <option value="">Select Stage</option>
+                  <option value="Phase III">Phase III</option>
+                  <option value="Market Shaping">Market Shaping</option>
+                  <option value="Market Launch">Market Launch</option>
+                </select>
+                <p className="text-xs text-gray-500 mt-1">Determines whether generic or brand name is required</p>
               </div>
 
-              <div>
-                <label htmlFor="product_name" className="block text-sm font-medium text-gray-700 mb-1">
-                  Brand/Product Name
-                </label>
-                <input
-                  type="text"
-                  id="product_name"
-                  name="product_name"
-                  value={formData.product_name}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="e.g., Keytruda, Carvykti"
-                />
-                <p className="text-xs text-gray-500 mt-1">Optional — Brand name not available in Phase III; use only if post-launch</p>
-              </div>
-
-              <div>
-                <label htmlFor="indication" className="block text-sm font-medium text-gray-700 mb-1">
-                  Medical Indication <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  id="indication"
-                  name="indication"
-                  value={formData.indication}
-                  onChange={handleChange}
-                  required
-                  rows={2}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="e.g., Non-small cell lung cancer"
-                />
-              </div>
-
+              {/* Therapeutic Area */}
               <div>
                 <label htmlFor="therapeutic_area" className="block text-sm font-medium text-gray-700 mb-1">
                   Therapeutic Area <span className="text-red-500">*</span>
@@ -443,6 +416,68 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
                     <option key={area} value={area}>{area}</option>
                   ))}
                 </select>
+              </div>
+
+              {/* Generic Name - Required for Phase III and Market Shaping */}
+              <div>
+                <label htmlFor="generic_name" className="block text-sm font-medium text-gray-700 mb-1">
+                  Generic/INN Name 
+                  <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="generic_name"
+                  name="generic_name"
+                  value={formData.generic_name}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="e.g., pembrolizumab"
+                />
+                <p className="text-xs text-gray-500 mt-1">International nonproprietary name (required for all stages)</p>
+              </div>
+
+              {/* Brand Name - Only for Market Launch */}
+              <div>
+                <label htmlFor="product_name" className="block text-sm font-medium text-gray-700 mb-1">
+                  Brand/Product Name
+                  {formData.development_stage === 'Market Launch' && <span className="text-red-500">*</span>}
+                </label>
+                <input
+                  type="text"
+                  id="product_name"
+                  name="product_name"
+                  value={formData.product_name}
+                  onChange={handleChange}
+                  required={formData.development_stage === 'Market Launch'}
+                  disabled={formData.development_stage !== 'Market Launch'}
+                  className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    formData.development_stage !== 'Market Launch' ? 'bg-gray-100' : ''
+                  }`}
+                  placeholder="e.g., Keytruda, Carvykti"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  {formData.development_stage === 'Market Launch'
+                    ? 'Required for Market Launch phase'
+                    : 'Not available until Market Launch'}
+                </p>
+              </div>
+
+              {/* Medical Indication - spans full width */}
+              <div className="md:col-span-2">
+                <label htmlFor="indication" className="block text-sm font-medium text-gray-700 mb-1">
+                  Medical Indication <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  id="indication"
+                  name="indication"
+                  value={formData.indication}
+                  onChange={handleChange}
+                  required
+                  rows={2}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="e.g., Non-small cell lung cancer"
+                />
               </div>
             </div>
           </div>
@@ -498,22 +533,7 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
                 />
               </div>
 
-              <div>
-                <label htmlFor="development_stage" className="block text-sm font-medium text-gray-700 mb-1">
-                  Development Stage
-                </label>
-                <select
-                  id="development_stage"
-                  name="development_stage"
-                  value={formData.development_stage}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="Phase III">Phase III</option>
-                  <option value="Market Shaping">Market Shaping</option>
-                  <option value="Market Launch">Market Launch</option>
-                </select>
-              </div>
+              {/* Development Stage moved to Section 1 */}
 
               <div>
                 <label htmlFor="line_of_therapy" className="block text-sm font-medium text-gray-700 mb-1">
