@@ -194,7 +194,9 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         submitter_email: formData.seo_reviewer_email,
         seo_reviewer_name: formData.seo_reviewer_name,  // Required in DB
         seo_reviewer_email: formData.seo_reviewer_email, // Required in DB
-        product_name: formData.product_name || formData.generic_name,  // Use generic_name as fallback if product_name is empty
+        // For Phase III and Market Shaping, use generic_name as product_name
+        // For Market Launch, use the actual product_name
+        product_name: formData.development_stage === 'Market Launch' ? formData.product_name : formData.generic_name,
         
         // Only the absolutely essential fields
         priority_level: 'medium',  // lowercase - check constraint might require this
