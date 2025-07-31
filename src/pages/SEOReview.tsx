@@ -207,8 +207,8 @@ export default function SEOReview() {
     }
   ]
 
-  // Calculate GEO scores for demo data if needed
-  const submissionsWithScores = (dbSubmissions || demoData).map(submission => {
+  // Use only demo data for now
+  const submissionsWithScores = demoData.map(submission => {
     if (submission.geo_optimization_score === 0 || submission.geo_optimization_score === undefined) {
       const scoreData = calculateGEOScore(submission);
       return {
