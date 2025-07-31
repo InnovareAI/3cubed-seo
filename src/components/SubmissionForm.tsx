@@ -194,6 +194,7 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         submitter_email: formData.seo_reviewer_email,
         seo_reviewer_name: formData.seo_reviewer_name,  // Required in DB
         seo_reviewer_email: formData.seo_reviewer_email, // Required in DB
+        product_name: formData.product_name || formData.generic_name,  // Use generic_name as fallback if product_name is empty
         
         // Only the absolutely essential fields
         priority_level: 'medium',  // lowercase - check constraint might require this
@@ -202,7 +203,6 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
 
       // Optional fields - only include if they have values
       const optionalFields = {
-        product_name: formData.product_name, // Now optional
         nct_number: formData.nct_number,
         sponsor: formData.sponsor,
         development_stage: formData.development_stage,
