@@ -14,7 +14,9 @@ import {
   Filter,
   Users,
   Building,
-  ArrowRight
+  ArrowRight,
+  Brain,
+  MessageSquare
 } from 'lucide-react'
 import { format } from 'date-fns'
 
@@ -49,6 +51,13 @@ interface Submission {
   h2_tags?: string[]
   seo_strategy_outline?: string
   geo_optimization_score?: number
+  geo_optimization?: {
+    ai_summary?: string
+    voice_search_answers?: any
+    medical_facts?: any
+    evidence_statistics?: string[]
+    citations?: any
+  }
 }
 
 export default function SEOReview() {
@@ -406,11 +415,59 @@ export default function SEOReview() {
                 </div>
               )}
 
-              {/* Display GEO event tags if available */}
-              {submission.geo_event_tags && submission.geo_event_tags.length > 0 && (
-                <div className="flex items-start gap-2 text-sm text-gray-600">
-                  <Hash className="h-4 w-4 text-blue-600" />
-                  <span className="text-xs">Events: {submission.geo_event_tags.join(', ')}</span>
+              {/* GEO Information Section */}
+              {(submission.geo_optimization || submission.geo_event_tags) && (
+                <div className="mt-3 pt-3 border-t border-gray-100">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Brain className="h-4 w-4 text-purple-600" />
+                    <span className="text-xs font-semibold text-gray-700">GEO Optimization</span>
+                  </div>
+                  
+                  {/* GEO Score if available */}
+                  {submission.geo_optimization_score && (
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="flex-1 bg-gray-200 rounded-full h-2">
+                        <div 
+                          className={`h-2 rounded-full transition-all ${
+                            submission.geo_optimization_score >= 80 ? 'bg-green-500' :
+                            submission.geo_optimization_score >= 60 ? 'bg-yellow-500' :
+                            'bg-red-500'
+                          }`}
+                          style={{ width: `${submission.geo_optimization_score}%` }}
+                        />
+                      </div>
+                      <span className="text-xs font-medium text-gray-600">{submission.geo_optimization_score}%</span>
+                    </div>
+                  )}
+                  
+                  {/* AI Summary Preview */}
+                  {submission.geo_optimization?.ai_summary && (
+                    <div className="text-xs text-gray-600 mb-2 line-clamp-2">
+                      <span className="font-medium">AI Summary:</span> {submission.geo_optimization.ai_summary}
+                    </div>
+                  )}
+                  
+                  {/* Voice Search Readiness */}
+                  {submission.geo_optimization?.voice_search_answers && (
+                    <div className="flex items-center gap-2 text-xs text-gray-600">
+                      <MessageSquare className="h-3 w-3 text-purple-600" />
+                      <span>Voice search optimized</span>
+                    </div>
+                  )}
+                  
+                  {/* GEO Event Tags */}
+                  {submission.geo_event_tags && submission.geo_event_tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {submission.geo_event_tags.slice(0, 3).map((tag: string, idx: number) => (
+                        <span key={idx} className="text-xs px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full">
+                          {tag}
+                        </span>
+                      ))}
+                      {submission.geo_event_tags.length > 3 && (
+                        <span className="text-xs text-gray-500">+{submission.geo_event_tags.length - 3} more</span>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -423,9 +480,21 @@ export default function SEOReview() {
             </div>
 
             <div className="mt-4 flex items-center justify-between">
-              <span className="text-sm text-gray-600">
-                Click to review
-              </span>
+              <div className="flex items-center gap-3 text-xs">
+                {/* Quick Stats */}
+                {submission.seo_keywords && (
+                  <span className="text-gray-600">
+                    <Hash className="h-3 w-3 inline mr-1" />
+                    {submission.seo_keywords.length} keywords
+                  </span>
+                )}
+                {submission.geo_optimization && (
+                  <span className="text-purple-600">
+                    <Brain className="h-3 w-3 inline mr-1" />
+                    GEO ready
+                  </span>
+                )}
+              </div>
               <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-blue-600 transition-colors" />
             </div>
           </div>
