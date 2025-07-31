@@ -4,7 +4,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import CTAButton from '@/components/CTAButton'
 import ComprehensiveApprovalForm from '@/components/ComprehensiveApprovalForm'
+import FieldApprovalControl, { FieldApproval } from '@/components/FieldApprovalControl'
 import { ApprovalFormSections } from '@/types/approval.types'
+import { exportToCSV, exportToPDF } from '@/utils/exportUtils'
 import { 
   ArrowLeft,
   CheckCircle,
@@ -23,7 +25,9 @@ import {
   Users,
   Pill,
   XCircle,
-  Shield
+  Shield,
+  Download,
+  FileDown
 } from 'lucide-react'
 import { format } from 'date-fns'
 
@@ -73,6 +77,9 @@ export default function SEOReviewDetail() {
   })
   
   const [revisionNotes, setRevisionNotes] = useState('')
+  const [fieldApprovals, setFieldApprovals] = useState<Record<string, FieldApproval>>({})
+  
+  // For backward compatibility
   const [approvals, setApprovals] = useState({
     seoTitle: false,
     metaDescription: false,
@@ -291,11 +298,53 @@ export default function SEOReviewDetail() {
     )
   }
 
-  const approvedCount = Object.values(approvals).filter(v => v === true).length
-  const totalApprovals = Object.keys(approvals).length
+  const handleFieldApproval = (fieldId: string, approval: FieldApproval) => {
+    setFieldApprovals(prev => ({
+      ...prev,
+      [fieldId]: approval
+    }));
+    
+    // Update legacy approvals for compatibility
+    const legacyMap: Record<string, keyof typeof approvals> = {
+      'seo_title': 'seoTitle',
+      'meta_description': 'metaDescription',
+      'geo_tags': 'geoTags',
+      'keywords': 'keywords',
+      'h1_tag': 'h1Tag',
+      'h2_tags': 'h2Tags'
+    };
+    
+    if (legacyMap[fieldId]) {
+      setApprovals(prev => ({
+        ...prev,
+        [legacyMap[fieldId]]: approval.status === 'approved'
+      }));
+    }
+  };
+
+  const handleExportCSV = () => {
+    const timestamp = new Date().toISOString().split('T')[0];
+    exportToCSV({
+      submission,
+      approvals: fieldApprovals,
+      timestamp
+    });
+  };
+
+  const handleExportPDF = async () => {
+    const timestamp = new Date().toISOString().split('T')[0];
+    await exportToPDF({
+      submission,
+      approvals: fieldApprovals,
+      timestamp
+    }, 'seo-review-content');
+  };
+
+  const approvedCount = Object.values(fieldApprovals).filter(v => v.status === 'approved').length
+  const totalApprovals = Math.max(Object.keys(fieldApprovals).length, 6) // At least 6 fields
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" id="seo-review-content">
       {/* Header */}
       <div className="mb-6">
         <button
@@ -318,9 +367,28 @@ export default function SEOReviewDetail() {
               </div>
             </div>
           </div>
-          <span className={`inline-flex items-center px-3 py-1.5 border rounded-full text-sm font-medium ${getPriorityColor(submission.priority_level || 'medium')}`}>
-            {submission.priority_level || 'Medium'} Priority
-          </span>
+          <div className="flex items-center gap-3">
+            {/* Export Buttons */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleExportCSV}
+                className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                <FileDown className="h-4 w-4" />
+                CSV
+              </button>
+              <button
+                onClick={handleExportPDF}
+                className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                <Download className="h-4 w-4" />
+                PDF
+              </button>
+            </div>
+            <span className={`inline-flex items-center px-3 py-1.5 border rounded-full text-sm font-medium ${getPriorityColor(submission.priority_level || 'medium')}`}>
+              {submission.priority_level || 'Medium'} Priority
+            </span>
+          </div>
         </div>
       </div>
 
@@ -448,160 +516,54 @@ export default function SEOReviewDetail() {
             </div>
 
             {/* SEO Title */}
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold text-gray-900">
-                  1. SEO Title Tag
-                  <span className="ml-2 text-xs font-normal text-gray-500">(50-60 characters)</span>
-                </h3>
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={approvals.seoTitle}
-                    onChange={(e) => setApprovals({...approvals, seoTitle: e.target.checked})}
-                    className="mr-2 rounded text-green-600 focus:ring-green-500"
-                  />
-                  <span className="text-sm">Approved</span>
-                </label>
-              </div>
-              <div className="bg-gray-50 rounded-lg p-4">
-                <p className="text-base font-medium text-gray-900">{submission.seo_title}</p>
-                <div className="mt-2 flex items-center justify-between">
-                  <span className={`text-xs ${
-                    submission.seo_title && submission.seo_title.length >= 50 && submission.seo_title.length <= 60
-                      ? 'text-green-600'
-                      : 'text-amber-600'
-                  }`}>
-                    Character count: {submission.seo_title?.length || 0}/60
-                  </span>
-                  {submission.seo_title && submission.seo_title.length >= 50 && submission.seo_title.length <= 60 && (
-                    <CheckCircle className="h-4 w-4 text-green-600" />
-                  )}
-                </div>
-              </div>
-            </div>
+            <FieldApprovalControl
+              fieldName="1. SEO Title Tag"
+              fieldValue={submission.seo_title || ''}
+              fieldId="seo_title"
+              characterLimit={60}
+              onApprovalChange={handleFieldApproval}
+              initialApproval={fieldApprovals['seo_title']}
+            />
 
             {/* Meta Description */}
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold text-gray-900">
-                  2. Meta Description
-                  <span className="ml-2 text-xs font-normal text-gray-500">(140-155 characters)</span>
-                </h3>
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={approvals.metaDescription}
-                    onChange={(e) => setApprovals({...approvals, metaDescription: e.target.checked})}
-                    className="mr-2 rounded text-green-600 focus:ring-green-500"
-                  />
-                  <span className="text-sm">Approved</span>
-                </label>
-              </div>
-              <div className="bg-gray-50 rounded-lg p-4">
-                <p className="text-sm text-gray-700">{submission.meta_description}</p>
-                <div className="mt-2">
-                  <span className={`text-xs ${
-                    submission.meta_description && submission.meta_description.length >= 140 && submission.meta_description.length <= 155
-                      ? 'text-green-600'
-                      : 'text-amber-600'
-                  }`}>
-                    Character count: {submission.meta_description?.length || 0}/155
-                  </span>
-                </div>
-              </div>
-            </div>
+            <FieldApprovalControl
+              fieldName="2. Meta Description"
+              fieldValue={submission.meta_description || ''}
+              fieldId="meta_description"
+              characterLimit={155}
+              onApprovalChange={handleFieldApproval}
+              initialApproval={fieldApprovals['meta_description']}
+            />
 
-            {/* H1 Tag - NEW */}
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold text-gray-900">
-                  3. H1 Main Heading
-                  <span className="ml-2 text-xs font-normal text-gray-500">Page main title</span>
-                </h3>
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={approvals.h1Tag || false}
-                    onChange={(e) => setApprovals({...approvals, h1Tag: e.target.checked})}
-                    className="mr-2 rounded text-green-600 focus:ring-green-500"
-                  />
-                  <span className="text-sm">Approved</span>
-                </label>
-              </div>
-              <div className="bg-gray-50 rounded-lg p-4">
-                <p className="text-lg font-semibold text-gray-900">{submission.h1_tag || 'AI-generated H1 tag will appear here'}</p>
-              </div>
-            </div>
+            {/* H1 Tag */}
+            <FieldApprovalControl
+              fieldName="3. H1 Main Heading"
+              fieldValue={submission.h1_tag || 'AI-generated H1 tag will appear here'}
+              fieldId="h1_tag"
+              onApprovalChange={handleFieldApproval}
+              initialApproval={fieldApprovals['h1_tag']}
+            />
 
             {/* H2 Tags */}
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold text-gray-900">
-                  4. H2 Subheadings ({submission.h2_tags?.length || 0})
-                </h3>
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={approvals.h2Tags}
-                    onChange={(e) => setApprovals({...approvals, h2Tags: e.target.checked})}
-                    className="mr-2 rounded text-green-600 focus:ring-green-500"
-                  />
-                  <span className="text-sm">Approved</span>
-                </label>
-              </div>
-              <div className="space-y-2">
-                {submission.h2_tags?.map((tag: string, idx: number) => (
-                  <div key={idx} className="bg-gray-50 rounded p-3">
-                    <p className="text-sm text-gray-700">{tag}</p>
-                  </div>
-                ))}
-              </div>
-              <p className="text-xs text-gray-500 mt-2">
-                {submission.h2_tags && submission.h2_tags.length >= 3 && submission.h2_tags.length <= 5 
-                  ? <span className="text-green-600">✓ Optimal number of H2 tags</span>
-                  : <span className="text-amber-600">⚠ Should have 3-5 H2 tags</span>
-                }
-              </p>
-            </div>
+            <FieldApprovalControl
+              fieldName={`4. H2 Subheadings (${submission.h2_tags?.length || 0})`}
+              fieldValue={submission.h2_tags || []}
+              fieldId="h2_tags"
+              onApprovalChange={handleFieldApproval}
+              initialApproval={fieldApprovals['h2_tags']}
+            />
 
             {/* Keywords */}
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold text-gray-900">
-                  5. Target Keywords (10-15 terms)
-                </h3>
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={approvals.keywords}
-                    onChange={(e) => setApprovals({...approvals, keywords: e.target.checked})}
-                    className="mr-2 rounded text-green-600 focus:ring-green-500"
-                  />
-                  <span className="text-sm">Approved</span>
-                </label>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {submission.seo_keywords?.map((keyword: string, idx: number) => (
-                  <span key={idx} className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                    <Hash className="h-3 w-3 mr-1" />
-                    {keyword}
-                  </span>
-                ))}
-              </div>
-              {submission.long_tail_keywords && submission.long_tail_keywords.length > 0 && (
-                <div className="mt-3">
-                  <p className="text-xs text-gray-600 mb-2">Long-tail variations:</p>
-                  <div className="flex flex-wrap gap-1">
-                    {submission.long_tail_keywords.map((keyword: string, idx: number) => (
-                      <span key={idx} className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-blue-50 text-blue-700">
-                        {keyword}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+            <FieldApprovalControl
+              fieldName="5. Target Keywords (10-15 terms)"
+              fieldValue={[
+                ...(submission.seo_keywords || []),
+                ...(submission.long_tail_keywords || [])
+              ]}
+              fieldId="keywords"
+              onApprovalChange={handleFieldApproval}
+              initialApproval={fieldApprovals['keywords']}
+            />
 
             {/* Body Content Summary - NEW */}
             <div>
@@ -669,33 +631,13 @@ export default function SEOReviewDetail() {
         {expandedSections['geo-optimization'] && submission.geo_optimization && (
           <div className="px-6 pb-6 space-y-6">
             {/* Event Tags */}
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold text-gray-900">GEO Event Tags</h3>
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={approvals.geoTags}
-                    onChange={(e) => setApprovals({...approvals, geoTags: e.target.checked})}
-                    className="mr-2 rounded text-green-600 focus:ring-green-500"
-                  />
-                  <span className="text-sm">Approved</span>
-                </label>
-              </div>
-              <div className="bg-purple-50 rounded-lg p-4">
-                {submission.geo_event_tags && submission.geo_event_tags.length > 0 ? (
-                  <div className="flex flex-wrap gap-2">
-                    {submission.geo_event_tags.map((tag: string, idx: number) => (
-                      <span key={idx} className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-gray-500 italic">No event tags defined</p>
-                )}
-              </div>
-            </div>
+            <FieldApprovalControl
+              fieldName="GEO Event Tags"
+              fieldValue={submission.geo_event_tags || []}
+              fieldId="geo_tags"
+              onApprovalChange={handleFieldApproval}
+              initialApproval={fieldApprovals['geo_tags']}
+            />
 
             {/* AI-Friendly Summary */}
             <div>
