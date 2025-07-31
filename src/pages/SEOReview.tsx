@@ -21,6 +21,7 @@ import { format } from 'date-fns'
 interface Submission {
   id: string
   product_name: string
+  generic_name?: string
   therapeutic_area: string
   stage: string
   workflow_stage: string
@@ -100,7 +101,79 @@ export default function SEOReview() {
     }
   }, [queryClient])
 
-  const submissions = dbSubmissions || []
+  // Temporary demo data for design purposes
+  const demoData: Submission[] = [
+    {
+      id: 'demo-1',
+      product_name: 'Keytruda',
+      generic_name: 'pembrolizumab',
+      therapeutic_area: 'Oncology',
+      stage: 'launch',
+      workflow_stage: 'ai_completed',
+      target_audience: ['HCPs', 'Patients'],
+      created_at: new Date().toISOString(),
+      submitter_name: 'Dr. Sarah Johnson',
+      submitter_email: 'sarah.johnson@pharma.com',
+      submitter_company: 'PharmaCorp',
+      priority_level: 'high',
+      medical_indication: 'Non-Small Cell Lung Cancer',
+      geography: ['USA', 'EU'],
+      client_name: 'Merck',
+      mechanism_of_action: 'PD-1 inhibitor',
+      key_differentiators: ['First-line therapy', 'Superior OS'],
+      seo_keywords: ['pembrolizumab', 'keytruda', 'lung cancer treatment'],
+      long_tail_keywords: ['keytruda for nsclc first line', 'pembrolizumab side effects'],
+      meta_title: 'Keytruda (Pembrolizumab) for NSCLC | Official Information',
+      meta_description: 'Learn about Keytruda, a PD-1 inhibitor for first-line treatment of NSCLC.',
+      seo_title: 'Keytruda: Revolutionary NSCLC Treatment',
+      geo_event_tags: ['ASCO 2024', 'ESMO 2024'],
+      h2_tags: ['How Keytruda Works', 'Clinical Trial Results', 'Patient Eligibility'],
+      seo_strategy_outline: 'Focus on first-line positioning and survival benefits',
+      geo_optimization_score: 92
+    },
+    {
+      id: 'demo-2',
+      product_name: 'Ozempic',
+      generic_name: 'semaglutide',
+      therapeutic_area: 'Diabetes',
+      stage: 'post-launch',
+      workflow_stage: 'seo_review',
+      target_audience: ['Patients', 'Caregivers'],
+      created_at: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
+      submitter_name: 'Mark Chen',
+      submitter_email: 'mark.chen@novonordisk.com',
+      priority_level: 'medium',
+      medical_indication: 'Type 2 Diabetes',
+      geography: ['USA'],
+      client_name: 'Novo Nordisk',
+      seo_keywords: ['ozempic', 'semaglutide', 'diabetes medication'],
+      long_tail_keywords: ['ozempic weight loss results', 'semaglutide injection how to use'],
+      meta_title: 'Ozempic (Semaglutide) for Type 2 Diabetes',
+      meta_description: 'Discover how Ozempic helps manage blood sugar in adults with type 2 diabetes.'
+    },
+    {
+      id: 'demo-3',
+      product_name: 'Humira',
+      generic_name: 'adalimumab',
+      therapeutic_area: 'Immunology',
+      stage: 'pre-launch',
+      workflow_stage: 'pending',
+      target_audience: ['HCPs', 'Patients', 'Payers'],
+      created_at: new Date(Date.now() - 7200000).toISOString(), // 2 hours ago
+      submitter_name: 'Emily Rodriguez',
+      submitter_email: 'emily.r@abbvie.com',
+      priority_level: 'low',
+      medical_indication: 'Rheumatoid Arthritis',
+      geography: ['Global'],
+      client_name: 'AbbVie',
+      seo_keywords: ['humira', 'adalimumab', 'rheumatoid arthritis'],
+      meta_title: 'Humira for Rheumatoid Arthritis Treatment',
+      seo_title: 'Humira: Leading RA Treatment Option',
+      geo_optimization_score: 78
+    }
+  ]
+
+  const submissions = dbSubmissions || demoData
 
   const filteredSubmissions = submissions?.filter(submission => {
     if (searchTerm && !submission.product_name.toLowerCase().includes(searchTerm.toLowerCase()) &&
