@@ -96,8 +96,8 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
   const progress = useMemo(() => {
     let score = 0;
     
-    // Section 1: Product Information (65%)
-    if (section1Complete) score += 65;
+    // Section 1: Product Information - 4 mandatory questions (40%)
+    if (section1Complete) score += 40;
     
     // Section 2: Clinical Context (+20%)
     const section2Fields = ['nct_number', 'sponsor', 'development_stage', 'line_of_therapy'];
@@ -122,9 +122,9 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
 
   const progressMessage = useMemo(() => {
     if (progress >= 95) return "Maximum optimization - competitive intelligence included";
-    if (progress >= 85) return "Comprehensive database coverage achieved";
-    if (progress >= 65) return "Ready to generate basic SEO content";
-    return "Fill in product information to begin";
+    if (progress >= 60) return "Comprehensive database coverage achieved";
+    if (progress >= 40) return "Core 4 questions complete - ready for basic SEO";
+    return "Complete the 4 mandatory product questions";
   }, [progress]);
 
   const toggleSection = (section: keyof typeof expandedSections) => {
@@ -364,9 +364,9 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         >
           <div className="flex items-center">
             <span className="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm font-bold">1</span>
-            <h3 className="text-lg font-semibold text-gray-900">Product Information (Required)</h3>
+            <h3 className="text-lg font-semibold text-gray-900">Product Information (4 Mandatory Questions)</h3>
             {section1Complete && (
-              <span className="ml-3 text-sm font-medium text-blue-600 bg-blue-100 px-2 py-1 rounded">65% Accuracy</span>
+              <span className="ml-3 text-sm font-medium text-blue-600 bg-blue-100 px-2 py-1 rounded">Core Data Complete</span>
             )}
           </div>
           <svg className={`w-5 h-5 text-gray-600 transition-transform ${expandedSections.section1 ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -772,9 +772,9 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         >
           <div className="flex items-center">
             <span className="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm font-bold">4</span>
-            <h3 className="text-lg font-semibold text-gray-900">Team & Review Assignment (Required)</h3>
+            <h3 className="text-lg font-semibold text-gray-900">Team & Review Assignment (Required for Submission)</h3>
             {section4Complete && (
-              <span className="ml-3 text-sm font-medium text-blue-600 bg-blue-100 px-2 py-1 rounded">Required</span>
+              <span className="ml-3 text-sm font-medium text-blue-600 bg-blue-100 px-2 py-1 rounded">Complete</span>
             )}
           </div>
           <svg className={`w-5 h-5 text-gray-600 transition-transform ${expandedSections.section4 ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
