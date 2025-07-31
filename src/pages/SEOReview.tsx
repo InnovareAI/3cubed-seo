@@ -16,9 +16,12 @@ import {
   Building,
   ArrowRight,
   Brain,
-  MessageSquare
+  MessageSquare,
+  Grid3X3,
+  List,
+  CalendarDays
 } from 'lucide-react'
-import { format } from 'date-fns'
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay } from 'date-fns'
 
 interface Submission {
   id: string
@@ -60,12 +63,16 @@ interface Submission {
   }
 }
 
+type ViewMode = 'grid' | 'list' | 'calendar'
+
 export default function SEOReview() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const [viewMode, setViewMode] = useState<ViewMode>('grid')
   const [searchTerm, setSearchTerm] = useState('')
   const [priorityFilter, setPriorityFilter] = useState<string>('all')
   const [therapeuticAreaFilter, setTherapeuticAreaFilter] = useState<string>('all')
+  const [selectedDate, setSelectedDate] = useState(new Date())
 
   // Track viewed submissions
   const [viewedSubmissions, setViewedSubmissions] = useState<Set<string>>(
@@ -249,10 +256,43 @@ export default function SEOReview() {
           <h1 className="text-2xl font-bold text-gray-900">SEO Review</h1>
           <p className="text-sm text-gray-600 mt-1">Review and optimize AI-generated content for search performance</p>
         </div>
-        <div className="flex items-center gap-3">
-          <CTAButton variant="primary" icon={<FileText className="h-4 w-4" />}>
-            Export Report
-          </CTAButton>
+        <div className="flex items-center gap-2">
+          {/* View Mode Toggle */}
+          <div className="flex items-center bg-white rounded-lg border border-gray-200 p-1">
+            <button
+              onClick={() => setViewMode('grid')}
+              className={`p-2 rounded transition-colors ${
+                viewMode === 'grid' 
+                  ? 'bg-blue-100 text-blue-600' 
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+              title="Grid View"
+            >
+              <Grid3X3 className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={`p-2 rounded transition-colors ${
+                viewMode === 'list' 
+                  ? 'bg-blue-100 text-blue-600' 
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+              title="List View"
+            >
+              <List className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => setViewMode('calendar')}
+              className={`p-2 rounded transition-colors ${
+                viewMode === 'calendar' 
+                  ? 'bg-blue-100 text-blue-600' 
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+              title="Calendar View"
+            >
+              <CalendarDays className="h-4 w-4" />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -359,9 +399,10 @@ export default function SEOReview() {
         </div>
       </div>
 
-      {/* Content Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredSubmissions?.map((submission) => (
+      {/* Content Display based on View Mode */}
+      {viewMode === 'grid' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredSubmissions?.map((submission) => (
           <div
             key={submission.id}
             onClick={() => handleCardClick(submission.id)}
@@ -498,14 +539,219 @@ export default function SEOReview() {
               <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-blue-600 transition-colors" />
             </div>
           </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
+
+      {/* List View */}
+      {viewMode === 'list' && (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SEO/GEO</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Submitted</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {filteredSubmissions?.map((submission) => (
+                <tr
+                  key={submission.id}
+                  onClick={() => handleCardClick(submission.id)}
+                  className="hover:bg-gray-50 cursor-pointer"
+                >
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div>
+                      <div className="text-sm font-medium text-gray-900">{submission.product_name}</div>
+                      <div className="text-xs text-gray-500">{submission.therapeutic_area}</div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {submission.client_name || submission.submitter_company || '-'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(submission.priority_level || 'medium')}`}>
+                      {submission.priority_level || 'Medium'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <div className="flex items-center gap-2">
+                      {submission.seo_keywords && (
+                        <span className="text-green-600">
+                          <Hash className="h-4 w-4 inline" /> {submission.seo_keywords.length}
+                        </span>
+                      )}
+                      {submission.geo_optimization && (
+                        <span className="text-purple-600">
+                          <Brain className="h-4 w-4 inline" />
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {format(new Date(submission.created_at), 'MMM d')}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {!viewedSubmissions.has(submission.id) && (
+                      <span className="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-full">NEW</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Calendar View */}
+      {viewMode === 'calendar' && (
+        <CalendarView 
+          submissions={filteredSubmissions} 
+          selectedDate={selectedDate}
+          onDateSelect={setSelectedDate}
+          onSubmissionClick={handleCardClick}
+          viewedSubmissions={viewedSubmissions}
+          getPriorityColor={getPriorityColor}
+        />
+      )}
 
       {filteredSubmissions?.length === 0 && (
         <div className="text-center py-12">
           <p className="text-gray-500">No content found for SEO review</p>
         </div>
       )}
+    </div>
+  )
+}
+
+// Calendar View Component
+function CalendarView({ 
+  submissions, 
+  selectedDate, 
+  onDateSelect, 
+  onSubmissionClick,
+  viewedSubmissions,
+  getPriorityColor
+}: { 
+  submissions: Submission[]
+  selectedDate: Date
+  onDateSelect: (date: Date) => void
+  onSubmissionClick: (id: string) => void
+  viewedSubmissions: Set<string>
+  getPriorityColor: (priority: string) => string
+}) {
+  const monthStart = startOfMonth(selectedDate)
+  const monthEnd = endOfMonth(selectedDate)
+  const days = eachDayOfInterval({ start: monthStart, end: monthEnd })
+  
+  // Group submissions by date
+  const submissionsByDate = submissions.reduce((acc, submission) => {
+    const dateKey = format(new Date(submission.created_at), 'yyyy-MM-dd')
+    if (!acc[dateKey]) acc[dateKey] = []
+    acc[dateKey].push(submission)
+    return acc
+  }, {} as Record<string, Submission[]>)
+  
+  const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+  
+  // Pad the calendar to start on Sunday
+  const firstDayOfWeek = monthStart.getDay()
+  const paddingDays = Array(firstDayOfWeek).fill(null)
+  
+  return (
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      {/* Month Navigation */}
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-lg font-semibold text-gray-900">
+          {format(selectedDate, 'MMMM yyyy')}
+        </h2>
+        <div className="flex gap-2">
+          <button
+            onClick={() => onDateSelect(new Date(selectedDate.getFullYear(), selectedDate.getMonth() - 1))}
+            className="p-2 hover:bg-gray-100 rounded"
+          >
+            ←
+          </button>
+          <button
+            onClick={() => onDateSelect(new Date())}
+            className="px-3 py-1 text-sm bg-blue-100 text-blue-600 rounded hover:bg-blue-200"
+          >
+            Today
+          </button>
+          <button
+            onClick={() => onDateSelect(new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1))}
+            className="p-2 hover:bg-gray-100 rounded"
+          >
+            →
+          </button>
+        </div>
+      </div>
+      
+      {/* Week Days */}
+      <div className="grid grid-cols-7 gap-2 mb-2">
+        {weekDays.map(day => (
+          <div key={day} className="text-center text-xs font-medium text-gray-500 uppercase">
+            {day}
+          </div>
+        ))}
+      </div>
+      
+      {/* Calendar Grid */}
+      <div className="grid grid-cols-7 gap-2">
+        {/* Padding days */}
+        {paddingDays.map((_, idx) => (
+          <div key={`pad-${idx}`} className="h-24" />
+        ))}
+        
+        {/* Calendar days */}
+        {days.map(day => {
+          const dateKey = format(day, 'yyyy-MM-dd')
+          const daySubmissions = submissionsByDate[dateKey] || []
+          const isToday = isSameDay(day, new Date())
+          
+          return (
+            <div
+              key={dateKey}
+              className={`h-24 border rounded-lg p-2 ${
+                isToday ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
+              } ${daySubmissions.length > 0 ? 'cursor-pointer hover:shadow-md' : ''}`}
+            >
+              <div className="text-sm font-medium text-gray-900">{format(day, 'd')}</div>
+              {daySubmissions.length > 0 && (
+                <div className="mt-1 space-y-1">
+                  {daySubmissions.slice(0, 2).map((submission) => (
+                    <div
+                      key={submission.id}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onSubmissionClick(submission.id)
+                      }}
+                      className="flex items-center gap-1 mb-1"
+                    >
+                      <span className={`inline-block px-1.5 py-0.5 text-xs font-medium rounded ${getPriorityColor(submission.priority_level || 'medium')}`}>
+                        {submission.priority_level?.[0]?.toUpperCase() || 'M'}
+                      </span>
+                      <span className="text-xs truncate hover:text-blue-600 cursor-pointer" title={submission.product_name}>
+                        {submission.product_name}
+                        {!viewedSubmissions.has(submission.id) && (
+                          <span className="ml-1 text-blue-600 font-bold">•</span>
+                        )}
+                      </span>
+                    </div>
+                  ))}
+                  {daySubmissions.length > 2 && (
+                    <div className="text-xs text-gray-500">+{daySubmissions.length - 2} more</div>
+                  )}
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }
