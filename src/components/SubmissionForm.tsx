@@ -188,7 +188,7 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
     let submissionData: any = {
         // Mandatory fields (always included)
         generic_name: formData.generic_name,
-        medical_indication: formData.indication,  // Map 'indication' to 'medical_indication' for n8n
+        indication: formData.indication,  // Use 'indication' as the column name
         therapeutic_area: formData.therapeutic_area,
         submitter_name: formData.seo_reviewer_name,
         submitter_email: formData.seo_reviewer_email,
