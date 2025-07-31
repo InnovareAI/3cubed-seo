@@ -9,6 +9,8 @@ import IndividualKeywordApproval, { KeywordApprovalData } from '@/components/Ind
 import ComplianceStatusVisual from '@/components/ComplianceStatusVisual'
 import { ApprovalFormSections } from '@/types/approval.types'
 import { exportToCSV, exportToPDF } from '@/utils/exportUtils'
+import GEOScoreBreakdownComponent from '@/components/GEOScoreBreakdown'
+import { calculateGEOScore } from '@/utils/geoScoring'
 import { 
   ArrowLeft,
   CheckCircle,
@@ -71,11 +73,11 @@ export default function SEOReviewDetail() {
   
   const [showApprovalForm, setShowApprovalForm] = useState(false)
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
+    'compliance': true,
     'overview': true,
     'seo-analysis': !showApprovalForm,
     'geo-optimization': false,
-    'seo-strategy': false,
-    'compliance': false
+    'seo-strategy': false
   })
   
   const [revisionNotes, setRevisionNotes] = useState('')
@@ -396,6 +398,34 @@ export default function SEOReviewDetail() {
         </div>
       </div>
 
+      {/* Compliance Status Section - MOVED TO TOP */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+        <div 
+          className="p-6 cursor-pointer"
+          onClick={() => toggleSection('compliance')}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Shield className="h-5 w-5 text-gray-600" />
+              <h2 className="text-lg font-semibold text-gray-900">Compliance Status</h2>
+            </div>
+            {expandedSections['compliance'] ? 
+              <ChevronUp className="h-5 w-5 text-gray-400" /> : 
+              <ChevronDown className="h-5 w-5 text-gray-400" />
+            }
+          </div>
+        </div>
+        
+        {expandedSections['compliance'] && (
+          <div className="px-6 pb-6">
+            <ComplianceStatusVisual 
+              submission={submission} 
+              fieldApprovals={fieldApprovals}
+            />
+          </div>
+        )}
+      </div>
+
       {/* Progress Bar */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
         <div className="flex items-center justify-between mb-2">
@@ -601,102 +631,43 @@ export default function SEOReviewDetail() {
               </div>
             </div>
 
-            {/* Keywords - Individual Approval */}
-            <div>
-              <h3 className="text-sm font-semibold text-gray-900 mb-3">
-                5. Target Keywords (10-15 terms)
-              </h3>
-              
-              {/* SEO Keywords */}
-              {submission.seo_keywords && submission.seo_keywords.length > 0 && (
-                <div className="mb-4">
-                  <h4 className="text-xs font-medium text-gray-700 mb-2">Primary SEO Keywords</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {submission.seo_keywords.map((keyword: string, idx: number) => (
-                      <IndividualKeywordApproval
-                        key={`seo-${idx}`}
-                        keyword={keyword}
-                        index={idx}
-                        type="seo"
-                        onApprovalChange={(index, approval) => {
-                          setKeywordApprovals(prev => ({
-                            ...prev,
-                            [`seo-${index}`]: approval
-                          }));
-                        }}
-                        initialApproval={keywordApprovals[`seo-${idx}`]}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-              
-              {/* Long-tail Keywords */}
-              {submission.long_tail_keywords && submission.long_tail_keywords.length > 0 && (
-                <div>
-                  <h4 className="text-xs font-medium text-gray-700 mb-2">Long-tail Keywords</h4>
-                  <div className="grid grid-cols-1 gap-3">
-                    {submission.long_tail_keywords.map((keyword: string, idx: number) => (
-                      <IndividualKeywordApproval
-                        key={`longtail-${idx}`}
-                        keyword={keyword}
-                        index={idx}
-                        type="longtail"
-                        onApprovalChange={(index, approval) => {
-                          setKeywordApprovals(prev => ({
-                            ...prev,
-                            [`longtail-${index}`]: approval
-                          }));
-                        }}
-                        initialApproval={keywordApprovals[`longtail-${idx}`]}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+            {/* Keywords */}
+            <FieldApprovalControl
+              fieldName="5. Target Keywords (10-15 terms)"
+              fieldValue={[
+                ...(submission.seo_keywords || []),
+                ...(submission.long_tail_keywords || [])
+              ]}
+              fieldId="keywords"
+              onApprovalChange={handleFieldApproval}
+              initialApproval={fieldApprovals['keywords']}
+            />
 
-            {/* Body Content Summary - NEW */}
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold text-gray-900">
-                  6. Body Content Summary
-                  <span className="ml-2 text-xs font-normal text-gray-500">(500-800 words generated)</span>
-                </h3>
-              </div>
-              <div className="bg-gray-50 rounded-lg p-4">
-                <p className="text-sm text-gray-700">
-                  {submission.ai_generated_content?.body_preview || 'AI-generated body content focusing on ' + submission.generic_name + ' for ' + (submission.medical_indication || submission.indication) + ' treatment optimization.'}
-                </p>
-                <div className="mt-3 flex items-center gap-4 text-xs text-gray-600">
-                  <span>✓ FDA-compliant language</span>
-                  <span>✓ Voice search optimized</span>
-                  <span>✓ Medical accuracy verified</span>
-                </div>
-              </div>
-            </div>
+            {/* Body Content Summary */}
+            <FieldApprovalControl
+              fieldName="6. Body Content Summary"
+              fieldValue={submission.ai_generated_content?.body_preview || 'AI-generated body content focusing on ' + submission.generic_name + ' for ' + (submission.medical_indication || submission.indication) + ' treatment optimization.'}
+              fieldId="body_content"
+              characterLimit={800}
+              onApprovalChange={handleFieldApproval}
+              initialApproval={fieldApprovals['body_content']}
+            />
 
-            {/* Schema Markup - NEW */}
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold text-gray-900">
-                  7. Schema Markup
-                  <span className="ml-2 text-xs font-normal text-gray-500">JSON-LD for rich snippets</span>
-                </h3>
-              </div>
-              <div className="bg-gray-900 rounded-lg p-4 overflow-x-auto">
-                <pre className="text-xs text-green-400">
-                  <code>{submission.ai_generated_content?.schema_markup || JSON.stringify({
-                    "@context": "https://schema.org",
-                    "@type": "Drug",
-                    "name": submission.product_name || submission.generic_name,
-                    "alternateName": submission.generic_name,
-                    "medicineSystem": "WesternConventional",
-                    "prescriptionStatus": "PrescriptionOnly"
-                  }, null, 2)}</code>
-                </pre>
-              </div>
-            </div>
+            {/* Schema Markup */}
+            <FieldApprovalControl
+              fieldName="7. Schema Markup (JSON-LD)"
+              fieldValue={submission.ai_generated_content?.schema_markup || JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "Drug",
+                "name": submission.product_name || submission.generic_name,
+                "alternateName": submission.generic_name,
+                "medicineSystem": "WesternConventional",
+                "prescriptionStatus": "PrescriptionOnly"
+              }, null, 2)}
+              fieldId="schema_markup"
+              onApprovalChange={handleFieldApproval}
+              initialApproval={fieldApprovals['schema_markup']}
+            />
           </div>
         )}
       </div>
@@ -784,33 +755,6 @@ export default function SEOReviewDetail() {
       </div>
 
 
-      {/* Compliance Status Section */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
-        <div 
-          className="p-6 cursor-pointer"
-          onClick={() => toggleSection('compliance')}
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Shield className="h-5 w-5 text-gray-600" />
-              <h2 className="text-lg font-semibold text-gray-900">Compliance Status</h2>
-            </div>
-            {expandedSections['compliance'] ? 
-              <ChevronUp className="h-5 w-5 text-gray-400" /> : 
-              <ChevronDown className="h-5 w-5 text-gray-400" />
-            }
-          </div>
-        </div>
-        
-        {expandedSections['compliance'] && (
-          <div className="px-6 pb-6">
-            <ComplianceStatusVisual 
-              submission={submission} 
-              fieldApprovals={fieldApprovals}
-            />
-          </div>
-        )}
-      </div>
 
       {/* Revision Notes */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">

@@ -18,7 +18,12 @@ import {
   ArrowRight,
   Eye,
   CheckCircle,
-  Scale
+  Scale,
+  BookOpen,
+  Award,
+  XCircle,
+  AlertTriangle,
+  Info
 } from 'lucide-react'
 import { format } from 'date-fns'
 
@@ -45,6 +50,24 @@ interface Submission {
   client_reviewed_by?: string
   dosage_form?: string
   ai_output?: any
+  mlr_requirements?: {
+    prescribing_information_approved: boolean
+    pi_approval_date?: string | null
+    peer_reviewed_articles: Array<{
+      title: string
+      journal: string
+      status: 'verified' | 'pending' | 'rejected'
+    }>
+    regulatory_submissions: string[]
+  }
+  compliance_items?: {
+    claims_verification: 'verified' | 'pending' | 'failed'
+    fair_balance: 'compliant' | 'under_review' | 'non_compliant'
+    adverse_events_disclosure: 'complete' | 'incomplete' | 'missing'
+    contraindications_listed: boolean
+    dosage_administration_clear: boolean
+    off_label_disclaimers: 'present' | 'missing' | 'unclear'
+  }
 }
 
 export default function MLRReview() {
@@ -107,16 +130,31 @@ export default function MLRReview() {
     }
   }
 
+  const getComplianceStatus = (submission: Submission) => {
+    if (!submission.compliance_items) return 'unknown'
+    const items = submission.compliance_items
+    const criticalItems = [
+      items.claims_verification === 'verified',
+      items.fair_balance === 'compliant',
+      items.adverse_events_disclosure === 'complete',
+      items.contraindications_listed,
+      items.dosage_administration_clear,
+      items.off_label_disclaimers === 'present'
+    ]
+    const passedItems = criticalItems.filter(Boolean).length
+    const totalItems = criticalItems.length
+    
+    if (passedItems === totalItems) return 'compliant'
+    if (passedItems >= totalItems * 0.7) return 'partial'
+    return 'non_compliant'
+  }
+
   // Calculate stats for the cards
   const stats = {
     total: filteredSubmissions?.length || 0,
     highPriority: filteredSubmissions?.filter(s => s.priority_level?.toLowerCase() === 'high').length || 0,
-    clientApproved: filteredSubmissions?.filter(s => s.client_review_responses?.roiConfidence).length || 0,
-    todaySubmissions: filteredSubmissions?.filter(s => {
-      const today = new Date()
-      const submissionDate = new Date(s.created_at)
-      return submissionDate.toDateString() === today.toDateString()
-    }).length || 0
+    compliant: filteredSubmissions?.filter(s => getComplianceStatus(s) === 'compliant').length || 0,
+    piApproved: filteredSubmissions?.filter(s => s.mlr_requirements?.prescribing_information_approved).length || 0
   }
 
   if (!useDummyData && isLoading) {
@@ -181,8 +219,8 @@ export default function MLRReview() {
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Client Approved</p>
-              <p className="text-2xl font-semibold text-green-600 mt-1">{stats.clientApproved}</p>
+              <p className="text-sm font-medium text-gray-600">MLR Compliant</p>
+              <p className="text-2xl font-semibold text-green-600 mt-1">{stats.compliant}</p>
             </div>
             <div className="p-3 bg-green-100 rounded-lg">
               <CheckCircle className="h-6 w-6 text-green-600" />
@@ -193,11 +231,11 @@ export default function MLRReview() {
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Today's Submissions</p>
-              <p className="text-2xl font-semibold text-gray-900 mt-1">{stats.todaySubmissions}</p>
+              <p className="text-sm font-medium text-gray-600">PI Approved</p>
+              <p className="text-2xl font-semibold text-blue-600 mt-1">{stats.piApproved}</p>
             </div>
-            <div className="p-3 bg-gray-100 rounded-lg">
-              <Clock className="h-6 w-6 text-gray-600" />
+            <div className="p-3 bg-blue-100 rounded-lg">
+              <BookOpen className="h-6 w-6 text-blue-600" />
             </div>
           </div>
         </div>
@@ -255,6 +293,60 @@ export default function MLRReview() {
         </div>
       </div>
 
+      {/* MLR Requirements & Best Practices */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        {/* MLR Requirements */}
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="flex items-center gap-2 mb-4">
+            <Shield className="h-5 w-5 text-purple-600" />
+            <h3 className="text-lg font-semibold text-gray-900">MLR Requirements</h3>
+          </div>
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <BookOpen className="h-4 w-4 text-blue-600" />
+              <span className="text-sm text-gray-700">Approved Prescribing Information (PI)</span>
+              <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full">Required</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Award className="h-4 w-4 text-yellow-600" />
+              <span className="text-sm text-gray-700">Peer-reviewed Journal Articles</span>
+              <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full">Required</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <FileText className="h-4 w-4 text-gray-600" />
+              <span className="text-sm text-gray-700">Regulatory Submissions</span>
+              <span className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded-full">Verified</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Industry Best Practices */}
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="flex items-center gap-2 mb-4">
+            <Scale className="h-5 w-5 text-green-600" />
+            <h3 className="text-lg font-semibold text-gray-900">Compliance Best Practices</h3>
+          </div>
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              <span className="text-sm text-gray-700">Claims Verification</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Scale className="h-4 w-4 text-blue-600" />
+              <span className="text-sm text-gray-700">Fair Balance Requirements</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <AlertTriangle className="h-4 w-4 text-yellow-600" />
+              <span className="text-sm text-gray-700">Adverse Events Disclosure</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Info className="h-4 w-4 text-purple-600" />
+              <span className="text-sm text-gray-700">Off-label Use Disclaimers</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Content Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredSubmissions?.map((submission) => (
@@ -291,15 +383,50 @@ export default function MLRReview() {
                 <span>Received {format(new Date(submission.created_at), 'MMM d, yyyy')}</span>
               </div>
 
-              <div className="flex items-center gap-2 text-sm text-purple-600">
-                <Shield className="h-4 w-4" />
-                <span>Pending MLR Review</span>
-              </div>
+              {/* MLR Requirements Status */}
+              {submission.mlr_requirements && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm">
+                    <BookOpen className="h-4 w-4" />
+                    <span className="text-xs font-medium">PI Status:</span>
+                    {submission.mlr_requirements.prescribing_information_approved ? (
+                      <span className="text-green-600 text-xs bg-green-100 px-2 py-0.5 rounded-full">Approved</span>
+                    ) : (
+                      <span className="text-red-600 text-xs bg-red-100 px-2 py-0.5 rounded-full">Pending</span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Award className="h-4 w-4" />
+                    <span className="text-xs font-medium">Articles:</span>
+                    <span className="text-xs text-gray-600">{submission.mlr_requirements.peer_reviewed_articles.length} verified</span>
+                  </div>
+                </div>
+              )}
 
-              {submission.client_review_responses?.roiConfidence && (
-                <div className="flex items-start gap-2 text-sm text-gray-600 bg-green-50 p-2 rounded">
-                  <Scale className="h-4 w-4 text-green-600 mt-0.5" />
-                  <span className="text-xs">Client Score: {submission.client_review_responses.roiConfidence}</span>
+              {/* Compliance Status */}
+              {submission.compliance_items && (
+                <div className="flex items-start gap-2 text-sm p-2 rounded" 
+                     style={{
+                       backgroundColor: getComplianceStatus(submission) === 'compliant' ? '#f0f9ff' : 
+                                       getComplianceStatus(submission) === 'partial' ? '#fef3c7' : '#fee2e2'
+                     }}>
+                  {getComplianceStatus(submission) === 'compliant' ? (
+                    <CheckCircle className="h-4 w-4 text-green-600 mt-0.5" />
+                  ) : getComplianceStatus(submission) === 'partial' ? (
+                    <AlertTriangle className="h-4 w-4 text-yellow-600 mt-0.5" />
+                  ) : (
+                    <XCircle className="h-4 w-4 text-red-600 mt-0.5" />
+                  )}
+                  <div>
+                    <span className="text-xs font-medium">
+                      {getComplianceStatus(submission) === 'compliant' ? 'MLR Compliant' :
+                       getComplianceStatus(submission) === 'partial' ? 'Partial Compliance' :
+                       'Non-Compliant'}
+                    </span>
+                    {getComplianceStatus(submission) !== 'compliant' && (
+                      <p className="text-xs text-gray-600 mt-1">Review required for compliance items</p>
+                    )}
+                  </div>
                 </div>
               )}
             </div>

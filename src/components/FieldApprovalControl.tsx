@@ -167,26 +167,8 @@ export default function FieldApprovalControl({
           </div>
         </div>
 
-        {/* Action Buttons Row 2 - Compliance, Ask AI, etc */}
+        {/* Action Buttons Row 2 - Ask AI only */}
         <div className="flex items-center gap-2">
-          <label className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium bg-white border border-gray-300 hover:bg-gray-50">
-            <input
-              type="checkbox"
-              checked={approval.complianceChecked || false}
-              onChange={(e) => {
-                const updatedApproval = {
-                  ...approval,
-                  complianceChecked: e.target.checked
-                };
-                setApproval(updatedApproval);
-                onApprovalChange(fieldId, updatedApproval);
-              }}
-              className="rounded text-blue-600 focus:ring-blue-500"
-            />
-            <Shield className="h-4 w-4 text-blue-600" />
-            <span>Compliance Check</span>
-          </label>
-
           <button
             onClick={() => {
               // AI consultation logic
@@ -201,17 +183,6 @@ export default function FieldApprovalControl({
             Ask AI
           </button>
 
-          <button
-            onClick={() => handleStatusChange('pending')}
-            className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-              approval.status === 'pending'
-                ? 'bg-gray-600 text-white'
-                : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
-            }`}
-          >
-            Reset
-          </button>
-
           {!showComment && approval.status !== 'rejected' && (
             <button
               onClick={() => setShowComment(true)}
@@ -224,13 +195,6 @@ export default function FieldApprovalControl({
         </div>
       </div>
 
-      {/* Compliance Warning */}
-      {approval.status === 'approved' && !approval.complianceChecked && (
-        <div className="mt-2 flex items-center gap-2 text-xs text-amber-600 bg-amber-50 p-2 rounded">
-          <AlertCircle className="h-3 w-3" />
-          <span>Approved without compliance check - Please verify compliance before final submission</span>
-        </div>
-      )}
 
       {/* Review Info */}
       {approval.reviewedAt && (

@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { supabase } from '@/lib/supabase'
-import CTAButton from '@/components/CTAButton'
+import { supabase } from '../lib/supabase'
+import { mockClientReviews } from '../data/mockClientReviews'
+import { THERAPEUTIC_AREAS } from '../constants/therapeuticAreas'
+import CTAButton from '../components/CTAButton'
 import { 
   Search, 
   Filter, 
@@ -16,7 +18,12 @@ import {
   Users,
   ThumbsUp,
   Edit3,
-  Eye
+  Eye,
+  Palette,
+  Target,
+  Zap,
+  AlertCircle,
+  Award
 } from 'lucide-react'
 
 
@@ -27,21 +34,13 @@ export default function ClientReview() {
   const [selectedPriority, setSelectedPriority] = useState<string>('all')
   const [selectedClient, setSelectedClient] = useState<string>('all')
   const [selectedStatus, setSelectedStatus] = useState<string>('all')
-  const [useDemoData] = useState(true)
+  const [useDemoData, setUseDemoData] = useState(true)
 
   const { data: submissions, isLoading } = useQuery({
     queryKey: ['client-review-content', { searchQuery, selectedPriority, selectedClient, selectedStatus }],
     queryFn: async () => {
       if (useDemoData) {
-        // Transform SEO Review mock data into Client Review data
-        return [].map((s: any) => ({
-          ...s,
-          workflow_stage: 'client_review',
-          client_review_status: Math.random() > 0.5 ? 'pending' : Math.random() > 0.5 ? 'approved' : 'revision_requested',
-          client_approval_date: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
-          client_feedback: Math.random() > 0.5 ? 'Please revise the H2 tags to be more specific' : null,
-          seo_reviewed_at: new Date(Date.now() - Math.random() * 10 * 24 * 60 * 60 * 1000).toISOString()
-        }))
+        return mockClientReviews
       }
 
       const { data, error } = await supabase
@@ -119,9 +118,21 @@ export default function ClientReview() {
           <h1 className="text-2xl font-bold text-gray-900">Client Review</h1>
           <p className="text-sm text-gray-600 mt-1">Review and approve SEO-optimized content with clients</p>
         </div>
-        <CTAButton variant="primary" icon={<FileText className="h-4 w-4" />}>
-          Export Report
-        </CTAButton>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setUseDemoData(!useDemoData)}
+            className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+              useDemoData 
+                ? 'bg-amber-100 text-amber-700' 
+                : 'bg-green-100 text-green-700'
+            }`}
+          >
+            {useDemoData ? 'Demo Data' : 'Live Data'}
+          </button>
+          <CTAButton variant="primary" icon={<FileText className="h-4 w-4" />}>
+            Export Report
+          </CTAButton>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -175,6 +186,65 @@ export default function ClientReview() {
         </div>
       </div>
 
+      {/* Brand Guidelines & Client Requirements */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        {/* Brand Guidelines Tracking */}
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="flex items-center gap-2 mb-4">
+            <Palette className="h-5 w-5 text-blue-600" />
+            <h3 className="text-lg font-semibold text-gray-900">Brand Guidelines</h3>
+          </div>
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <MessageSquare className="h-4 w-4 text-purple-600" />
+              <span className="text-sm text-gray-700">Tone & Messaging Consistency</span>
+              <span className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded-full">Tracked</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Eye className="h-4 w-4 text-green-600" />
+              <span className="text-sm text-gray-700">Visual Identity Compliance</span>
+              <span className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded-full">Tracked</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Target className="h-4 w-4 text-orange-600" />
+              <span className="text-sm text-gray-700">Key Message Alignment</span>
+              <span className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded-full">Tracked</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Zap className="h-4 w-4 text-red-600" />
+              <span className="text-sm text-gray-700">Competitive Positioning</span>
+              <span className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded-full">Tracked</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Client-Specific Requirements */}
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="flex items-center gap-2 mb-4">
+            <Award className="h-5 w-5 text-yellow-600" />
+            <h3 className="text-lg font-semibold text-gray-900">Client Requirements</h3>
+          </div>
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <Target className="h-4 w-4 text-blue-600" />
+              <span className="text-sm text-gray-700">Target KPIs & Metrics</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <MessageSquare className="h-4 w-4 text-green-600" />
+              <span className="text-sm text-gray-700">Messaging Priorities</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Zap className="h-4 w-4 text-purple-600" />
+              <span className="text-sm text-gray-700">Competitive Claims Strategy</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <CheckCircle className="h-4 w-4 text-gray-600" />
+              <span className="text-sm text-gray-700">Compliance Level Requirements</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Filters */}
       <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
@@ -206,9 +276,9 @@ export default function ClientReview() {
             className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="all">All Clients</option>
-            <option value="Pharma Corp">Pharma Corp</option>
-            <option value="BioPharma Inc">BioPharma Inc</option>
-            <option value="HealthCare Solutions">HealthCare Solutions</option>
+            {Array.from(new Set(submissions?.map(s => s.client_name).filter(Boolean))).map(client => (
+              <option key={client} value={client}>{client}</option>
+            ))}
           </select>
 
           <select
@@ -268,6 +338,39 @@ export default function ClientReview() {
                 {getStatusIcon(submission.client_review_status || 'pending')}
                 <span className="capitalize">{(submission.client_review_status || 'pending').replace('_', ' ')}</span>
               </div>
+
+              {/* Brand Guidelines Status */}
+              {(submission as any).brand_guidelines && (
+                <div className="space-y-2">
+                  <div className="text-xs font-medium text-gray-700 mb-1">Brand Guidelines:</div>
+                  <div className="grid grid-cols-2 gap-1">
+                    {Object.entries((submission as any).brand_guidelines).map(([key, status]) => (
+                      <div key={key} className="flex items-center gap-1">
+                        {status === 'approved' ? (
+                          <CheckCircle className="h-3 w-3 text-green-600" />
+                        ) : status === 'revision_needed' ? (
+                          <AlertCircle className="h-3 w-3 text-yellow-600" />
+                        ) : (
+                          <Clock className="h-3 w-3 text-gray-600" />
+                        )}
+                        <span className="text-xs text-gray-600 capitalize">
+                          {key.replace('_', ' ')}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Client Requirements Summary */}
+              {(submission as any).client_requirements && (
+                <div className="bg-blue-50 p-2 rounded">
+                  <div className="text-xs font-medium text-blue-800 mb-1">Target KPIs:</div>
+                  <div className="text-xs text-blue-700">
+                    {(submission as any).client_requirements.target_kpis?.slice(0, 2).join(', ')}
+                  </div>
+                </div>
+              )}
 
               {submission.client_feedback && (
                 <div className="flex items-start gap-2 text-sm text-gray-600 bg-yellow-50 p-2 rounded">
