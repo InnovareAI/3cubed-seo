@@ -5,7 +5,9 @@ import {
   MessageSquare, 
   AlertCircle,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Shield,
+  Sparkles
 } from 'lucide-react';
 
 interface FieldApprovalControlProps {
@@ -20,6 +22,7 @@ interface FieldApprovalControlProps {
 export interface FieldApproval {
   status: 'pending' | 'approved' | 'rejected';
   comment: string;
+  complianceChecked?: boolean;
   reviewedBy?: string;
   reviewedAt?: string;
 }
@@ -118,71 +121,114 @@ export default function FieldApprovalControl({
         <p className="text-sm text-gray-700 whitespace-pre-wrap">{displayValue || 'No content'}</p>
       </div>
 
-      {/* Action Buttons */}
-      <div className="flex items-center gap-2 mb-3">
-        <button
-          onClick={() => handleStatusChange('approved')}
-          className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-            approval.status === 'approved'
-              ? 'bg-green-600 text-white'
-              : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
-          }`}
-        >
-          <span className="flex items-center gap-1">
-            <CheckCircle className="h-4 w-4" />
-            Approve
-          </span>
-        </button>
-        
-        <button
-          onClick={() => handleStatusChange('rejected')}
-          className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-            approval.status === 'rejected'
-              ? 'bg-red-600 text-white'
-              : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
-          }`}
-        >
-          <span className="flex items-center gap-1">
-            <XCircle className="h-4 w-4" />
-            Reject
-          </span>
-        </button>
-        
-        <button
-          onClick={() => handleStatusChange('pending')}
-          className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-            approval.status === 'pending'
-              ? 'bg-gray-600 text-white'
-              : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
-          }`}
-        >
-          Reset
-        </button>
+      {/* Action Buttons Row 1 - Approve/Reject with inline comment */}
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => handleStatusChange('approved')}
+            className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+              approval.status === 'approved'
+                ? 'bg-green-600 text-white'
+                : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            <span className="flex items-center gap-1">
+              <CheckCircle className="h-4 w-4" />
+              Approve
+            </span>
+          </button>
+          
+          <div className="flex items-center gap-2 flex-1">
+            <button
+              onClick={() => handleStatusChange('rejected')}
+              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                approval.status === 'rejected'
+                  ? 'bg-red-600 text-white'
+                  : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              <span className="flex items-center gap-1">
+                <XCircle className="h-4 w-4" />
+                Reject
+              </span>
+            </button>
+            
+            {/* Comment field next to reject */}
+            {(approval.status === 'rejected' || showComment) && (
+              <input
+                type="text"
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                onBlur={handleCommentSave}
+                placeholder={approval.status === 'rejected' ? 'Reason for rejection...' : 'Add comment...'}
+                className="flex-1 px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            )}
+          </div>
+        </div>
 
-        <button
-          onClick={() => setShowComment(!showComment)}
-          className="ml-auto px-3 py-1.5 rounded-md text-sm font-medium bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 flex items-center gap-1"
-        >
-          <MessageSquare className="h-4 w-4" />
-          Comment
-          {showComment ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-        </button>
+        {/* Action Buttons Row 2 - Compliance, Ask AI, etc */}
+        <div className="flex items-center gap-2">
+          <label className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium bg-white border border-gray-300 hover:bg-gray-50">
+            <input
+              type="checkbox"
+              checked={approval.complianceChecked || false}
+              onChange={(e) => {
+                const updatedApproval = {
+                  ...approval,
+                  complianceChecked: e.target.checked
+                };
+                setApproval(updatedApproval);
+                onApprovalChange(fieldId, updatedApproval);
+              }}
+              className="rounded text-blue-600 focus:ring-blue-500"
+            />
+            <Shield className="h-4 w-4 text-blue-600" />
+            <span>Compliance Check</span>
+          </label>
+
+          <button
+            onClick={() => {
+              // AI consultation logic
+              const aiPrompt = `Review this ${fieldName}: "${displayValue}". Check for: 1) FDA compliance, 2) Medical accuracy, 3) Brand consistency`;
+              console.log('AI Consultation:', aiPrompt);
+              // In real implementation, this would call an AI service
+              alert('AI review requested. This would typically open a modal with AI suggestions.');
+            }}
+            className="px-3 py-1.5 rounded-md text-sm font-medium bg-purple-100 text-purple-700 hover:bg-purple-200 flex items-center gap-1"
+          >
+            <Sparkles className="h-4 w-4" />
+            Ask AI
+          </button>
+
+          <button
+            onClick={() => handleStatusChange('pending')}
+            className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+              approval.status === 'pending'
+                ? 'bg-gray-600 text-white'
+                : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            Reset
+          </button>
+
+          {!showComment && approval.status !== 'rejected' && (
+            <button
+              onClick={() => setShowComment(true)}
+              className="px-3 py-1.5 rounded-md text-sm font-medium bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 flex items-center gap-1"
+            >
+              <MessageSquare className="h-4 w-4" />
+              Add Comment
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* Comment Section */}
-      {showComment && (
-        <div className="border-t pt-3">
-          <textarea
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-            onBlur={handleCommentSave}
-            placeholder={approval.status === 'rejected' ? 'Please provide reason for rejection...' : 'Add optional comments...'}
-            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            rows={3}
-          />
-          {approval.status === 'rejected' && !comment && (
-            <p className="text-xs text-red-600 mt-1">* Comment required for rejected items</p>
-          )}
+      {/* Compliance Warning */}
+      {approval.status === 'approved' && !approval.complianceChecked && (
+        <div className="mt-2 flex items-center gap-2 text-xs text-amber-600 bg-amber-50 p-2 rounded">
+          <AlertCircle className="h-3 w-3" />
+          <span>Approved without compliance check - Please verify compliance before final submission</span>
         </div>
       )}
 
