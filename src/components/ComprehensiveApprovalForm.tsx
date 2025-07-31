@@ -14,9 +14,11 @@ import {
   Brain,
   FileText,
   Zap,
-  RefreshCw
+  RefreshCw,
+  BookOpen
 } from 'lucide-react';
 import { ApprovalField, KeywordApproval, ContentApproval, ApprovalFormSections } from '@/types/approval.types';
+import SEOGEOStrategyOverview from './SEOGEOStrategyOverview';
 
 interface Props {
   submission: any;
@@ -25,6 +27,7 @@ interface Props {
 
 export default function ComprehensiveApprovalForm({ submission, onSubmit }: Props) {
   const [expandedSections, setExpandedSections] = useState({
+    seoGeoStrategy: true,
     strategy: true,
     seo: true,
     geo: true
@@ -507,6 +510,29 @@ export default function ComprehensiveApprovalForm({ submission, onSubmit }: Prop
             </span>
           )}
         </div>
+      </div>
+
+      {/* SEO/GEO Strategy Overview - 4 Page Document */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+        <button
+          onClick={() => toggleSection('seoGeoStrategy')}
+          className="w-full p-6 flex items-center justify-between hover:bg-gray-50 transition-colors"
+        >
+          <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+            <BookOpen className="h-5 w-5 text-indigo-500" />
+            SEO/GEO Strategy Overview
+            <span className="text-xs bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full ml-2">
+              4-Page Strategic Document
+            </span>
+          </h2>
+          {expandedSections.seoGeoStrategy ? <ChevronUp /> : <ChevronDown />}
+        </button>
+        
+        {expandedSections.seoGeoStrategy && (
+          <div className="px-6 pb-6">
+            <SEOGEOStrategyOverview submission={submission} />
+          </div>
+        )}
       </div>
 
       {/* Strategy Section */}
