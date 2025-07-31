@@ -216,7 +216,7 @@ export default function SEOReview() {
   const stats = {
     total: filteredSubmissions?.length || 0,
     highPriority: filteredSubmissions?.filter(s => s.priority_level?.toLowerCase() === 'high').length || 0,
-    hasKeywords: filteredSubmissions?.filter(s => s.seo_keywords && s.seo_keywords.length > 0).length || 0,
+    newForReview: filteredSubmissions?.filter(s => !viewedSubmissions.has(s.id)).length || 0,
     todaySubmissions: filteredSubmissions?.filter(s => {
       const today = new Date()
       const submissionDate = new Date(s.created_at)
@@ -276,11 +276,11 @@ export default function SEOReview() {
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Has Keywords</p>
-              <p className="text-2xl font-semibold text-green-600 mt-1">{stats.hasKeywords}</p>
+              <p className="text-sm font-medium text-gray-600">New for Review</p>
+              <p className="text-2xl font-semibold text-blue-600 mt-1">{stats.newForReview}</p>
             </div>
-            <div className="p-3 bg-green-100 rounded-lg">
-              <Hash className="h-6 w-6 text-green-600" />
+            <div className="p-3 bg-blue-100 rounded-lg">
+              <FileText className="h-6 w-6 text-blue-600" />
             </div>
           </div>
         </div>
