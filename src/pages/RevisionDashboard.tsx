@@ -97,11 +97,16 @@ export default function RevisionDashboard() {
   const [revisionNotes, setRevisionNotes] = useState<Record<string, string>>({})
   const [filterBy, setFilterBy] = useState<'all' | 'seo' | 'client' | 'mlr'>('all')
   const [searchTerm, setSearchTerm] = useState('')
+  const [useDemoData, setUseDemoData] = useState(true)
   const queryClient = useQueryClient()
 
   const { data: submissions, isLoading } = useQuery({
-    queryKey: ['revision-dashboard'],
+    queryKey: ['revision-dashboard', useDemoData],
     queryFn: async () => {
+      if (useDemoData) {
+        return mockRevisions
+      }
+      
       const { data, error } = await supabase
         .from('submissions')
         .select('*')
@@ -204,11 +209,23 @@ export default function RevisionDashboard() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-gray-900">Revisions</h1>
-        <p className="mt-1 text-sm text-gray-500">
-          Manage and process all revision requests from reviewers
-        </p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-900">Revisions</h1>
+          <p className="mt-1 text-sm text-gray-500">
+            Manage and process all revision requests from reviewers
+          </p>
+        </div>
+        <button
+          onClick={() => setUseDemoData(!useDemoData)}
+          className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+            useDemoData 
+              ? 'bg-amber-100 text-amber-700' 
+              : 'bg-green-100 text-green-700'
+          }`}
+        >
+          {useDemoData ? 'Demo Data' : 'Live Data'}
+        </button>
       </div>
 
       {/* Summary Cards */}

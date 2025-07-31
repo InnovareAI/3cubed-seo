@@ -20,6 +20,7 @@ import { format, subDays } from 'date-fns'
 import { useAuditLogs, useAuditLogStats, formatActionName, getActionColor } from '../hooks/useAuditLogs'
 import { AuditLogger } from '../lib/auditLogger'
 import { mockAuditLogs, mockAuditStats } from '../data/mockAuditLogs'
+import { mockAuditData } from '../data/mockAuditData'
 
 type ActivityType = 'all' | 'submission' | 'auth' | 'user' | 'system' | 'client' | 'project'
 type DateRange = 'last24h' | 'last7d' | 'last30d' | 'last90d' | 'lastYear' | 'all'
@@ -78,7 +79,7 @@ export default function AuditTrail() {
   const [activityType, setActivityType] = useState<ActivityType>('all')
   const [dateRange, setDateRange] = useState<DateRange>('last7d')
   const [selectedEntry, setSelectedEntry] = useState<any>(null)
-  const [useDemoData] = useState(true) // Toggle for demo data
+  const [useDemoData, setUseDemoData] = useState(true) // Toggle for demo data
 
   // Get filter configuration
   const filters = {
@@ -91,7 +92,7 @@ export default function AuditTrail() {
   const filteredMockData = useMemo(() => {
     if (!useDemoData) return []
     
-    let filtered = [...mockAuditLogs]
+    let filtered = [...mockAuditData]
     
     // Filter by activity type
     if (activityType !== 'all') {
@@ -176,11 +177,23 @@ export default function AuditTrail() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-gray-900">Audit Trail</h1>
-        <p className="mt-1 text-sm text-gray-500">
-          Complete activity log for compliance and security tracking
-        </p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-900">Audit Trail</h1>
+          <p className="mt-1 text-sm text-gray-500">
+            Complete activity log for compliance and security tracking
+          </p>
+        </div>
+        <button
+          onClick={() => setUseDemoData(!useDemoData)}
+          className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+            useDemoData 
+              ? 'bg-amber-100 text-amber-700' 
+              : 'bg-green-100 text-green-700'
+          }`}
+        >
+          {useDemoData ? 'Demo Data' : 'Live Data'}
+        </button>
       </div>
 
       {/* Compliance Notice */}

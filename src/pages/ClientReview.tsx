@@ -37,7 +37,7 @@ export default function ClientReview() {
   const [useDemoData, setUseDemoData] = useState(true)
 
   const { data: submissions, isLoading } = useQuery({
-    queryKey: ['client-review-content', { searchQuery, selectedPriority, selectedClient, selectedStatus }],
+    queryKey: ['client-review-content', { searchQuery, selectedPriority, selectedClient, selectedStatus, useDemoData }],
     queryFn: async () => {
       if (useDemoData) {
         return mockClientReviews
@@ -50,8 +50,9 @@ export default function ClientReview() {
         .order('created_at', { ascending: false })
 
       if (error) throw error
-      return data
-    }
+      return data || []
+    },
+    enabled: true
   })
 
   const filteredSubmissions = submissions?.filter(submission => {

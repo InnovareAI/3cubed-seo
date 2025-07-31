@@ -77,6 +77,7 @@ export default function SEOReview() {
   const [selectedDate, setSelectedDate] = useState(new Date())
   const [showGEOModal, setShowGEOModal] = useState(false)
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null)
+  const [useDemoData, setUseDemoData] = useState(true)
 
   // Track viewed submissions
   const [viewedSubmissions, setViewedSubmissions] = useState<Set<string>>(
@@ -84,12 +85,15 @@ export default function SEOReview() {
   )
 
   const { data: dbSubmissions, isLoading } = useQuery({
-    queryKey: ['seo-review-queue'],
+    queryKey: ['seo-review-queue', useDemoData],
     queryFn: async () => {
+      if (useDemoData) {
+        return demoData
+      }
       const { data, error } = await supabase
         .from('submissions')
         .select('*')
-        .order('created_at', { ascending: false }) // Always newest first
+        .order('created_at', { ascending: false })
       
       if (error) throw error
       return data as Submission[]
@@ -207,8 +211,8 @@ export default function SEOReview() {
     }
   ]
 
-  // Use only demo data for now
-  const submissionsWithScores = demoData.map(submission => {
+  // Calculate GEO scores for submissions
+  const submissionsWithScores = (dbSubmissions || []).map(submission => {
     if (submission.geo_optimization_score === 0 || submission.geo_optimization_score === undefined) {
       const scoreData = calculateGEOScore(submission);
       return {
@@ -287,6 +291,18 @@ export default function SEOReview() {
           <p className="text-sm text-gray-600 mt-1">Review and optimize AI-generated content for search performance</p>
         </div>
         <div className="flex items-center gap-2">
+          {/* Demo Data Toggle */}
+          <button
+            onClick={() => setUseDemoData(!useDemoData)}
+            className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+              useDemoData 
+                ? 'bg-amber-100 text-amber-700' 
+                : 'bg-green-100 text-green-700'
+            }`}
+          >
+            {useDemoData ? 'Demo Data' : 'Live Data'}
+          </button>
+          
           {/* View Mode Toggle */}
           <div className="flex items-center bg-white rounded-lg border border-gray-200 p-1">
             <button
