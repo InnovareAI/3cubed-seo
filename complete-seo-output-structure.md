@@ -85,41 +85,55 @@ Structured data for rich snippets:
 
 ### 10. GEO Content (Generative Engine Optimization)
 
-**Definition**: Content optimized for AI-powered search engines (ChatGPT, Claude, Perplexity, Gemini)
+**Definition**: Content optimized for AI-powered search engines using Backlinko's proven tactics
 
-#### A. AI-Friendly Summary (2-3 sentences)
-Concise definition that AI can extract:
-"[Product] is a [therapeutic area] medication [in development for/approved for] [indication]. It works by [simple mechanism]. [Availability statement based on stage]."
+#### A. Authoritative Summary with Citations
+"According to [FDA/ClinicalTrials.gov], [Product] is a [drug class with technical term] [approved/in development] for [exact FDA indication]. In the pivotal [trial name] (NCT#), it demonstrated [key statistical outcome]. [Mechanism of action with medical terminology]."
 
-#### B. Structured Q&A Format
-For AI to extract and present:
-- **What**: [Product] is a [drug class] that [primary action]
-- **Why**: Used to treat [indication] in [patient population]
-- **How**: Administered as [dosage form] [frequency]
-- **When**: [Stage-specific availability]
-- **Where**: [Trial sites/Pharmacy availability]
+#### B. Technical Medical Facts (Structured for AI)
+- **Classification**: [Technical drug class, e.g., "humanized IgG1 monoclonal antibody"]
+- **Mechanism**: [Precise MOA, e.g., "selectively binds to PD-1 receptor"]
+- **Indication**: [Exact FDA language]
+- **Efficacy**: [Primary endpoint with statistics and p-value]
+- **Administration**: [Technical details, e.g., "2 mg/kg IV q3w"]
+- **Biomarkers**: [If applicable, e.g., "PD-L1 TPS ≥50%"]
 
-#### C. Key Facts List (5-7 bullet points)
-Easily extractable by AI:
-• Drug name: [Brand (Generic)]
-• Indication: [FDA-approved/investigational indication]
-• Mechanism: [One-line explanation]
-• Administration: [Route and frequency]
-• Key benefit: [Primary efficacy point]
-• Safety note: [Most important warning]
-• Status: [Development stage/Approval date]
+#### C. Statistical Evidence Points
+• Clinical Trial: [Name] (NCT#) with N=[patients]
+• Primary Outcome: [Specific result with HR/OR and CI]
+• Response Rate: [ORR % with comparator]
+• Survival Data: [mPFS/OS with months]
+• Safety Profile: [% Grade 3+ AEs]
+• FDA Approval: [Date and application number]
+• Published: [Journal, DOI]
 
-#### D. Voice Search Optimization
-Natural language answers:
-- "According to FDA records, [product] is..."
-- "Clinical trials show that [product]..."
-- "[Product] was approved by the FDA in [date] for..."
+#### D. Expert Quotations & Guidelines
+- FDA Review: "[Quote from FDA review document]"
+- Lead Investigator: "[Quote from trial PI]"
+- Clinical Guidelines: "Per [NCCN/ASCO] guidelines..."
+- Prescribing Information: "[Direct quote on dosing/warnings]"
 
-#### E. AI Citation Format
-Help AI cite sources:
-- Source: [FDA/ClinicalTrials.gov]
-- Reference: [NCT#/NDA#]
+#### E. Unique Medical Vocabulary
+Include disease-specific and drug-specific terms:
+- [Unique biomarkers]
+- [Specific patient populations]
+- [Technical administration terms]
+- [Resistance mechanisms]
+- [Companion diagnostics]
+
+#### F. Voice Search Optimization with Authority
+- "According to FDA approval [#], [product] is indicated for..."
+- "Clinical trial [name] demonstrated that [product]..."
+- "The prescribing information states that [product]..."
+- "In [%] of patients, [product] showed..."
+
+#### G. Source Documentation for AI
+- Primary Source: [FDA Label/Drugs@FDA]
+- Clinical Trial: [ClinicalTrials.gov NCT#]
+- Publication: [Journal, Year, DOI]
+- Guidelines: [Organization, Year]
 - Last Updated: [Date]
+- Evidence Level: [Phase 3 RCT/Real-world/Meta-analysis]
 
 ## Output Format Structure
 
