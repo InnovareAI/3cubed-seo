@@ -33,50 +33,6 @@ interface ContentItem {
   complianceStatus: 'pending' | 'approved' | 'rejected'
 }
 
-const mockContent: ContentItem[] = [
-  {
-    id: '1',
-    title: 'Product X Landing Page - Benefits Focus',
-    type: 'landing_page',
-    client: 'Pharma Corp',
-    product: 'Product X',
-    keywords: ['Product X treatment', 'oncology therapy', 'cancer treatment'],
-    wordCount: 1245,
-    status: 'approved',
-    createdAt: '2024-01-15',
-    updatedAt: '2024-01-16',
-    author: 'John Doe',
-    complianceStatus: 'approved'
-  },
-  {
-    id: '2',
-    title: 'HCP Email Campaign - Clinical Trial Results',
-    type: 'email_campaign',
-    client: 'BioTech Inc',
-    product: 'Treatment Y',
-    keywords: ['clinical efficacy', 'safety profile', 'phase 3 results'],
-    wordCount: 350,
-    status: 'published',
-    createdAt: '2024-01-14',
-    updatedAt: '2024-01-14',
-    author: 'Jane Smith',
-    complianceStatus: 'approved'
-  },
-  {
-    id: '3',
-    title: 'Social Media Series - Patient Education',
-    type: 'social_media_post',
-    client: 'MedTech Solutions',
-    product: 'Device Z',
-    keywords: ['patient education', 'treatment options', 'medical device'],
-    wordCount: 280,
-    status: 'draft',
-    createdAt: '2024-01-16',
-    updatedAt: '2024-01-16',
-    author: 'Mike Johnson',
-    complianceStatus: 'pending'
-  }
-]
 
 export default function ContentLibrary() {
   const [searchTerm, setSearchTerm] = useState('')
@@ -85,11 +41,11 @@ export default function ContentLibrary() {
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
 
   // In real app, fetch from database
-  const { data: contentItems = mockContent } = useQuery({
+  const { data: contentItems = [] } = useQuery({
     queryKey: ['content-library'],
     queryFn: async () => {
-      // Simulate API call
-      return mockContent
+      // TODO: Fetch from database
+      return []
     }
   })
 

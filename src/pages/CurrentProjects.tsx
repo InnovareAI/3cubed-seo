@@ -91,7 +91,6 @@ export default function CurrentProjects() {
       const { data, error } = await supabase
         .from('submissions')
         .select('*')
-        .in('workflow_stage', ['Form_Submitted', 'AI_Processing', 'SEO_Review', 'MLR_Review', 'Client_Review', 'Revision_Requested'])
         .order('created_at', { ascending: false })
       
       if (error) throw error

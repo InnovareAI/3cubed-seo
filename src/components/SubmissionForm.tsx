@@ -81,9 +81,9 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
     section4: true
   });
 
-  // Calculate section completion
+  // Calculate section completion (product_name is now optional)
   const section1Complete = useMemo(() => {
-    const fields = ['product_name', 'generic_name', 'indication', 'therapeutic_area'];
+    const fields = ['generic_name', 'indication', 'therapeutic_area'];
     return fields.every(field => formData[field as keyof FormData]);
   }, [formData]);
 
@@ -165,9 +165,8 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
     setIsSubmitting(true);
     setError(null);
 
-    // Validate only the 6 mandatory fields
+    // Validate only the 5 mandatory fields (Product Name is now optional)
     const mandatoryFields = {
-      'Product Name': formData.product_name,
       'Generic/INN Name': formData.generic_name,
       'Indication': formData.indication,
       'Therapeutic Area': formData.therapeutic_area,
@@ -188,7 +187,6 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
     // Build submission data - only include fields that definitely exist
     let submissionData: any = {
         // Mandatory fields (always included)
-        product_name: formData.product_name,
         generic_name: formData.generic_name,
         indication: formData.indication,
         therapeutic_area: formData.therapeutic_area,
@@ -204,6 +202,7 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
 
       // Optional fields - only include if they have values
       const optionalFields = {
+        product_name: formData.product_name, // Now optional
         nct_number: formData.nct_number,
         sponsor: formData.sponsor,
         development_stage: formData.development_stage,
@@ -253,52 +252,8 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         const submissionId = insertedData[0].id;
         console.log('✅ Created submission record:', submissionId);
 
-        // Step 2: Trigger n8n workflow with submission ID
-        const webhookPayload = {
-          submission_id: submissionId,
-          trigger_source: 'form_submission'
-        };
-        
-        console.log('🚀 Triggering AI processing with payload:', webhookPayload);
-        
-        // Use Netlify function instead of n8n
-        const webhookResponse = await fetch('/.netlify/functions/process-submission', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ submission_id: submissionId })
-        });
-
-        console.log('Webhook response status:', webhookResponse.status, webhookResponse.statusText);
-        console.log('Webhook response headers:', Object.fromEntries(webhookResponse.headers));
-        
-        if (!webhookResponse.ok) {
-          const errorText = await webhookResponse.text();
-          console.error('Webhook error response:', errorText);
-          throw new Error(`Webhook failed: ${webhookResponse.status} ${webhookResponse.statusText} - ${errorText}`);
-        }
-
-        // Get response as text first to debug
-        const responseText = await webhookResponse.text();
-        console.log('Raw webhook response:', responseText);
-        
-        let webhookData;
-        if (responseText.trim()) {
-          try {
-            webhookData = JSON.parse(responseText);
-          } catch (parseError) {
-            console.error('JSON parse error:', parseError);
-            console.log('Response was not valid JSON, treating as success');
-            webhookData = { status: 'submitted', rawResponse: responseText };
-          }
-        } else {
-          console.log('Empty response from webhook, treating as success');
-          webhookData = { status: 'submitted', message: 'Empty response' };
-        }
-        
-        console.log('✅ Data successfully sent to n8n webhook:', webhookData);
-        console.log('🎉 Full submission flow completed - record created and workflow triggered');
+        console.log('✅ Successfully created submission record in Supabase');
+        console.log('🎉 Form submission completed - Supabase trigger will handle N8N workflow');
 
         // Show success modal (user must dismiss manually)
         setShowSuccessMessage(true);
@@ -423,22 +378,6 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
           <div className="p-6 space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="product_name" className="block text-sm font-medium text-gray-700 mb-1">
-                  Product Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  id="product_name"
-                  name="product_name"
-                  value={formData.product_name}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="e.g., Keytruda, Carvykti"
-                />
-              </div>
-
-              <div>
                 <label htmlFor="generic_name" className="block text-sm font-medium text-gray-700 mb-1">
                   Generic/INN Name <span className="text-red-500">*</span>
                 </label>
@@ -453,6 +392,22 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
                   placeholder="e.g., pembrolizumab"
                 />
                 <p className="text-xs text-gray-500 mt-1">International nonproprietary name</p>
+              </div>
+
+              <div>
+                <label htmlFor="product_name" className="block text-sm font-medium text-gray-700 mb-1">
+                  Brand/Product Name
+                </label>
+                <input
+                  type="text"
+                  id="product_name"
+                  name="product_name"
+                  value={formData.product_name}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="e.g., Keytruda, Carvykti"
+                />
+                <p className="text-xs text-gray-500 mt-1">Optional — Brand name not available in Phase III; use only if post-launch</p>
               </div>
 
               <div>

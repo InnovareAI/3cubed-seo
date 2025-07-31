@@ -16,65 +16,15 @@ interface ClientProject {
   status: 'active' | 'paused' | 'completed'
 }
 
-const mockClients: ClientProject[] = [
-  {
-    client_name: 'Pharma Corp',
-    company: 'pharmacorp.com',
-    product_count: 5,
-    active_campaigns: 3,
-    pending_reviews: 2,
-    approved_content: 45,
-    total_submissions: 52,
-    approval_rate: 87,
-    last_activity: new Date().toISOString(),
-    status: 'active'
-  },
-  {
-    client_name: 'BioTech Inc',
-    company: 'biotech-inc.com',
-    product_count: 3,
-    active_campaigns: 2,
-    pending_reviews: 1,
-    approved_content: 28,
-    total_submissions: 31,
-    approval_rate: 90,
-    last_activity: new Date(Date.now() - 86400000).toISOString(),
-    status: 'active'
-  },
-  {
-    client_name: 'MedTech Solutions',
-    company: 'medtechsolutions.com',
-    product_count: 8,
-    active_campaigns: 5,
-    pending_reviews: 4,
-    approved_content: 67,
-    total_submissions: 78,
-    approval_rate: 86,
-    last_activity: new Date(Date.now() - 172800000).toISOString(),
-    status: 'active'
-  },
-  {
-    client_name: 'Global Pharma',
-    company: 'globalpharma.com',
-    product_count: 12,
-    active_campaigns: 0,
-    pending_reviews: 0,
-    approved_content: 134,
-    total_submissions: 145,
-    approval_rate: 92,
-    last_activity: new Date(Date.now() - 604800000).toISOString(),
-    status: 'completed'
-  }
-]
 
 export default function ProjectsOverview() {
   const navigate = useNavigate()
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'paused' | 'completed'>('all')
 
-  const { data: clientProjects = mockClients, isLoading = false } = useQuery({
+  const { data: clientProjects = [], isLoading = false } = useQuery({
     queryKey: ['client-projects'],
-    queryFn: async () => mockClients,
+    queryFn: async () => [],
     refetchInterval: 30000
   })
 

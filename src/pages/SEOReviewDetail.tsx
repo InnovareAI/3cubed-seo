@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
@@ -35,6 +35,7 @@ interface Submission {
   created_at: string
   submitter_name: string
   submitter_email: string
+  submitter_company?: string
   priority_level: string
   medical_indication?: string
   langchain_status?: string
@@ -91,6 +92,33 @@ export default function SEOReviewDetail() {
       return data as Submission
     }
   })
+
+  // Set up real-time subscription for this specific submission
+  useEffect(() => {
+    if (!id) return
+
+    const channel = supabase
+      .channel(`submission-${id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'submissions',
+          filter: `id=eq.${id}`
+        },
+        (payload) => {
+          // Refetch data when this submission is updated
+          queryClient.invalidateQueries({ queryKey: ['seo-review-detail', id] })
+        }
+      )
+      .subscribe()
+
+    // Cleanup subscription on unmount
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [id, queryClient])
 
   const updateStatus = useMutation({
     mutationFn: async ({ 
@@ -260,7 +288,7 @@ export default function SEOReviewDetail() {
                   <Building className="h-4 w-4" />
                   Client
                 </p>
-                <p className="mt-1 font-medium text-gray-900">{submission.client_name || 'Pharma Corp'}</p>
+                <p className="mt-1 font-medium text-gray-900">{submission.client_name || submission.submitter_company || '-'}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-600 flex items-center gap-1">

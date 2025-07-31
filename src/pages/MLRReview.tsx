@@ -278,12 +278,12 @@ export default function MLRReview() {
             <div className="space-y-3">
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <Building className="h-4 w-4" />
-                <span>{('submitter_company' in submission ? submission.submitter_company : submission.client_name) || 'Pharma Corp'}</span>
+                <span>{('submitter_company' in submission ? submission.submitter_company : submission.client_name) || '-'}</span>
               </div>
 
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <Users className="h-4 w-4" />
-                <span>{submission.target_audience?.join(', ') || 'Healthcare Professionals'}</span>
+                <span>{submission.target_audience?.join(', ') || '-'}</span>
               </div>
 
               <div className="flex items-center gap-2 text-sm text-gray-600">

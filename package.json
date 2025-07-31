@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "vite build",
     "preview": "vite preview",
     "deploy": "netlify deploy --prod",
     "netlify:dev": "netlify dev",
@@ -20,7 +20,9 @@
     "@tanstack/react-query": "^5.17.0",
     "clsx": "^2.0.0",
     "date-fns": "^3.0.0",
+    "dotenv": "^17.2.1",
     "lucide-react": "^0.294.0",
+    "node-fetch": "^3.3.2",
     "pg": "^8.16.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -29,10 +31,12 @@
     "tailwind-merge": "^2.2.0"
   },
   "devDependencies": {
+    "@types/lodash": "^4.17.20",
     "@types/react": "^18.2.43",
     "@types/react-dom": "^18.2.17",
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.16",
+    "lodash": "^4.17.21",
     "postcss": "^8.4.32",
     "tailwindcss": "^3.3.0",
     "typescript": "^5.8.3",

@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useState, useEffect } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import CTAButton from '../components/CTAButton'
@@ -28,6 +28,7 @@ interface Submission {
   created_at: string
   submitter_name: string
   submitter_email: string
+  submitter_company?: string
   priority_level: string
   medical_indication?: string
   langchain_status?: string
@@ -51,6 +52,7 @@ interface Submission {
 
 export default function SEOReview() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const [searchTerm, setSearchTerm] = useState('')
   const [priorityFilter, setPriorityFilter] = useState<string>('all')
   const [therapeuticAreaFilter, setTherapeuticAreaFilter] = useState<string>('all')
@@ -61,15 +63,37 @@ export default function SEOReview() {
       const { data, error } = await supabase
         .from('submissions')
         .select('*')
-        .eq('workflow_stage', 'seo_review')
-        .order('created_at', { ascending: true })
+        .order('created_at', { ascending: false })
       
       if (error) throw error
       return data as Submission[]
     },
-    refetchInterval: 30000,
     enabled: true
   })
+
+  // Set up real-time subscription for instant updates
+  useEffect(() => {
+    const channel = supabase
+      .channel('submissions-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'submissions'
+        },
+        (payload) => {
+          // Refetch data when any submission changes
+          queryClient.invalidateQueries({ queryKey: ['seo-review-queue'] })
+        }
+      )
+      .subscribe()
+
+    // Cleanup subscription on unmount
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [queryClient])
 
   const submissions = dbSubmissions || []
 
@@ -265,12 +289,12 @@ export default function SEOReview() {
             <div className="space-y-3">
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <Building className="h-4 w-4" />
-                <span>{submission.client_name || 'Pharma Corp'}</span>
+                <span>{submission.client_name || submission.submitter_company || 'No client'}</span>
               </div>
 
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <Users className="h-4 w-4" />
-                <span>{submission.target_audience?.join(', ') || 'Healthcare Professionals'}</span>
+                <span>{submission.target_audience?.join(', ') || 'No audience specified'}</span>
               </div>
 
               <div className="flex items-center gap-2 text-sm text-gray-600">

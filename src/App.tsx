@@ -4,6 +4,7 @@ import ErrorBoundary from './components/ErrorBoundary'
 import ProjectsOverview from './pages/ProjectsOverview'
 import SEORequests from './pages/SEORequests'
 import SEOReview from './pages/SEOReview'
+import EditableSEOReview from './pages/EditableSEOReview'
 import ClientReview from './pages/ClientReview'
 import Compliance from './pages/Compliance'
 import RevisionDashboard from './pages/RevisionDashboard'
@@ -79,6 +80,7 @@ function App() {
             <Route path="submissions/:id" element={<SubmissionDetail />} />
             <Route path="hitl-review" element={<HITLReview />} />
             <Route path="seo-review" element={<SEOReview />} />
+            <Route path="seo-review-editable" element={<EditableSEOReview />} />
             <Route path="seo-review/:id" element={<SEOReviewDetail />} />
             <Route path="client-review" element={<ClientReview />} />
             <Route path="client-review/:id" element={<ClientReviewDetail />} />
