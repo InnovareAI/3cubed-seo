@@ -12,6 +12,12 @@ Generate comprehensive SEO and GEO-optimized content based on these 4 mandatory 
 **3. MEDICAL INDICATION**: ${indication}
 **4. THERAPEUTIC AREA**: ${therapeutic_area}
 
+**IMPORTANT**: Based on the development stage, select appropriate GEO fields:
+- Phase III: Include Trial Enrollment Information (6 total GEO fields)
+- Market Launch: Include Prescribing Highlights (6-7 total GEO fields)
+- Add Biomarker Information for targeted therapies
+- Never include competitive comparisons
+
 [FDA DATA SECTION - Include when available]
 
 ### REQUIRED OUTPUT STRUCTURE:
@@ -92,34 +98,63 @@ Generate complete JSON-LD code:
 }
 ```
 
-#### 10. GEO Content (Generative Engine Optimization):
+#### 10. GEO Content (Generative Engine Optimization - 5-7 fields):
 
-**A. AI-Friendly Summary (2-3 sentences):**
-Write a concise definition that AI assistants can extract and use.
+**ALWAYS INCLUDE THESE 5 CORE FIELDS:**
 
-**B. Structured Q&A Format:**
-- What: [Definition]
-- Why: [Purpose/Indication]
-- How: [Mechanism/Administration]
-- When: [Availability/Stage]
-- Where: [Access points]
+**1. AI-Optimized Summary:**
+Write 2-3 sentences with citations that AI can extract. Start with "According to [source]..."
 
-**C. Key Facts List (5-7 bullet points):**
-• Drug name: 
-• Indication: 
-• Mechanism: 
-• Administration: 
-• Key benefit: 
-• Safety note: 
-• Status: 
+**2. Structured Medical Facts:**
+• Drug Class: [Technical classification]
+• Mechanism: [MOA with scientific terms]
+• Administration: [Route, dosing, frequency]
+• Key Efficacy: [Primary endpoint with statistics]
 
-**D. Voice Search Optimization:**
-Write 2-3 natural language sentences that answer voice queries.
+**3. Evidence-Based Statistics:**
+List 3-5 key data points:
+• Trial: [Name] (NCT#) with N=[number]
+• Primary Outcome: [Result with CI]
+• Response Rate: [% with criteria]
+• Safety: [% common AEs]
 
-**E. AI Citation Format:**
-- Source: [FDA/ClinicalTrials.gov]
-- Reference: [NCT#/NDA#]
-- Last Updated: [Current date]
+**4. Authoritative Citations:**
+• FDA: [Approval date, NDA/BLA#]
+• Clinical Trial: [NCT#, phase]
+• Publication: [Journal, DOI]
+
+**5. Voice Search Answers:**
+Natural responses to:
+• "What is [product] used for?"
+• "How does [product] work?"
+• "Is [product] FDA approved?"
+
+**ADD 1-2 DYNAMIC FIELDS BASED ON STAGE:**
+
+**For Phase III - Add:**
+**6. Trial Enrollment Information:**
+• Eligibility: [Key criteria]
+• Locations: [Sites/countries]
+• Contact: [ClinicalTrials.gov]
+• Timeline: [Completion date]
+
+**For Market Launch - Add:**
+**6. Prescribing Highlights:**
+• Dosing: [Regimen]
+• Contraindications: [List]
+• Warnings: [Key warnings]
+• Interactions: [Major]
+
+**For Targeted Therapies - Also Add:**
+**7. Biomarker Information:**
+• Required Testing: [Test name]
+• Cutoff: [Values]
+• Method: [FDA-approved test]
+
+**NEVER INCLUDE:**
+- Comparisons to other products
+- Competitive positioning
+- Off-label information
 
 ### CRITICAL REQUIREMENTS:
 1. Use FDA data to enhance accuracy when available
