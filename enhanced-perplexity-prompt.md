@@ -12,6 +12,33 @@ Generate SEO-optimized pharmaceutical content based on these 4 mandatory inputs:
 **3. MEDICAL INDICATION**: ${indication}
 **4. THERAPEUTIC AREA**: ${therapeutic_area}
 
+### FDA DATABASE ENRICHMENT (When Available):
+${fda_clinical_trial_data && `
+**CLINICAL TRIAL DATA (ClinicalTrials.gov)**:
+- NCT ID: ${nct_id}
+- Official Title: ${official_title}
+- Study Status: ${overall_status}
+- Phase: ${phase}
+- Enrollment: ${enrollment} participants
+- Primary Outcomes: ${primary_outcomes}
+`}
+
+${fda_approval_data && `
+**FDA APPROVAL DATA (Drugs@FDA)**:
+- Application Number: ${application_number}
+- Sponsor: ${sponsor_name}
+- Approval Date: ${approval_date}
+- Marketing Status: ${marketing_status}
+- Dosage Form: ${dosage_form}
+`}
+
+${fda_labeling_data && `
+**OFFICIAL FDA LABELING**:
+- Approved Indications: ${indications_and_usage}
+- Contraindications: ${contraindications}
+- Warnings: ${warnings_and_cautions}
+`}
+
 ### CRITICAL INSTRUCTIONS:
 
 1. **Stage-Specific Requirements**:
@@ -41,10 +68,11 @@ Format: [Name] - [Therapeutic Area] Treatment for [Indication] [Stage Status]
 
 #### Keywords (10-15 terms):
 - 3-4 terms from product name(s)
-- 3-4 terms from indication
+- 3-4 terms from indication (use FDA-approved indication language)
 - 2-3 terms from therapeutic area
-- 2-3 stage-specific terms
+- 2-3 stage-specific terms (include NCT number if available)
 - 2-3 long-tail questions
+- 1-2 FDA-specific terms (e.g., "FDA approved [product]", "[product] prescribing information")
 
 #### H2 Subheadings (EXACTLY 5):
 1. "What is [Product Name]?" - Define using therapeutic area
@@ -57,19 +85,30 @@ Format: [Name] - [Therapeutic Area] Treatment for [Indication] [Stage Status]
 Paragraph structure:
 1. Opening (75-100 words): Answer all 4 questions in first 2 sentences
 2. Indication Deep Dive (100-150 words): Disease state in therapeutic context
+   - Use FDA labeling data for approved indication language
 3. Product Explanation (100-150 words): How it addresses the indication
+   - Incorporate mechanism from FDA data when available
 4. Stage-Specific Content (150-200 words): 
-   - Phase III: Trial design, enrollment criteria
-   - Market Shaping: Unmet need, development timeline
-   - Market Launch: Benefits, administration, availability
-5. Therapeutic Landscape (75-100 words): Positioning within specialty
-6. Call-to-Action (50-75 words): Stage-appropriate next steps
+   - Phase III: Use clinical trial data (enrollment, NCT#, primary outcomes)
+   - Market Shaping: Reference trial status and timeline from FDA data
+   - Market Launch: Use FDA approval data (approval date, dosage forms)
+5. Clinical Evidence (100-150 words): 
+   - Phase III: Current trial design from ClinicalTrials.gov
+   - Market Launch: Efficacy data from FDA labeling
+6. Safety Information (75-100 words):
+   - Use FDA labeling data for contraindications/warnings
+7. Call-to-Action (50-75 words): Stage-appropriate next steps
 
 #### Schema Markup:
-Generate JSON-LD based on stage:
-- Phase III: ClinicalTrial schema
-- Market Shaping: MedicalWebPage + Drug (investigational)
-- Market Launch: Drug schema with full properties
+Generate JSON-LD based on stage and FDA data:
+- Phase III: ClinicalTrial schema with NCT ID and enrollment data
+- Market Shaping: MedicalWebPage + Drug (investigational) with trial status
+- Market Launch: Drug schema with FDA approval number, marketing status, dosage forms
+
+Include FDA data properties when available:
+- "clinicalTrialId": NCT number from ClinicalTrials.gov
+- "fdaApplicationNumber": NDA/BLA from Drugs@FDA
+- "prescribingInformation": URL reference to FDA labeling
 
 ### GEO OPTIMIZATION REQUIREMENTS:
 
@@ -83,6 +122,7 @@ Generate JSON-LD based on stage:
    - First sentence must work as a voice assistant response
    - Include question-format H3 subheadings
    - Use conversational tone while maintaining medical accuracy
+   - When FDA data available, include: "According to FDA records..."
 
 3. **AI Search Features**:
    - Bold key facts for snippet extraction
@@ -95,7 +135,10 @@ Generate JSON-LD based on stage:
 - All stages: Include appropriate disclaimers
 - Market Launch: Balance benefit/risk information
 - Never make comparative claims
-- Cite clinical trial numbers when referencing data
+- ALWAYS cite NCT numbers when referencing clinical data
+- Use ONLY FDA-approved language for indications
+- Include "See full prescribing information" when citing FDA labeling
+- Reference FDA application numbers for approved products
 
 ### OUTPUT FORMAT:
 Provide output with these exact section headers:
