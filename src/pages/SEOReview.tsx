@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import CTAButton from '../components/CTAButton'
 import { THERAPEUTIC_AREAS } from '../constants/therapeuticAreas'
+import GEOScoreBreakdownComponent from '../components/GEOScoreBreakdown'
+import { calculateGEOScore } from '../utils/geoScoring'
 import { 
   Search,
   FileText,
@@ -73,6 +75,8 @@ export default function SEOReview() {
   const [priorityFilter, setPriorityFilter] = useState<string>('all')
   const [therapeuticAreaFilter, setTherapeuticAreaFilter] = useState<string>('all')
   const [selectedDate, setSelectedDate] = useState(new Date())
+  const [showGEOModal, setShowGEOModal] = useState(false)
+  const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null)
 
   // Track viewed submissions
   const [viewedSubmissions, setViewedSubmissions] = useState<Set<string>>(
@@ -140,13 +144,24 @@ export default function SEOReview() {
       key_differentiators: ['First-line therapy', 'Superior OS'],
       seo_keywords: ['pembrolizumab', 'keytruda', 'lung cancer treatment'],
       long_tail_keywords: ['keytruda for nsclc first line', 'pembrolizumab side effects'],
+      consumer_questions: ['What is Keytruda?', 'How does Keytruda work?', 'What are Keytruda side effects?'],
+      h1_tag: 'What is Keytruda and How Does It Treat NSCLC?',
+      h2_tags: ['How Keytruda Works', 'Clinical Trial Results', 'Patient Eligibility'],
       meta_title: 'Keytruda (Pembrolizumab) for NSCLC | Official Information',
       meta_description: 'Learn about Keytruda, a PD-1 inhibitor for first-line treatment of NSCLC.',
       seo_title: 'Keytruda: Revolutionary NSCLC Treatment',
       geo_event_tags: ['ASCO 2024', 'ESMO 2024'],
-      h2_tags: ['How Keytruda Works', 'Clinical Trial Results', 'Patient Eligibility'],
       seo_strategy_outline: 'Focus on first-line positioning and survival benefits',
-      geo_optimization_score: 92
+      geo_optimization: {
+        ai_summary: 'Keytruda is a PD-1 inhibitor immunotherapy for NSCLC',
+        evidence_statistics: ['85% response rate', '70% 2-year survival'],
+        citations: { 'FDA': 'FDA approval 2016', 'NEJM': 'Clinical trial data' },
+        voice_search_answers: { 'what': 'Keytruda is an immunotherapy drug' }
+      },
+      ai_generated_content: {
+        schema_markup: { "@type": "Drug", "name": "Keytruda" }
+      },
+      geo_optimization_score: 0 // Will be calculated
     },
     {
       id: 'demo-2',
@@ -192,7 +207,19 @@ export default function SEOReview() {
     }
   ]
 
-  const submissions = dbSubmissions || demoData
+  // Calculate GEO scores for demo data if needed
+  const submissionsWithScores = (dbSubmissions || demoData).map(submission => {
+    if (submission.geo_optimization_score === 0 || submission.geo_optimization_score === undefined) {
+      const scoreData = calculateGEOScore(submission);
+      return {
+        ...submission,
+        geo_optimization_score: scoreData.percentage
+      };
+    }
+    return submission;
+  });
+
+  const submissions = submissionsWithScores
 
   const filteredSubmissions = submissions?.filter(submission => {
     if (searchTerm && !submission.product_name.toLowerCase().includes(searchTerm.toLowerCase()) &&
@@ -468,8 +495,16 @@ export default function SEOReview() {
                   </div>
                   
                   {/* GEO Score if available */}
-                  {submission.geo_optimization_score && (
-                    <div className="flex items-center gap-2 mb-2">
+                  {submission.geo_optimization_score !== undefined && (
+                    <div 
+                      className="flex items-center gap-2 mb-2 cursor-pointer hover:opacity-80 transition-opacity"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedSubmission(submission);
+                        setShowGEOModal(true);
+                      }}
+                      title="Click to see GEO score breakdown"
+                    >
                       <div className="flex-1 bg-gray-200 rounded-full h-2">
                         <div 
                           className={`h-2 rounded-full transition-all ${
@@ -626,6 +661,18 @@ export default function SEOReview() {
         <div className="text-center py-12">
           <p className="text-gray-500">No content found for SEO review</p>
         </div>
+      )}
+
+      {/* GEO Score Modal */}
+      {showGEOModal && selectedSubmission && (
+        <GEOScoreBreakdownComponent
+          submission={selectedSubmission}
+          showAsModal={true}
+          onClose={() => {
+            setShowGEOModal(false);
+            setSelectedSubmission(null);
+          }}
+        />
       )}
     </div>
   )

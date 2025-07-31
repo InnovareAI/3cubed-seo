@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase'
 import CTAButton from '@/components/CTAButton'
 import ComprehensiveApprovalForm from '@/components/ComprehensiveApprovalForm'
 import FieldApprovalControl, { FieldApproval } from '@/components/FieldApprovalControl'
+import IndividualKeywordApproval, { KeywordApprovalData } from '@/components/IndividualKeywordApproval'
 import { ApprovalFormSections } from '@/types/approval.types'
 import { exportToCSV, exportToPDF } from '@/utils/exportUtils'
 import { 
@@ -78,6 +79,8 @@ export default function SEOReviewDetail() {
   
   const [revisionNotes, setRevisionNotes] = useState('')
   const [fieldApprovals, setFieldApprovals] = useState<Record<string, FieldApproval>>({})
+  const [keywordApprovals, setKeywordApprovals] = useState<Record<number, KeywordApprovalData>>({})
+  const [h2Approvals, setH2Approvals] = useState<Record<number, FieldApproval>>({})
   
   // For backward compatibility
   const [approvals, setApprovals] = useState({
@@ -406,6 +409,35 @@ export default function SEOReviewDetail() {
         </div>
       </div>
 
+      {/* SEO/GEO Strategy Section - MOVED TO TOP */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+        <div 
+          className="p-6 cursor-pointer"
+          onClick={() => toggleSection('seo-strategy')}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Globe className="h-5 w-5 text-gray-600" />
+              <h2 className="text-lg font-semibold text-gray-900">SEO/GEO Strategy</h2>
+            </div>
+            {expandedSections['seo-strategy'] ? 
+              <ChevronUp className="h-5 w-5 text-gray-400" /> : 
+              <ChevronDown className="h-5 w-5 text-gray-400" />
+            }
+          </div>
+        </div>
+        
+        {expandedSections['seo-strategy'] && (
+          <div className="px-6 pb-6">
+            <div className="bg-gray-50 rounded-lg p-4">
+              <p className="text-sm text-gray-700 whitespace-pre-wrap">
+                {submission.seo_strategy_outline}
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Overview Section */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
         <div 
@@ -544,26 +576,84 @@ export default function SEOReviewDetail() {
               initialApproval={fieldApprovals['h1_tag']}
             />
 
-            {/* H2 Tags */}
-            <FieldApprovalControl
-              fieldName={`4. H2 Subheadings (${submission.h2_tags?.length || 0})`}
-              fieldValue={submission.h2_tags || []}
-              fieldId="h2_tags"
-              onApprovalChange={handleFieldApproval}
-              initialApproval={fieldApprovals['h2_tags']}
-            />
+            {/* H2 Tags - Individual Approval */}
+            <div>
+              <h3 className="text-sm font-semibold text-gray-900 mb-3">
+                4. H2 Subheadings ({submission.h2_tags?.length || 0})
+              </h3>
+              <div className="space-y-3">
+                {submission.h2_tags?.map((tag: string, idx: number) => (
+                  <FieldApprovalControl
+                    key={`h2-${idx}`}
+                    fieldName={`H2 #${idx + 1}`}
+                    fieldValue={tag}
+                    fieldId={`h2_tag_${idx}`}
+                    onApprovalChange={(fieldId, approval) => {
+                      setH2Approvals(prev => ({
+                        ...prev,
+                        [idx]: approval
+                      }));
+                    }}
+                    initialApproval={h2Approvals[idx]}
+                  />
+                ))}
+              </div>
+            </div>
 
-            {/* Keywords */}
-            <FieldApprovalControl
-              fieldName="5. Target Keywords (10-15 terms)"
-              fieldValue={[
-                ...(submission.seo_keywords || []),
-                ...(submission.long_tail_keywords || [])
-              ]}
-              fieldId="keywords"
-              onApprovalChange={handleFieldApproval}
-              initialApproval={fieldApprovals['keywords']}
-            />
+            {/* Keywords - Individual Approval */}
+            <div>
+              <h3 className="text-sm font-semibold text-gray-900 mb-3">
+                5. Target Keywords (10-15 terms)
+              </h3>
+              
+              {/* SEO Keywords */}
+              {submission.seo_keywords && submission.seo_keywords.length > 0 && (
+                <div className="mb-4">
+                  <h4 className="text-xs font-medium text-gray-700 mb-2">Primary SEO Keywords</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {submission.seo_keywords.map((keyword: string, idx: number) => (
+                      <IndividualKeywordApproval
+                        key={`seo-${idx}`}
+                        keyword={keyword}
+                        index={idx}
+                        type="seo"
+                        onApprovalChange={(index, approval) => {
+                          setKeywordApprovals(prev => ({
+                            ...prev,
+                            [`seo-${index}`]: approval
+                          }));
+                        }}
+                        initialApproval={keywordApprovals[`seo-${idx}`]}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Long-tail Keywords */}
+              {submission.long_tail_keywords && submission.long_tail_keywords.length > 0 && (
+                <div>
+                  <h4 className="text-xs font-medium text-gray-700 mb-2">Long-tail Keywords</h4>
+                  <div className="grid grid-cols-1 gap-3">
+                    {submission.long_tail_keywords.map((keyword: string, idx: number) => (
+                      <IndividualKeywordApproval
+                        key={`longtail-${idx}`}
+                        keyword={keyword}
+                        index={idx}
+                        type="longtail"
+                        onApprovalChange={(index, approval) => {
+                          setKeywordApprovals(prev => ({
+                            ...prev,
+                            [`longtail-${index}`]: approval
+                          }));
+                        }}
+                        initialApproval={keywordApprovals[`longtail-${idx}`]}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Body Content Summary - NEW */}
             <div>
@@ -692,34 +782,6 @@ export default function SEOReviewDetail() {
         )}
       </div>
 
-      {/* SEO Strategy Section */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
-        <div 
-          className="p-6 cursor-pointer"
-          onClick={() => toggleSection('seo-strategy')}
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Globe className="h-5 w-5 text-gray-600" />
-              <h2 className="text-lg font-semibold text-gray-900">SEO Strategy</h2>
-            </div>
-            {expandedSections['seo-strategy'] ? 
-              <ChevronUp className="h-5 w-5 text-gray-400" /> : 
-              <ChevronDown className="h-5 w-5 text-gray-400" />
-            }
-          </div>
-        </div>
-        
-        {expandedSections['seo-strategy'] && (
-          <div className="px-6 pb-6">
-            <div className="bg-gray-50 rounded-lg p-4">
-              <p className="text-sm text-gray-700 whitespace-pre-wrap">
-                {submission.seo_strategy_outline}
-              </p>
-            </div>
-          </div>
-        )}
-      </div>
 
       {/* Compliance Status Section */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
