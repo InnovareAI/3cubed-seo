@@ -405,26 +405,37 @@ export default function SEOReviewDetail() {
         
         {expandedSections['seo-analysis'] && (
           <div className="px-6 pb-6 space-y-6">
-            {/* Core Input Display */}
+            {/* Core Input Display - 4 Mandatory Questions */}
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 mb-6">
-              <h3 className="text-sm font-semibold text-gray-900 mb-3">AI Optimization Based On:</h3>
+              <h3 className="text-sm font-semibold text-gray-900 mb-3">AI Optimization Based On 4 Core Inputs:</h3>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <span className="text-gray-600">Generic Name:</span>
-                  <span className="ml-2 font-medium text-gray-900">{submission.generic_name || 'N/A'}</span>
+                  <span className="text-gray-600">1. Development Stage:</span>
+                  <span className="ml-2 font-medium text-gray-900">{submission.development_stage || submission.stage || 'Phase III'}</span>
                 </div>
                 <div>
-                  <span className="text-gray-600">Indication:</span>
+                  <span className="text-gray-600">2. Product Name:</span>
+                  <span className="ml-2 font-medium text-gray-900">
+                    {(submission.development_stage === 'Market Launch' || submission.stage === 'launch' || submission.stage === 'post-launch') 
+                      ? (submission.product_name || 'Brand name required')
+                      : (submission.generic_name || 'Generic name required')}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-gray-600">3. Indication:</span>
                   <span className="ml-2 font-medium text-gray-900">{submission.medical_indication || submission.indication || 'N/A'}</span>
                 </div>
                 <div>
-                  <span className="text-gray-600">Therapeutic Area:</span>
+                  <span className="text-gray-600">4. Therapeutic Area:</span>
                   <span className="ml-2 font-medium text-gray-900">{submission.therapeutic_area}</span>
                 </div>
-                <div>
-                  <span className="text-gray-600">Reviewer:</span>
-                  <span className="ml-2 font-medium text-gray-900">{submission.submitter_name}</span>
-                </div>
+              </div>
+              <div className="mt-3 pt-3 border-t border-blue-200">
+                <p className="text-xs text-blue-800">
+                  <strong>Note:</strong> {(submission.development_stage === 'Market Launch' || submission.stage === 'launch' || submission.stage === 'post-launch') 
+                    ? 'Market Launch phase uses brand name for optimization'
+                    : 'Phase III/Market Shaping uses generic name for optimization'}
+                </p>
               </div>
             </div>
 

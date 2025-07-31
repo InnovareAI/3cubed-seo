@@ -51,7 +51,7 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
     // Section 2
     nct_number: '',
     sponsor: '',
-    development_stage: 'Phase III',
+    development_stage: '',  // Now mandatory in Section 1
     line_of_therapy: '',
     patient_population: [],
     
@@ -266,7 +266,7 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
           therapeutic_area: '',
           nct_number: '',
           sponsor: '',
-          development_stage: 'Phase III',
+          development_stage: '',
           line_of_therapy: '',
           patient_population: [],
           route_of_administration: '',
