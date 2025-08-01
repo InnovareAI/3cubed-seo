@@ -1,6 +1,16 @@
 // Netlify Function for Claude AI Quality Assurance Review
 
 exports.handler = async (event, context) => {
+  // Add CORS headers
+  const headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS'
+  };
+
+  if (event.httpMethod === 'OPTIONS') {
+    return { statusCode: 200, headers, body: '' };
+  }
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
@@ -56,7 +66,7 @@ Format your response as JSON:
   "compliance_notes": "FDA compliance observations"
 }`;
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await globalThis.fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'x-api-key': claudeApiKey,
@@ -102,8 +112,8 @@ Format your response as JSON:
     return {
       statusCode: 200,
       headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
+        ...headers,
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         success: true,
@@ -116,6 +126,7 @@ Format your response as JSON:
     console.error('Claude QA error:', error);
     return {
       statusCode: 500,
+      headers,
       body: JSON.stringify({
         error: 'QA review failed',
         message: error.message

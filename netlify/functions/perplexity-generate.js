@@ -1,6 +1,16 @@
 // Netlify Function for Perplexity AI Content Generation
 
 exports.handler = async (event, context) => {
+  // Add CORS headers
+  const headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS'
+  };
+
+  if (event.httpMethod === 'OPTIONS') {
+    return { statusCode: 200, headers, body: '' };
+  }
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
@@ -64,7 +74,7 @@ Ensure all content is:
 - SEO optimized
 - Patient-friendly language`;
 
-    const response = await fetch('https://api.perplexity.ai/chat/completions', {
+    const response = await globalThis.fetch('https://api.perplexity.ai/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${perplexityApiKey}`,
@@ -109,8 +119,8 @@ Ensure all content is:
     return {
       statusCode: 200,
       headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
+        ...headers,
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         success: true,
@@ -122,6 +132,7 @@ Ensure all content is:
     console.error('Perplexity generation error:', error);
     return {
       statusCode: 500,
+      headers,
       body: JSON.stringify({
         error: 'Content generation failed',
         message: error.message
