@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
+import { api } from '../lib/api'
 import CTAButton from '../components/CTAButton'
 import { THERAPEUTIC_AREAS } from '../constants/therapeuticAreas'
 import GEOScoreBreakdownComponent from '../components/GEOScoreBreakdown'
@@ -90,13 +90,14 @@ export default function SEOReview() {
       if (useDemoData) {
         return demoData
       }
-      const { data, error } = await supabase
-        .from('submissions')
-        .select('*')
-        .order('created_at', { ascending: false })
       
-      if (error) throw error
-      return data as Submission[]
+      try {
+        const data = await api.getSubmissions()
+        return data as Submission[]
+      } catch (error) {
+        console.error('Failed to fetch submissions:', error)
+        throw error
+      }
     },
     enabled: true
   })
