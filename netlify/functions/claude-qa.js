@@ -20,7 +20,7 @@ exports.handler = async (event, context) => {
 
   try {
     const { content, submission, fdaData } = JSON.parse(event.body);
-    const claudeApiKey = process.env.CLAUDE_API_KEY;
+    const claudeApiKey = process.env.CLAUDE_API_KEY || process.env.VITE_CLAUDE_API_KEY;
     
     if (!claudeApiKey) {
       throw new Error('CLAUDE_API_KEY not configured');

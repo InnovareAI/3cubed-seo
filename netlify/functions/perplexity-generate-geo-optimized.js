@@ -22,7 +22,7 @@ exports.handler = async (event, context) => {
 
   try {
     const { submission, fdaData } = JSON.parse(event.body);
-    const perplexityApiKey = process.env.PERPLEXITY_API_KEY;
+    const perplexityApiKey = process.env.PERPLEXITY_API_KEY || process.env.VITE_PERPLEXITY_API_KEY;
     
     if (!perplexityApiKey) {
       throw new Error('PERPLEXITY_API_KEY not configured');
