@@ -77,7 +77,7 @@ export default function SEOReview() {
   const [selectedDate, setSelectedDate] = useState(new Date())
   const [showGEOModal, setShowGEOModal] = useState(false)
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null)
-  const [useDemoData, setUseDemoData] = useState(true)
+  const [useDemoData, setUseDemoData] = useState(false)
 
   // Track viewed submissions
   const [viewedSubmissions, setViewedSubmissions] = useState<Set<string>>(
@@ -102,29 +102,8 @@ export default function SEOReview() {
     enabled: true
   })
 
-  // Set up real-time subscription for instant updates
-  useEffect(() => {
-    const channel = supabase
-      .channel('submissions-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'submissions'
-        },
-        (payload) => {
-          // Refetch data when any submission changes
-          queryClient.invalidateQueries({ queryKey: ['seo-review-queue'] })
-        }
-      )
-      .subscribe()
-
-    // Cleanup subscription on unmount
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [queryClient])
+  // TODO: Implement polling or WebSocket updates with Railway
+  // For now, users can manually refresh to see new submissions
 
   // Temporary demo data for design purposes
   const demoData: Submission[] = [
