@@ -201,27 +201,8 @@ export default function SEOReviewDetail() {
   useEffect(() => {
     if (!id || id.startsWith('demo-')) return // Skip for demo data
 
-    const channel = supabase
-      .channel(`submission-${id}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'submissions',
-          filter: `id=eq.${id}`
-        },
-        (payload) => {
-          // Refetch data when this submission is updated
-          queryClient.invalidateQueries({ queryKey: ['seo-review-detail', id] })
-        }
-      )
-      .subscribe()
-
-    // Cleanup subscription on unmount
-    return () => {
-      supabase.removeChannel(channel)
-    }
+    // Removed Supabase real-time subscription
+    // Will implement Railway WebSocket or polling later
   }, [id, queryClient])
   */
 

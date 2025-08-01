@@ -77,7 +77,6 @@ export default function SEOReview() {
   const [selectedDate, setSelectedDate] = useState(new Date())
   const [showGEOModal, setShowGEOModal] = useState(false)
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null)
-  const [useDemoData, setUseDemoData] = useState(false)
 
   // Track viewed submissions
   const [viewedSubmissions, setViewedSubmissions] = useState<Set<string>>(
@@ -85,12 +84,8 @@ export default function SEOReview() {
   )
 
   const { data: dbSubmissions, isLoading } = useQuery({
-    queryKey: ['seo-review-queue', useDemoData],
+    queryKey: ['seo-review-queue'],
     queryFn: async () => {
-      if (useDemoData) {
-        return demoData
-      }
-      
       try {
         const data = await api.getSubmissions()
         return data as Submission[]
@@ -104,92 +99,6 @@ export default function SEOReview() {
 
   // TODO: Implement polling or WebSocket updates with Railway
   // For now, users can manually refresh to see new submissions
-
-  // Temporary demo data for design purposes
-  const demoData: Submission[] = [
-    {
-      id: 'demo-1',
-      product_name: 'Keytruda',
-      generic_name: 'pembrolizumab',
-      therapeutic_area: 'Oncology',
-      stage: 'Market Launch',
-      development_stage: 'Market Launch',
-      workflow_stage: 'ai_completed',
-      target_audience: ['HCPs', 'Patients'],
-      created_at: new Date().toISOString(),
-      submitter_name: 'Dr. Sarah Johnson',
-      submitter_email: 'sarah.johnson@pharma.com',
-      submitter_company: 'PharmaCorp',
-      priority_level: 'high',
-      medical_indication: 'Non-Small Cell Lung Cancer',
-      geography: ['USA', 'EU'],
-      client_name: 'Merck',
-      mechanism_of_action: 'PD-1 inhibitor',
-      key_differentiators: ['First-line therapy', 'Superior OS'],
-      seo_keywords: ['pembrolizumab', 'keytruda', 'lung cancer treatment'],
-      long_tail_keywords: ['keytruda for nsclc first line', 'pembrolizumab side effects'],
-      consumer_questions: ['What is Keytruda?', 'How does Keytruda work?', 'What are Keytruda side effects?'],
-      h1_tag: 'What is Keytruda and How Does It Treat NSCLC?',
-      h2_tags: ['How Keytruda Works', 'Clinical Trial Results', 'Patient Eligibility'],
-      meta_title: 'Keytruda (Pembrolizumab) for NSCLC | Official Information',
-      meta_description: 'Learn about Keytruda, a PD-1 inhibitor for first-line treatment of NSCLC.',
-      seo_title: 'Keytruda: Revolutionary NSCLC Treatment',
-      geo_event_tags: ['ASCO 2024', 'ESMO 2024'],
-      seo_strategy_outline: 'Focus on first-line positioning and survival benefits',
-      geo_optimization: {
-        ai_summary: 'Keytruda is a PD-1 inhibitor immunotherapy for NSCLC',
-        evidence_statistics: ['85% response rate', '70% 2-year survival'],
-        citations: { 'FDA': 'FDA approval 2016', 'NEJM': 'Clinical trial data' },
-        voice_search_answers: { 'what': 'Keytruda is an immunotherapy drug' }
-      },
-      ai_generated_content: {
-        schema_markup: { "@type": "Drug", "name": "Keytruda" }
-      },
-      geo_optimization_score: 0 // Will be calculated
-    },
-    {
-      id: 'demo-2',
-      product_name: 'Ozempic',
-      generic_name: 'semaglutide',
-      therapeutic_area: 'Diabetes',
-      stage: 'Market Launch',
-      development_stage: 'Market Launch',
-      workflow_stage: 'seo_review',
-      target_audience: ['Patients', 'Caregivers'],
-      created_at: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
-      submitter_name: 'Mark Chen',
-      submitter_email: 'mark.chen@novonordisk.com',
-      priority_level: 'medium',
-      medical_indication: 'Type 2 Diabetes',
-      geography: ['USA'],
-      client_name: 'Novo Nordisk',
-      seo_keywords: ['ozempic', 'semaglutide', 'diabetes medication'],
-      long_tail_keywords: ['ozempic weight loss results', 'semaglutide injection how to use'],
-      meta_title: 'Ozempic (Semaglutide) for Type 2 Diabetes',
-      meta_description: 'Discover how Ozempic helps manage blood sugar in adults with type 2 diabetes.'
-    },
-    {
-      id: 'demo-3',
-      product_name: 'Humira',
-      generic_name: 'adalimumab',
-      therapeutic_area: 'Immunology',
-      stage: 'Phase III',
-      development_stage: 'Phase III',
-      workflow_stage: 'pending',
-      target_audience: ['HCPs', 'Patients', 'Payers'],
-      created_at: new Date(Date.now() - 7200000).toISOString(), // 2 hours ago
-      submitter_name: 'Emily Rodriguez',
-      submitter_email: 'emily.r@abbvie.com',
-      priority_level: 'low',
-      medical_indication: 'Rheumatoid Arthritis',
-      geography: ['Global'],
-      client_name: 'AbbVie',
-      seo_keywords: ['humira', 'adalimumab', 'rheumatoid arthritis'],
-      meta_title: 'Humira for Rheumatoid Arthritis Treatment',
-      seo_title: 'Humira: Leading RA Treatment Option',
-      geo_optimization_score: 78
-    }
-  ]
 
   // Calculate GEO scores for submissions
   const submissionsWithScores = (dbSubmissions || []).map(submission => {
@@ -271,18 +180,6 @@ export default function SEOReview() {
           <p className="text-sm text-gray-600 mt-1">Review and optimize AI-generated content for search performance</p>
         </div>
         <div className="flex items-center gap-2">
-          {/* Demo Data Toggle */}
-          <button
-            onClick={() => setUseDemoData(!useDemoData)}
-            className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
-              useDemoData 
-                ? 'bg-amber-100 text-amber-700' 
-                : 'bg-green-100 text-green-700'
-            }`}
-          >
-            {useDemoData ? 'Demo Data' : 'Live Data'}
-          </button>
-          
           {/* View Mode Toggle */}
           <div className="flex items-center bg-white rounded-lg border border-gray-200 p-1">
             <button
