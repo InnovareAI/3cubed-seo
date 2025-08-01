@@ -1,0 +1,139 @@
+{
+  "submission": {
+    "id": "ENDO-2025-001",
+    "product_name": "Omnitrope",
+    "generic_name": "somatropin",
+    "medical_indication": "Growth hormone deficiency",
+    "therapeutic_area": "Endocrinology",
+    "development_stage": "FDA Approved",
+    "workflow_stage": "seo_review",
+    "submitter_name": "Sarah Chen",
+    "submitter_email": "s.chen@sandoz.com",
+    "submitter_company": "Sandoz Inc.",
+    "priority_level": "high",
+    "client_name": "Sandoz Biopharmaceuticals"
+  },
+  
+  "fda_data": {
+    "application_number": "BLA021426",
+    "brand_name": "OMNITROPE",
+    "generic_name": "SOMATROPIN",
+    "approval_status": "Approved",
+    "indications": [
+      "Pediatric growth hormone deficiency",
+      "Prader-Willi Syndrome",
+      "Turner Syndrome",
+      "Chronic kidney disease",
+      "Small for gestational age",
+      "Adult growth hormone deficiency"
+    ],
+    "clinical_trials_count": 5,
+    "is_biosimilar": true,
+    "reference_product": "Genotropin"
+  },
+  
+  "ai_generated_content": {
+    "seo_title": "Omnitrope® (Somatropin) - FDA-Approved Biosimilar Growth Hormone Therapy",
+    "meta_description": "Omnitrope is an FDA-approved biosimilar somatropin for treating growth hormone deficiency in children and adults. Learn about indications, efficacy, safety, and cost savings.",
+    "h1_tag": "Omnitrope: Biosimilar Growth Hormone for GHD Treatment",
+    "h2_tags": [
+      "What is Omnitrope (Somatropin)?",
+      "FDA-Approved Indications for Omnitrope",
+      "How Omnitrope Compares to Genotropin",
+      "Clinical Evidence Supporting Omnitrope",
+      "Starting Omnitrope Treatment: What to Expect",
+      "Insurance Coverage and Cost Savings"
+    ],
+    
+    "seo_keywords": [
+      "Omnitrope",
+      "somatropin biosimilar",
+      "growth hormone deficiency treatment",
+      "FDA approved growth hormone",
+      "pediatric GHD therapy",
+      "adult growth hormone replacement",
+      "Sandoz biosimilar"
+    ],
+    
+    "long_tail_keywords": [
+      "Omnitrope vs Genotropin comparison",
+      "how to inject Omnitrope pen",
+      "Omnitrope insurance coverage 2025",
+      "growth hormone deficiency symptoms children",
+      "Omnitrope dosing calculator"
+    ],
+    
+    "consumer_questions": [
+      {
+        "question": "What is Omnitrope and what is it used for?",
+        "answer": "Omnitrope is an FDA-approved biosimilar version of human growth hormone (somatropin) manufactured by Sandoz. It's used to treat growth hormone deficiency in both children and adults, as well as growth failure in children due to Prader-Willi syndrome, Turner syndrome, chronic kidney disease, or being born small for gestational age."
+      },
+      {
+        "question": "Is Omnitrope as effective as brand-name growth hormone?",
+        "answer": "Yes, Omnitrope has been proven to be biosimilar to Genotropin, meaning it has the same effectiveness, safety profile, and quality. Clinical studies have shown equivalent growth rates and IGF-1 responses. As the first FDA-approved biosimilar growth hormone, Omnitrope has over 15 years of real-world evidence supporting its use."
+      },
+      {
+        "question": "How much does Omnitrope cost compared to other growth hormones?",
+        "answer": "Omnitrope typically costs 15-30% less than brand-name growth hormones like Genotropin, Humatrope, or Norditropin. The exact savings depend on your insurance coverage, dosage, and pharmacy. Many insurance plans prefer Omnitrope due to its lower cost, resulting in lower copayments for patients."
+      },
+      {
+        "question": "What are the side effects of Omnitrope?",
+        "answer": "Common side effects include injection site reactions, headache, muscle or joint pain, and swelling. In children, temporary issues like hip pain or limping may occur. Serious but rare side effects can include increased pressure in the brain, changes in blood sugar, or allergic reactions. Always report new symptoms to your doctor."
+      },
+      {
+        "question": "How is Omnitrope administered?",
+        "answer": "Omnitrope is given as a subcutaneous (under the skin) injection, typically once daily in the evening. It comes in pre-filled pen devices (Omnitrope Pen 5 and Pen 10) that make self-administration easier. Your healthcare provider will train you on proper injection technique and site rotation."
+      }
+    ],
+    
+    "geo_optimization": {
+      "ai_friendly_summary": "Omnitrope is a biosimilar somatropin (recombinant human growth hormone) approved by the FDA for treating growth hormone deficiency and related growth disorders. Manufactured by Sandoz, it offers the same therapeutic benefits as Genotropin at a significantly lower cost, improving patient access to growth hormone therapy.",
+      
+      "key_facts": [
+        "First FDA-approved biosimilar growth hormone (2006)",
+        "Indicated for 6 pediatric and 1 adult condition",
+        "15-30% cost savings versus reference product",
+        "Available in 5mg and 10mg pen presentations",
+        "Over 15 years of post-market safety data"
+      ],
+      
+      "evidence_statistics": [
+        "Bioequivalence demonstrated in multiple Phase III trials",
+        "98.3% amino acid sequence identity to natural growth hormone",
+        "5 clinical trials registered on ClinicalTrials.gov",
+        "Used in over 30 countries worldwide"
+      ],
+      
+      "medical_facts": {
+        "mechanism": "Stimulates linear growth via IGF-1 production",
+        "half_life": "2-3 hours subcutaneous",
+        "onset": "IGF-1 elevation within 24 hours",
+        "monitoring": "IGF-1 levels, growth velocity, glucose"
+      }
+    },
+    
+    "seo_strategy_outline": "Create comprehensive hub content around growth hormone deficiency, with Omnitrope as the featured FDA-approved biosimilar treatment. Develop comparison content versus brand-name options, cost calculators, injection training videos, and patient success stories. Target both pediatric endocrinologists and adult hormone specialists.",
+    
+    "content_strategy": "Position Omnitrope as the smart choice for growth hormone therapy - combining proven efficacy with improved affordability. Address biosimilar concerns through education, emphasize FDA approval and safety record, and highlight real-world patient access improvements.",
+    
+    "geo_event_tags": [
+      "biosimilar-growth-hormone",
+      "FDA-approved-GHD-treatment",
+      "pediatric-endocrinology",
+      "cost-effective-biologic"
+    ]
+  },
+  
+  "qa_assessment": {
+    "medical_accuracy": 96,
+    "fda_compliance": 99,
+    "seo_effectiveness": 93,
+    "content_quality": 95,
+    "risk_assessment": 3,
+    "recommendation": "APPROVED - Ready for SEO implementation",
+    "notes": "Strong FDA-compliant content with accurate medical information and effective SEO optimization."
+  },
+  
+  "workflow_stage": "seo_review",
+  "created_at": "2025-08-01T17:45:00Z"
+}

@@ -181,7 +181,7 @@ export default function SEOReviewDetail() {
     }
   }
 
-  const { data: submission, isLoading } = useQuery({
+  const { data: submission, isLoading, error } = useQuery({
     queryKey: ['seo-review-detail', id],
     queryFn: async () => {
       // Check if it's demo data
@@ -206,7 +206,8 @@ export default function SEOReviewDetail() {
         if (mockSubmission) return mockSubmission as Submission
         throw error
       }
-    }
+    },
+    retry: false // Don't retry on error, just use mock data
   })
 
   // No real-time updates - using mock data
@@ -281,10 +282,27 @@ export default function SEOReviewDetail() {
     }
   }
 
-  if (isLoading || !submission) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+      </div>
+    )
+  }
+
+  if (error || !submission) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <p className="text-gray-600">Unable to load submission details</p>
+          <button
+            onClick={() => navigate('/seo-review')}
+            className="mt-4 text-blue-600 hover:text-blue-800"
+          >
+            Back to SEO Review
+          </button>
+        </div>
       </div>
     )
   }

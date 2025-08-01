@@ -33,13 +33,23 @@ export const api = {
 
   // Get single submission
   async getSubmission(id: string) {
-    const response = await fetch(`${API_BASE_URL}/api/submissions/${id}`);
-    
-    if (!response.ok) {
-      throw new Error('Failed to fetch submission');
-    }
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/submissions/${id}`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch submission');
+      }
 
-    return response.json();
+      const data = await response.json();
+      // If we get an empty response, throw error to trigger fallback
+      if (!data || (data.error !== undefined)) {
+        throw new Error('Empty response from API');
+      }
+      return data;
+    } catch (error) {
+      // Let the component handle the fallback to mock data
+      throw error;
+    }
   },
 
   // Update submission
