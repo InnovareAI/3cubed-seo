@@ -226,33 +226,83 @@ export const exportToPDF = async (data: ExportData, elementId: string) => {
 // Enhanced PDF with visual elements (alternative method using html2canvas)
 export const exportToPDFVisual = async (elementId: string, filename: string) => {
   const element = document.getElementById(elementId);
-  if (!element) return;
-  
-  const canvas = await html2canvas(element, {
-    scale: 2,
-    logging: false,
-    useCORS: true,
-    backgroundColor: '#ffffff'
-  });
-  
-  const imgData = canvas.toDataURL('image/png');
-  const pdf = new jsPDF('p', 'mm', 'a4');
-  
-  const imgWidth = 210; // A4 width in mm
-  const imgHeight = (canvas.height * imgWidth) / canvas.width;
-  
-  let heightLeft = imgHeight;
-  let position = 0;
-  
-  pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-  heightLeft -= 297; // A4 height in mm
-  
-  while (heightLeft >= 0) {
-    position = heightLeft - imgHeight;
-    pdf.addPage();
-    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-    heightLeft -= 297;
+  if (!element) {
+    console.error('Element not found for PDF export');
+    return;
   }
   
-  pdf.save(filename);
+  // Store original styles
+  const originalHeight = element.style.height;
+  const originalOverflow = element.style.overflow;
+  const originalMaxHeight = element.style.maxHeight;
+  
+  try {
+    // Temporarily expand the element to capture all content
+    element.style.height = 'auto';
+    element.style.overflow = 'visible';
+    element.style.maxHeight = 'none';
+    
+    // Wait for any layout changes
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    const canvas = await html2canvas(element, {
+      scale: 2,
+      logging: false,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      windowHeight: element.scrollHeight,
+      height: element.scrollHeight,
+      y: 0
+    });
+    
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    
+    const pageWidth = 210; // A4 width in mm
+    const pageHeight = 297; // A4 height in mm
+    const margin = 10; // 10mm margins
+    const contentWidth = pageWidth - (2 * margin);
+    const contentHeight = pageHeight - (2 * margin);
+    
+    // Calculate image dimensions to fit page width
+    const imgWidth = contentWidth;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    
+    // Calculate how many pages we need
+    const totalPages = Math.ceil(imgHeight / contentHeight);
+    
+    // Add content to PDF, splitting across pages
+    for (let page = 0; page < totalPages; page++) {
+      if (page > 0) {
+        pdf.addPage();
+      }
+      
+      const yOffset = -(page * contentHeight);
+      pdf.addImage(
+        imgData, 
+        'PNG', 
+        margin, 
+        margin + yOffset, 
+        imgWidth, 
+        imgHeight
+      );
+      
+      // Add page number
+      pdf.setFontSize(10);
+      pdf.setTextColor(128, 128, 128);
+      pdf.text(
+        `Page ${page + 1} of ${totalPages}`, 
+        pageWidth / 2, 
+        pageHeight - 5, 
+        { align: 'center' }
+      );
+    }
+    
+    pdf.save(filename);
+  } finally {
+    // Restore original styles
+    element.style.height = originalHeight;
+    element.style.overflow = originalOverflow;
+    element.style.maxHeight = originalMaxHeight;
+  }
 };

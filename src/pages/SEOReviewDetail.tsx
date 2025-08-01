@@ -8,7 +8,7 @@ import FieldApprovalControl, { FieldApproval } from '@/components/FieldApprovalC
 import IndividualKeywordApproval, { KeywordApprovalData } from '@/components/IndividualKeywordApproval'
 import ComplianceStatusVisual from '@/components/ComplianceStatusVisual'
 import { ApprovalFormSections } from '@/types/approval.types'
-import { exportToCSV, exportToPDF } from '@/utils/exportUtils'
+import { exportToCSV, exportToPDF, exportToPDFVisual } from '@/utils/exportUtils'
 import GEOScoreBreakdownComponent from '@/components/GEOScoreBreakdown'
 import { calculateGEOScore } from '@/utils/geoScoring'
 import { 
@@ -340,13 +340,27 @@ export default function SEOReviewDetail() {
     });
   };
 
-  const handleExportPDF = async () => {
+  const handleExportPDF = async (event: React.MouseEvent<HTMLButtonElement>) => {
     const timestamp = new Date().toISOString().split('T')[0];
-    await exportToPDF({
-      submission,
-      approvals: fieldApprovals,
-      timestamp
-    }, 'seo-review-content');
+    const filename = `SEO_Review_${submission.product_name}_${timestamp}.pdf`;
+    
+    // Show loading state on button
+    const button = event.currentTarget;
+    const originalText = button.textContent;
+    button.disabled = true;
+    button.textContent = 'Generating PDF...';
+    
+    try {
+      // Use visual export to capture entire page content
+      await exportToPDFVisual('seo-review-content', filename);
+    } catch (error) {
+      console.error('PDF generation failed:', error);
+      alert('Failed to generate PDF. Please try again.');
+    } finally {
+      // Restore button state
+      button.disabled = false;
+      button.textContent = originalText || 'PDF';
+    }
   };
 
   const approvedCount = Object.values(fieldApprovals).filter(v => v.status === 'approved').length
@@ -388,7 +402,7 @@ export default function SEOReviewDetail() {
               </button>
               <button
                 onClick={handleExportPDF}
-                className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Download className="h-4 w-4" />
                 PDF
