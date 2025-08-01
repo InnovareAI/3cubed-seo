@@ -935,6 +935,206 @@
       "ai_processing_status": "completed",
       "created_at": "2025-08-01T19:40:00Z",
       "updated_at": "2025-08-01T19:45:00Z"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440005",
+      "product_name": "Nexletol",
+      "generic_name": "bempedoic acid",
+      "medical_indication": "Primary hyperlipidemia, mixed dyslipidemia, heterozygous familial hypercholesterolemia",
+      "therapeutic_area": "Cardiovascular",
+      "development_stage": "FDA Approved",
+      "workflow_stage": "revision",
+      "submitter_name": "Amanda Wilson",
+      "submitter_email": "awilson@3cubed.com",
+      "submitter_company": "3Cubed SEO",
+      "sponsor": "Esperion Therapeutics",
+      "mechanism_of_action": "ATP citrate lyase inhibitor that reduces cholesterol synthesis upstream of HMG-CoA reductase",
+      "line_of_therapy": "Add-on to maximally tolerated statin therapy or statin-intolerant patients",
+      "patient_population": "Adults with heterozygous familial hypercholesterolemia or ASCVD requiring additional LDL-C lowering",
+      "geographic_markets": ["United States", "European Union", "United Kingdom", "Switzerland"],
+      "key_differentiators": [
+        "First oral non-statin LDL-C lowering therapy in decades",
+        "No muscle-related side effects unlike statins",
+        "Once-daily oral tablet convenience",
+        "38% LDL-C reduction as monotherapy"
+      ],
+      "primary_endpoints": "LDL-C reduction from baseline and cardiovascular event reduction",
+      "priority_level": "high",
+      "seo_title": "Nexletol® (Bempedoic Acid) - Non-Statin LDL Cholesterol Treatment | ASCVD Management",
+      "meta_description": "Nexletol is an FDA-approved oral non-statin therapy for lowering LDL cholesterol in adults with ASCVD or HeFH. Learn about efficacy, safety for statin-intolerant patients, and cardiovascular benefits.",
+      "h1_tag": "Nexletol (Bempedoic Acid): Revolutionary Non-Statin Cholesterol Treatment",
+      "h2_tags": [
+        "What is Nexletol Non-Statin Therapy?",
+        "Who Should Consider Nexletol?",
+        "Clinical Evidence: CLEAR Outcomes Trial",
+        "Nexletol for Statin-Intolerant Patients",
+        "How to Start Nexletol Treatment",
+        "Insurance Coverage and Cost Information"
+      ],
+      "seo_keywords": [
+        "Nexletol",
+        "bempedoic acid",
+        "non-statin cholesterol medication",
+        "LDL-C lowering",
+        "statin intolerance",
+        "ASCVD treatment",
+        "ATP citrate lyase inhibitor",
+        "cardiovascular risk reduction",
+        "oral cholesterol therapy"
+      ],
+      "long_tail_keywords": [
+        "Nexletol vs statins side effects comparison",
+        "bempedoic acid for statin intolerant patients",
+        "Nexletol CLEAR Outcomes trial results",
+        "how much does Nexletol lower cholesterol",
+        "Nexletol and ezetimibe combination therapy"
+      ],
+      "revision_notes": {
+        "requested_by": "Dr. Sarah Mitchell",
+        "requested_date": "2025-08-01T14:30:00Z",
+        "reason": "Need to update cardiovascular outcomes data from CLEAR trial and adjust messaging for primary prevention indication",
+        "specific_changes": [
+          "Update CLEAR Outcomes trial data with 13% MACE reduction",
+          "Add primary prevention messaging for high-risk patients",
+          "Clarify combination therapy benefits with ezetimibe",
+          "Update cost information with new patient assistance program"
+        ],
+        "mlr_concerns": [
+          "Ensure balanced presentation of muscle symptom data",
+          "Update safety profile with latest FDA label changes",
+          "Clarify uric acid elevation monitoring requirements"
+        ]
+      },
+      "consumer_questions": [
+        {
+          "question": "What is Nexletol and how is it different from statins?",
+          "answer": "Nexletol (bempedoic acid) is an FDA-approved oral medication that lowers LDL cholesterol by blocking ATP citrate lyase, an enzyme involved in cholesterol production. Unlike statins, which work downstream in the cholesterol pathway and can cause muscle pain, Nexletol works upstream and doesn't affect muscles because it's not activated in muscle tissue."
+        },
+        {
+          "question": "Who should take Nexletol?",
+          "answer": "Nexletol is for adults with cardiovascular disease or familial hypercholesterolemia who need additional LDL lowering despite maximum statin therapy, or those who can't tolerate statins due to side effects. It's particularly beneficial for patients who experience muscle pain with statins, as Nexletol doesn't cause muscle-related side effects."
+        },
+        {
+          "question": "How effective is Nexletol at lowering cholesterol?",
+          "answer": "Nexletol lowers LDL cholesterol by approximately 18% when added to maximum statin therapy and by 38% when used alone. The CLEAR Outcomes trial showed it also reduces major cardiovascular events by 13%, including heart attacks and strokes, making it both effective for cholesterol control and cardiovascular protection."
+        },
+        {
+          "question": "What are the side effects of Nexletol?",
+          "answer": "Common side effects include upper respiratory infection, back pain, abdominal pain, and elevated uric acid levels. Unlike statins, Nexletol doesn't cause muscle pain or weakness. Rarely, it may cause tendon rupture or gout. Regular monitoring of uric acid levels is recommended."
+        },
+        {
+          "question": "Can Nexletol be taken with other cholesterol medications?",
+          "answer": "Yes, Nexletol is often combined with other cholesterol medications. It's FDA-approved for use with statins and ezetimibe. The combination of Nexletol and ezetimibe (available as Nexlizet) can lower LDL by up to 38% without statins. Always consult your doctor about drug combinations."
+        },
+        {
+          "question": "How much does Nexletol cost?",
+          "answer": "Nexletol costs approximately $400-500 per month without insurance. Most commercial insurance plans cover it with prior authorization, typically with $50-100 copays. Esperion offers a savings program that can reduce costs to as low as $10 per month for eligible patients with commercial insurance."
+        },
+        {
+          "question": "How quickly does Nexletol work?",
+          "answer": "Nexletol begins lowering LDL cholesterol within 1 week, with maximum effects seen by 4 weeks. Cardiovascular benefits accumulate over time, with the CLEAR trial showing event reduction becoming apparent after about 6 months of treatment."
+        },
+        {
+          "question": "Is Nexletol safe for people who can't take statins?",
+          "answer": "Yes, Nexletol is specifically beneficial for statin-intolerant patients. Because it's not activated in muscle tissue, it doesn't cause the muscle pain, weakness, or cramping that leads many people to discontinue statins. Clinical trials included many statin-intolerant patients who tolerated Nexletol well."
+        },
+        {
+          "question": "Does Nexletol prevent heart attacks and strokes?",
+          "answer": "Yes, the landmark CLEAR Outcomes trial proved Nexletol reduces major cardiovascular events by 13%, including a 23% reduction in heart attacks and 15% reduction in coronary revascularization procedures. This makes it the first non-statin oral therapy proven to prevent cardiovascular events."
+        },
+        {
+          "question": "What monitoring is required while taking Nexletol?",
+          "answer": "Regular monitoring includes lipid panels to track cholesterol levels and uric acid levels, as Nexletol can increase uric acid. Your doctor may also monitor liver enzymes periodically. Unlike statins, muscle enzyme monitoring is not necessary since Nexletol doesn't affect muscles."
+        }
+      ],
+      "geo_event_tags": [
+        "non-statin-cholesterol-therapy",
+        "FDA-approved-cardiovascular",
+        "statin-alternative",
+        "LDL-lowering-medication",
+        "ASCVD-prevention"
+      ],
+      "geo_optimization": {
+        "ai_friendly_summary": "Nexletol (bempedoic acid) is an FDA-approved oral ATP citrate lyase inhibitor that lowers LDL cholesterol by blocking cholesterol synthesis upstream of statins. Proven to reduce cardiovascular events by 13% in the CLEAR Outcomes trial, it offers a muscle-sparing alternative for statin-intolerant patients or those needing additional LDL reduction beyond statins.",
+        "key_facts": [
+          "FDA approved February 21, 2020 for LDL-C reduction",
+          "First oral non-statin in over a decade",
+          "38% LDL-C reduction as monotherapy",
+          "13% MACE reduction proven in CLEAR trial",
+          "No muscle-related adverse events",
+          "Once-daily 180mg oral tablet",
+          "Over 500,000 prescriptions written to date"
+        ],
+        "evidence_statistics": [
+          "18% additional LDL-C reduction when added to statins",
+          "38% LDL-C reduction as monotherapy",
+          "13% reduction in 4-point MACE (CV death, MI, stroke, revascularization)",
+          "23% reduction in fatal or non-fatal MI",
+          "CLEAR trial: 13,970 patients followed for median 40.6 months",
+          "Well-tolerated by 91% of statin-intolerant patients",
+          "Gout incidence: 3.5% vs 2.1% placebo"
+        ],
+        "medical_facts": {
+          "mechanism": "Inhibits ATP citrate lyase, reducing acetyl-CoA for cholesterol synthesis",
+          "pharmacokinetics": "Half-life: 21 hours, No CYP450 interactions, Kidney excretion",
+          "onset": "LDL reduction within 1 week, maximum effect at 4 weeks",
+          "monitoring": "Lipid panel, uric acid levels, renal function"
+        },
+        "voice_search_answers": {
+          "what_is": "Nexletol is a once-daily pill that lowers bad cholesterol without causing muscle pain like statins",
+          "how_to_use": "Take one 180mg Nexletol tablet daily with or without food at the same time each day",
+          "cost": "Nexletol costs about $400-500 monthly but copay cards can reduce it to $10 with insurance",
+          "effectiveness": "Nexletol lowers LDL cholesterol by 18-38% and reduces heart attacks and strokes by 13%"
+        },
+        "event_tags": {
+          "perplexity": ["non-statin-therapy", "cholesterol-medication", "cardiovascular-prevention", "FDA-approved-treatment"],
+          "claude": ["Nexletol-bempedoic-acid", "ATP-citrate-lyase-inhibitor", "statin-alternative", "ASCVD-therapy"],
+          "chatgpt": ["bempedoic-acid-treatment", "Nexletol-cholesterol", "non-statin-LDL", "cardiovascular-medication"],
+          "gemini": ["cholesterol-lowering-drug", "Nexletol-therapy", "statin-intolerance-option", "heart-disease-prevention"]
+        }
+      },
+      "seo_strategy_outline": "Target statin-intolerant patients and those needing additional LDL reduction beyond statins. Create content addressing muscle pain concerns, cardiovascular outcomes data, and cost/coverage information. Emphasize the CLEAR trial results and position as a proven alternative or add-on therapy.",
+      "content_strategy": "Position Nexletol as the breakthrough non-statin option that finally gives patients a muscle-friendly alternative with proven cardiovascular benefits. Address the large statin-intolerant population directly while also targeting combination therapy opportunities. Build trust through transparent discussion of the CLEAR outcomes data.",
+      "competitive_advantages": [
+        "Only oral non-statin proven to reduce cardiovascular events",
+        "No muscle-related side effects mechanism",
+        "Once-daily oral convenience vs injectable PCSK9s",
+        "Lower cost than PCSK9 inhibitors",
+        "Proven efficacy in statin-intolerant population",
+        "Combination formulation available (Nexlizet)"
+      ],
+      "fda_data": {
+        "application_number": "NDA211616",
+        "approval_date": "2020-02-21",
+        "indication_approved": true,
+        "drug_class": "ATP citrate lyase inhibitor",
+        "indications": [
+          "Primary hyperlipidemia",
+          "Mixed dyslipidemia",
+          "Heterozygous familial hypercholesterolemia",
+          "ASCVD requiring additional LDL-C lowering"
+        ],
+        "clinical_trials_count": 12,
+        "post_market_studies": 5,
+        "regulatory_status": "Active",
+        "combination_product": "Nexlizet (with ezetimibe)"
+      },
+      "qa_scores": {
+        "medical_accuracy": 94,
+        "fda_compliance": 98,
+        "seo_effectiveness": 92,
+        "content_quality": 93,
+        "risk_assessment": 3,
+        "overall_score": 94,
+        "recommendation": "REVISION NEEDED",
+        "review_notes": "Strong content but needs updates for CLEAR trial final data and primary prevention messaging. Some claims need softening per latest FDA guidance.",
+        "reviewer": "Claude AI Medical Review",
+        "review_date": "2025-08-01T15:00:00Z"
+      },
+      "geo_optimization_score": 90,
+      "ai_processing_status": "revision_requested",
+      "created_at": "2025-07-25T10:00:00Z",
+      "updated_at": "2025-08-01T15:00:00Z"
     }
   ]
 }

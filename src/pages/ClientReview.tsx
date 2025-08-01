@@ -34,23 +34,12 @@ export default function ClientReview() {
   const [selectedPriority, setSelectedPriority] = useState<string>('all')
   const [selectedClient, setSelectedClient] = useState<string>('all')
   const [selectedStatus, setSelectedStatus] = useState<string>('all')
-  const [useDemoData, setUseDemoData] = useState(true)
 
   const { data: submissions, isLoading } = useQuery({
-    queryKey: ['client-review-content', { searchQuery, selectedPriority, selectedClient, selectedStatus, useDemoData }],
+    queryKey: ['client-review-content', { searchQuery, selectedPriority, selectedClient, selectedStatus }],
     queryFn: async () => {
-      if (useDemoData) {
-        return mockClientReviews
-      }
-
-      const { data, error } = await supabase
-        .from('submissions')
-        .select('*')
-        .eq('workflow_stage', 'client_review')
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-      return data || []
+      // Always use mock data for now
+      return mockClientReviews
     },
     enabled: true
   })
@@ -119,21 +108,9 @@ export default function ClientReview() {
           <h1 className="text-2xl font-bold text-gray-900">Client Review</h1>
           <p className="text-sm text-gray-600 mt-1">Review and approve SEO-optimized content with clients</p>
         </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setUseDemoData(!useDemoData)}
-            className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
-              useDemoData 
-                ? 'bg-amber-100 text-amber-700' 
-                : 'bg-green-100 text-green-700'
-            }`}
-          >
-            {useDemoData ? 'Demo Data' : 'Live Data'}
-          </button>
-          <CTAButton variant="primary" icon={<FileText className="h-4 w-4" />}>
-            Export Report
-          </CTAButton>
-        </div>
+        <CTAButton variant="primary" icon={<FileText className="h-4 w-4" />}>
+          Export Report
+        </CTAButton>
       </div>
 
       {/* Stats Cards */}

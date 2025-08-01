@@ -85,19 +85,82 @@ const getPriorityBadge = (priority: string) => {
 }
 
 export default function CurrentProjects() {
-  const { data: submissions, isLoading } = useQuery({
-    queryKey: ['current-projects-submissions'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('submissions')
-        .select('*')
-        .order('created_at', { ascending: false })
-      
-      if (error) throw error
-      return data as Submission[]
+  // Mock data for current projects
+  const mockProjects: Submission[] = [
+    {
+      id: '1',
+      product_name: 'Omnitrope',
+      therapeutic_area: 'Endocrinology',
+      stage: 'Launch',
+      workflow_stage: 'SEO_Review',
+      priority_level: 'High',
+      submitter_name: 'Michael Thompson',
+      submitter_email: 'mthompson@3cubed.com',
+      created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+      updated_at: new Date().toISOString(),
+      indication: 'Growth hormone deficiency',
+      target_audience: 'Pediatric endocrinologists'
     },
-    refetchInterval: 30000 // Refresh every 30 seconds
-  })
+    {
+      id: '2',
+      product_name: 'Erelzi',
+      therapeutic_area: 'Rheumatology',
+      stage: 'Pre-Launch',
+      workflow_stage: 'Client_Review',
+      priority_level: 'High',
+      submitter_name: 'Sarah Johnson',
+      submitter_email: 'sjohnson@3cubed.com',
+      created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+      updated_at: new Date().toISOString(),
+      indication: 'Rheumatoid arthritis',
+      target_audience: 'Rheumatologists'
+    },
+    {
+      id: '3',
+      product_name: 'Tyruko',
+      therapeutic_area: 'Neurology',
+      stage: 'Launch',
+      workflow_stage: 'MLR_Review',
+      priority_level: 'Medium',
+      submitter_name: 'David Chen',
+      submitter_email: 'dchen@3cubed.com',
+      created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+      updated_at: new Date().toISOString(),
+      indication: 'Multiple sclerosis',
+      target_audience: 'Neurologists'
+    },
+    {
+      id: '4',
+      product_name: 'Keytruda',
+      therapeutic_area: 'Oncology',
+      stage: 'Post-Launch',
+      workflow_stage: 'AI_Processing',
+      priority_level: 'High',
+      submitter_name: 'Jennifer Martinez',
+      submitter_email: 'jmartinez@3cubed.com',
+      created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+      updated_at: new Date().toISOString(),
+      indication: 'Multiple cancer types',
+      target_audience: 'Oncologists'
+    },
+    {
+      id: '5',
+      product_name: 'Immunomax',
+      therapeutic_area: 'Rheumatology',
+      stage: 'Pre-Launch',
+      workflow_stage: 'Form_Submitted',
+      priority_level: 'Medium',
+      submitter_name: 'Robert Kim',
+      submitter_email: 'rkim@3cubed.com',
+      created_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
+      updated_at: new Date().toISOString(),
+      indication: 'Rheumatoid arthritis, GCA',
+      target_audience: 'Rheumatologists'
+    }
+  ]
+
+  const submissions = mockProjects
+  const isLoading = false
 
   // Calculate summary stats
   const stats = {
