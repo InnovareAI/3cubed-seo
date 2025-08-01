@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { supabase } from '../lib/supabase';
+import { supabase } from '../lib/mockData';
 import { THERAPEUTIC_AREAS } from '../constants/therapeuticAreas';
 import { CheckCircle, AlertCircle } from 'lucide-react';
 

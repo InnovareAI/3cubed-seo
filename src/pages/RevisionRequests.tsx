@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase, type Submission } from '../lib/supabase'
+import { supabase, type Submission } from '../lib/mockData'
 import { AuditLogger } from '../lib/auditLogger'
 import { RefreshCw, MessageSquare, CheckCircle, XCircle, ChevronDown, ChevronUp } from 'lucide-react'
 import { format } from 'date-fns'

@@ -1,5 +1,5 @@
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts'
-import { ContentStatus } from '@/lib/supabase'
+import { ContentStatus } from '../lib/mockData'
 
 interface StatusDistributionChartProps {
   data?: Record<string, number>

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Outlet, NavLink, useLocation } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { supabase } from '../lib/supabase'
+import { supabase } from '../lib/mockData'
 import { 
   FileText, 
   Library, 

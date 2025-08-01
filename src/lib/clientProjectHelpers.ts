@@ -1,4 +1,4 @@
-import { supabase } from './supabase'
+import { supabase } from '../lib/mockData'
 
 /**
  * Find or create a client based on email domain

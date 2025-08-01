@@ -1,9 +1,9 @@
 import { Fragment } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import { X, Target, BarChart3, AlertCircle, CheckCircle } from 'lucide-react'
-import { ContentPiece } from '@/lib/supabase'
+import { ContentPiece } from '../lib/mockData'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '../lib/mockData'
 import { useState } from 'react'
 
 interface SEOReviewModalProps {
@@ -26,7 +26,7 @@ export default function SEOReviewModal({ isOpen, onClose, content }: SEOReviewMo
       newStatus: 'pending_client_review' | 'requires_revision'
       notes?: string 
     }) => {
-      const { data, error } = await supabase.rpc('transition_content_status', {
+      const { data, error } = await mockApi.rpc('transition_content_status', {
         p_content_id: content.id,
         p_new_status: newStatus,
         p_user_id: '11111111-1111-1111-1111-111111111111', // TODO: Get from auth

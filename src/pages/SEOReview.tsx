@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
+import { mockApi } from '../lib/mockData'
 import CTAButton from '../components/CTAButton'
 import { THERAPEUTIC_AREAS } from '../constants/therapeuticAreas'
 import GEOScoreBreakdownComponent from '../components/GEOScoreBreakdown'
@@ -86,40 +86,13 @@ export default function SEOReview() {
   const { data: dbSubmissions, isLoading } = useQuery({
     queryKey: ['seo-review-queue'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('submissions')
-        .select('*')
-        .order('created_at', { ascending: false })
-      
-      if (error) throw error
+      const data = await mockApi.getSubmissions()
       return data as Submission[]
     },
     enabled: true
   })
 
-  // Set up real-time subscription for instant updates
-  useEffect(() => {
-    const channel = supabase
-      .channel('submissions-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'submissions'
-        },
-        (payload) => {
-          // Refetch data when any submission changes
-          queryClient.invalidateQueries({ queryKey: ['seo-review-queue'] })
-        }
-      )
-      .subscribe()
-
-    // Cleanup subscription on unmount
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [queryClient])
+  // No real-time updates - using mock data
 
   // Calculate GEO scores for submissions
   const submissionsWithScores = (dbSubmissions || []).map(submission => {

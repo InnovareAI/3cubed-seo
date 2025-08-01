@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
-import { supabase } from '../lib/supabase'
+import { supabase } from '../lib/mockData'
 import { debounce } from 'lodash'
 import { format } from 'date-fns'
 import {
@@ -117,7 +117,7 @@ export default function EditableSEODashboard() {
       .subscribe()
 
     return () => {
-      supabase.removeChannel(channel)
+      mockApi.removeChannel(channel)
     }
   }, [queryClient, editingId, editingState])
 

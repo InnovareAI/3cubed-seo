@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { supabase } from '../lib/mockData';
 
 interface AuditLogEntry {
   entityType: string;
@@ -13,7 +13,7 @@ export class AuditLogger {
   static async log(entry: AuditLogEntry): Promise<void> {
     try {
       // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await mockApi.auth.getUser();
       
       // Get client IP (in production, this would come from request headers)
       const ipAddress = 'Client IP'; // TODO: Get from request headers in production

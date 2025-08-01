@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase } from '../lib/supabase'
-import { ContentStatus, ContentPiece } from '../lib/supabase'
+import { supabase } from '../lib/mockData'
+import { ContentStatus, ContentPiece } from '../lib/mockData'
 
 export function useContentPieces(status?: ContentStatus) {
   return useQuery({
@@ -72,7 +72,7 @@ export function useUpdateContentStatus() {
 
       // Log to audit trail
       if (reviewerId) {
-        await supabase.from('audit_logs').insert({
+        await mockApi.from('audit_logs').insert({
           user_id: reviewerId,
           action: 'status_change',
           entity_type: 'content_piece',

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase } from '@/lib/supabase'
+import { mockApi } from '@/lib/mockData'
 import CTAButton from '@/components/CTAButton'
 import ComprehensiveApprovalForm from '@/components/ComprehensiveApprovalForm'
 import FieldApprovalControl, { FieldApproval } from '@/components/FieldApprovalControl'
@@ -183,43 +183,13 @@ export default function SEOReviewDetail() {
         return demoData[id] || null
       }
       
-      const { data, error } = await supabase
-        .from('submissions')
-        .select('*')
-        .eq('id', id)
-        .single()
-      
-      if (error) throw error
+      const data = await mockApi.getSubmission(id!)
+      if (!data) throw new Error('Submission not found')
       return data as Submission
     }
   })
 
-  // Set up real-time subscription for this specific submission
-  useEffect(() => {
-    if (!id || id.startsWith('demo-')) return // Skip for demo data
-
-    const channel = supabase
-      .channel(`submission-${id}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'submissions',
-          filter: `id=eq.${id}`
-        },
-        (payload) => {
-          // Refetch data when this submission is updated
-          queryClient.invalidateQueries({ queryKey: ['seo-review-detail', id] })
-        }
-      )
-      .subscribe()
-
-    // Cleanup subscription on unmount
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [id, queryClient])
+  // No real-time updates - using mock data
 
   const updateStatus = useMutation({
     mutationFn: async ({ 
@@ -242,12 +212,7 @@ export default function SEOReviewDetail() {
         updateData.rejected_at = new Date().toISOString()
       }
 
-      const { error } = await supabase
-        .from('submissions')
-        .update(updateData)
-        .eq('id', id)
-      
-      if (error) throw error
+      await mockApi.updateSubmission(id!, updateData)
       
       queryClient.invalidateQueries({ queryKey: ['seo-review-content'] })
       navigate('/seo-review')

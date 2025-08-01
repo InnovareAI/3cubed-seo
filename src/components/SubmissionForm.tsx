@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { supabase } from '../lib/supabase';
+import { mockApi } from '../lib/mockData';
 import { THERAPEUTIC_AREAS } from '../constants/therapeuticAreas';
 import { CheckCircle } from 'lucide-react';
 
@@ -243,19 +243,14 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
       console.log('🚀 About to create submission record in Supabase:', submissionData);
 
       try {
-        // Step 1: Create submission record in Supabase
-        const { data: insertedData, error: supabaseError } = await supabase
-          .from('submissions')
-          .insert([submissionData])
-          .select();
-
-        if (supabaseError) throw supabaseError;
+        // Step 1: Create submission record locally
+        const submission = await mockApi.createSubmission(submissionData);
         
-        const submissionId = insertedData[0].id;
+        const submissionId = submission.id;
         console.log('✅ Created submission record:', submissionId);
 
-        console.log('✅ Successfully created submission record in Supabase');
-        console.log('🎉 Form submission completed - Supabase trigger will handle N8N workflow');
+        console.log('✅ Successfully created submission record');
+        console.log('🎉 Form submission completed');
 
         // Show success modal (user must dismiss manually)
         setShowSuccessMessage(true);
