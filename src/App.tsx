@@ -20,6 +20,7 @@ import SubmissionDetail from './pages/SubmissionDetail'
 import SEOReviewDetail from './pages/SEOReviewDetail'
 import ClientReviewDetail from './pages/ClientReviewDetail'
 import MLRReviewDetail from './pages/MLRReviewDetail'
+import TestAI from './pages/TestAI'
 
 // Temporary placeholder component for missing pages
 function ComingSoon({ title }: { title: string }) {
@@ -94,6 +95,7 @@ function App() {
             <Route path="content-hub" element={<ComingSoon title="SEO Content Hub" />} />
             <Route path="audit" element={<AuditTrail />} />
             <Route path="admin" element={<Administration />} />
+            <Route path="test-ai" element={<TestAI />} />
             <Route path="projects/:clientName" element={<ClientDashboard />} />
           </Route>
         </Routes>

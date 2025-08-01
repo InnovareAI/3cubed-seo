@@ -98,12 +98,26 @@ app.put('/api/submissions/:id', async (req, res) => {
     const { id } = req.params;
     const updates = req.body;
     
+    // Handle array fields properly
+    const processedUpdates = {};
+    for (const [key, value] of Object.entries(updates)) {
+      if (Array.isArray(value)) {
+        // PostgreSQL array format
+        processedUpdates[key] = `{${value.join(',')}}`;
+      } else if (typeof value === 'object' && value !== null) {
+        // JSON fields
+        processedUpdates[key] = JSON.stringify(value);
+      } else {
+        processedUpdates[key] = value;
+      }
+    }
+    
     // Build dynamic update query
-    const setClause = Object.keys(updates)
+    const setClause = Object.keys(processedUpdates)
       .map((key, index) => `${key} = $${index + 2}`)
       .join(', ');
     
-    const values = [id, ...Object.values(updates)];
+    const values = [id, ...Object.values(processedUpdates)];
     
     const query = `
       UPDATE submissions 
