@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { api } from '../lib/api';
+import { supabase } from '../lib/supabase';
 import { THERAPEUTIC_AREAS } from '../constants/therapeuticAreas';
 import { CheckCircle } from 'lucide-react';
 
@@ -240,17 +240,22 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         }
       });
 
-      console.log('🚀 About to create submission record via Railway API:', submissionData);
+      console.log('🚀 About to create submission record in Supabase:', submissionData);
 
       try {
-        // Step 1: Create submission record via Railway API
-        const response = await api.createSubmission(submissionData);
+        // Step 1: Create submission record in Supabase
+        const { data: insertedData, error: supabaseError } = await supabase
+          .from('submissions')
+          .insert([submissionData])
+          .select();
+
+        if (supabaseError) throw supabaseError;
         
-        const submissionId = response.id;
+        const submissionId = insertedData[0].id;
         console.log('✅ Created submission record:', submissionId);
 
-        console.log('✅ Successfully created submission record via Railway API');
-        console.log('🎉 Form submission completed - Railway will handle processing');
+        console.log('✅ Successfully created submission record in Supabase');
+        console.log('🎉 Form submission completed - Supabase trigger will handle N8N workflow');
 
         // Show success modal (user must dismiss manually)
         setShowSuccessMessage(true);

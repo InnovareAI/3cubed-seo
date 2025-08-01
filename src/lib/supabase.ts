@@ -6,8 +6,9 @@ console.log('VITE_SUPABASE_URL exists:', !!import.meta.env.VITE_SUPABASE_URL)
 console.log('VITE_SUPABASE_ANON_KEY exists:', !!import.meta.env.VITE_SUPABASE_ANON_KEY)
 console.log('All env vars:', Object.keys(import.meta.env))
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+// Use the actual Supabase credentials from CLAUDE.md
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://eqokpqqjdzbzatbmqiea.supabase.co'
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVxb2twcXFqZHpiemF0Ym1xaWVhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY5Mzk1NTAsImV4cCI6MjA1MjUxNTU1MH0.TFLR1z7VdvKf9v_zNx8QQ6vYqLjUd2S4m3o4ZOBJZj4'
 
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables')

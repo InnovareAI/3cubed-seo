@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { api } from '@/lib/api'
+import { supabase } from '@/lib/supabase'
 import CTAButton from '@/components/CTAButton'
 import ComprehensiveApprovalForm from '@/components/ComprehensiveApprovalForm'
 import FieldApprovalControl, { FieldApproval } from '@/components/FieldApprovalControl'
@@ -183,28 +183,43 @@ export default function SEOReviewDetail() {
         return demoData[id] || null
       }
       
-      try {
-        const data = await api.getSubmission(id!)
-        return data as Submission
-      } catch (error) {
-        console.error('Failed to fetch submission:', error)
-        throw error
-      }
+      const { data, error } = await supabase
+        .from('submissions')
+        .select('*')
+        .eq('id', id)
+        .single()
+      
+      if (error) throw error
+      return data as Submission
     }
   })
 
-  // TODO: Implement real-time updates with Railway WebSocket
-  // For now, we'll rely on manual refresh or polling
-  
-  // Commented out Supabase real-time subscription
-  /*
+  // Set up real-time subscription for this specific submission
   useEffect(() => {
     if (!id || id.startsWith('demo-')) return // Skip for demo data
 
-    // Removed Supabase real-time subscription
-    // Will implement Railway WebSocket or polling later
+    const channel = supabase
+      .channel(`submission-${id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'submissions',
+          filter: `id=eq.${id}`
+        },
+        (payload) => {
+          // Refetch data when this submission is updated
+          queryClient.invalidateQueries({ queryKey: ['seo-review-detail', id] })
+        }
+      )
+      .subscribe()
+
+    // Cleanup subscription on unmount
+    return () => {
+      supabase.removeChannel(channel)
+    }
   }, [id, queryClient])
-  */
 
   const updateStatus = useMutation({
     mutationFn: async ({ 
@@ -227,12 +242,12 @@ export default function SEOReviewDetail() {
         updateData.rejected_at = new Date().toISOString()
       }
 
-      try {
-        await api.updateSubmission(id!, updateData)
-      } catch (error) {
-        console.error('Failed to update submission:', error)
-        throw error
-      }
+      const { error } = await supabase
+        .from('submissions')
+        .update(updateData)
+        .eq('id', id)
+      
+      if (error) throw error
       
       queryClient.invalidateQueries({ queryKey: ['seo-review-content'] })
       navigate('/seo-review')
