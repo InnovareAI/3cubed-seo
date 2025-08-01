@@ -85,15 +85,16 @@ const getPriorityBadge = (priority: string) => {
 }
 
 export default function CurrentProjects() {
-  // Mock data for current projects
+  // Mock data for current projects - comprehensive list from all stages
   const mockProjects: Submission[] = [
+    // SEO Review Stage
     {
-      id: '1',
+      id: '550e8400-e29b-41d4-a716-446655440000',
       product_name: 'Omnitrope',
       therapeutic_area: 'Endocrinology',
       stage: 'Launch',
       workflow_stage: 'SEO_Review',
-      priority_level: 'High',
+      priority_level: 'high',
       submitter_name: 'Michael Thompson',
       submitter_email: 'mthompson@3cubed.com',
       created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
@@ -102,60 +103,163 @@ export default function CurrentProjects() {
       target_audience: 'Pediatric endocrinologists'
     },
     {
-      id: '2',
+      id: '550e8400-e29b-41d4-a716-446655440001',
       product_name: 'Erelzi',
-      therapeutic_area: 'Rheumatology',
+      therapeutic_area: 'Rheumatology/Dermatology',
       stage: 'Pre-Launch',
-      workflow_stage: 'Client_Review',
-      priority_level: 'High',
+      workflow_stage: 'SEO_Review',
+      priority_level: 'high',
       submitter_name: 'Sarah Johnson',
       submitter_email: 'sjohnson@3cubed.com',
       created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
       updated_at: new Date().toISOString(),
-      indication: 'Rheumatoid arthritis',
+      indication: 'Rheumatoid arthritis, psoriatic arthritis',
       target_audience: 'Rheumatologists'
     },
     {
-      id: '3',
+      id: '550e8400-e29b-41d4-a716-446655440002',
       product_name: 'Tyruko',
-      therapeutic_area: 'Neurology',
+      therapeutic_area: 'Neurology/Gastroenterology',
       stage: 'Launch',
-      workflow_stage: 'MLR_Review',
-      priority_level: 'Medium',
+      workflow_stage: 'SEO_Review',
+      priority_level: 'high',
       submitter_name: 'David Chen',
       submitter_email: 'dchen@3cubed.com',
       created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
       updated_at: new Date().toISOString(),
-      indication: 'Multiple sclerosis',
+      indication: 'Multiple sclerosis, Crohn\'s disease',
       target_audience: 'Neurologists'
     },
     {
-      id: '4',
+      id: '550e8400-e29b-41d4-a716-446655440003',
       product_name: 'Keytruda',
-      therapeutic_area: 'Oncology',
+      therapeutic_area: 'Oncology/Immuno-oncology',
       stage: 'Post-Launch',
-      workflow_stage: 'AI_Processing',
-      priority_level: 'High',
+      workflow_stage: 'SEO_Review',
+      priority_level: 'high',
       submitter_name: 'Jennifer Martinez',
       submitter_email: 'jmartinez@3cubed.com',
-      created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+      created_at: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
       updated_at: new Date().toISOString(),
       indication: 'Multiple cancer types',
       target_audience: 'Oncologists'
     },
     {
-      id: '5',
+      id: '550e8400-e29b-41d4-a716-446655440004',
       product_name: 'Immunomax',
-      therapeutic_area: 'Rheumatology',
+      therapeutic_area: 'Rheumatology/Immunology',
       stage: 'Pre-Launch',
-      workflow_stage: 'Form_Submitted',
-      priority_level: 'Medium',
+      workflow_stage: 'SEO_Review',
+      priority_level: 'high',
       submitter_name: 'Robert Kim',
       submitter_email: 'rkim@3cubed.com',
-      created_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
+      created_at: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
       updated_at: new Date().toISOString(),
-      indication: 'Rheumatoid arthritis, GCA',
+      indication: 'Rheumatoid arthritis, GCA, SSc-ILD',
       target_audience: 'Rheumatologists'
+    },
+    // Client Review Stage
+    {
+      id: 'cr-001',
+      product_name: 'Tremfya',
+      therapeutic_area: 'Dermatology/Rheumatology',
+      stage: 'Launch',
+      workflow_stage: 'Client_Review',
+      priority_level: 'high',
+      submitter_name: 'Emma Wilson',
+      submitter_email: 'ewilson@3cubed.com',
+      created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+      updated_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+      indication: 'Plaque psoriasis',
+      target_audience: 'Dermatologists'
+    },
+    {
+      id: 'cr-002',
+      product_name: 'Spravato',
+      therapeutic_area: 'Psychiatry',
+      stage: 'Post-Launch',
+      workflow_stage: 'Client_Review',
+      priority_level: 'medium',
+      submitter_name: 'Alex Chen',
+      submitter_email: 'achen@3cubed.com',
+      created_at: new Date(Date.now() - 9 * 24 * 60 * 60 * 1000).toISOString(),
+      updated_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+      indication: 'Treatment-resistant depression',
+      target_audience: 'Psychiatrists'
+    },
+    // MLR Review Stage
+    {
+      id: 'mlr-001',
+      product_name: 'Vyvgart',
+      therapeutic_area: 'Neurology',
+      stage: 'Launch',
+      workflow_stage: 'MLR_Review',
+      priority_level: 'high',
+      submitter_name: 'Laura Martinez',
+      submitter_email: 'lmartinez@3cubed.com',
+      created_at: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(),
+      updated_at: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
+      indication: 'Generalized myasthenia gravis',
+      target_audience: 'Neurologists'
+    },
+    {
+      id: 'mlr-002',
+      product_name: 'Skyrizi',
+      therapeutic_area: 'Dermatology/Gastroenterology',
+      stage: 'Post-Launch',
+      workflow_stage: 'MLR_Review',
+      priority_level: 'medium',
+      submitter_name: 'James Wilson',
+      submitter_email: 'jwilson@3cubed.com',
+      created_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+      updated_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
+      indication: 'Plaque psoriasis, Crohn\'s disease',
+      target_audience: 'Dermatologists, Gastroenterologists'
+    },
+    // Revision Stage
+    {
+      id: '550e8400-e29b-41d4-a716-446655440005',
+      product_name: 'Nexletol',
+      therapeutic_area: 'Cardiovascular',
+      stage: 'Post-Launch',
+      workflow_stage: 'Revision_Requested',
+      priority_level: 'high',
+      submitter_name: 'Amanda Wilson',
+      submitter_email: 'awilson@3cubed.com',
+      created_at: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString(),
+      updated_at: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
+      indication: 'Hyperlipidemia, ASCVD',
+      target_audience: 'Cardiologists, PCPs'
+    },
+    // AI Processing Stage
+    {
+      id: 'ai-001',
+      product_name: 'Wegovy',
+      therapeutic_area: 'Endocrinology',
+      stage: 'Launch',
+      workflow_stage: 'AI_Processing',
+      priority_level: 'high',
+      submitter_name: 'Sofia Rodriguez',
+      submitter_email: 'srodriguez@3cubed.com',
+      created_at: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
+      updated_at: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+      indication: 'Weight management',
+      target_audience: 'Endocrinologists, PCPs'
+    },
+    // Recently Submitted
+    {
+      id: 'sub-001',
+      product_name: 'Leqembi',
+      therapeutic_area: 'Neurology',
+      stage: 'Pre-Launch',
+      workflow_stage: 'Form_Submitted',
+      priority_level: 'high',
+      submitter_name: 'Daniel Park',
+      submitter_email: 'dpark@3cubed.com',
+      created_at: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
+      updated_at: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
+      indication: 'Alzheimer\'s disease',
+      target_audience: 'Neurologists, Memory care specialists'
     }
   ]
 
@@ -167,7 +271,11 @@ export default function CurrentProjects() {
     total: submissions?.length || 0,
     inReview: submissions?.filter(s => ['SEO_Review', 'MLR_Review', 'Client_Review'].includes(s.workflow_stage)).length || 0,
     submitted: submissions?.filter(s => ['Form_Submitted', 'AI_Processing'].includes(s.workflow_stage)).length || 0,
-    highPriority: submissions?.filter(s => s.priority_level.toLowerCase() === 'high').length || 0
+    highPriority: submissions?.filter(s => s.priority_level.toLowerCase() === 'high').length || 0,
+    seoReview: submissions?.filter(s => s.workflow_stage === 'SEO_Review').length || 0,
+    clientReview: submissions?.filter(s => s.workflow_stage === 'Client_Review').length || 0,
+    mlrReview: submissions?.filter(s => s.workflow_stage === 'MLR_Review').length || 0,
+    revision: submissions?.filter(s => s.workflow_stage === 'Revision_Requested').length || 0
   }
 
   if (isLoading) {
@@ -258,11 +366,40 @@ export default function CurrentProjects() {
         </div>
       </div>
 
+      {/* Workflow Stage Breakdown */}
+      <div className="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
+        <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
+          <h3 className="text-lg leading-6 font-medium text-gray-900">
+            Workflow Stage Distribution
+          </h3>
+        </div>
+        <div className="px-4 py-5 sm:px-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="text-center">
+              <div className="text-2xl font-semibold text-yellow-600">{stats.seoReview}</div>
+              <div className="text-sm text-gray-500">SEO Review</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-semibold text-blue-600">{stats.clientReview}</div>
+              <div className="text-sm text-gray-500">Client Review</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-semibold text-purple-600">{stats.mlrReview}</div>
+              <div className="text-sm text-gray-500">MLR Review</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-semibold text-orange-600">{stats.revision}</div>
+              <div className="text-sm text-gray-500">Revision</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Projects Table */}
       <div className="bg-white shadow overflow-hidden sm:rounded-lg">
         <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
           <h3 className="text-lg leading-6 font-medium text-gray-900">
-            Active Projects
+            All Active Projects ({stats.total})
           </h3>
         </div>
         <div className="overflow-x-auto">
