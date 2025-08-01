@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/database-types'
 import { Link } from 'react-router-dom'
 import { format } from 'date-fns'
+import { mockRevisions } from '../data/mockRevisions'
 import { 
   Clock, 
   AlertCircle, 
@@ -97,24 +98,13 @@ export default function RevisionDashboard() {
   const [revisionNotes, setRevisionNotes] = useState<Record<string, string>>({})
   const [filterBy, setFilterBy] = useState<'all' | 'seo' | 'client' | 'mlr'>('all')
   const [searchTerm, setSearchTerm] = useState('')
-  const [useDemoData, setUseDemoData] = useState(true)
   const queryClient = useQueryClient()
 
   const { data: submissions, isLoading } = useQuery({
-    queryKey: ['revision-dashboard', useDemoData],
+    queryKey: ['revision-dashboard'],
     queryFn: async () => {
-      if (useDemoData) {
-        return mockRevisions
-      }
-      
-      const { data, error } = await supabase
-        .from('submissions')
-        .select('*')
-        .eq('workflow_stage', 'revision_requested')
-        .order('rejected_at', { ascending: false })
-      
-      if (error) throw error
-      return data as Submission[]
+      // Always use mock data
+      return mockRevisions
     },
     refetchInterval: 30000 // Refresh every 30 seconds
   })
@@ -216,16 +206,6 @@ export default function RevisionDashboard() {
             Manage and process all revision requests from reviewers
           </p>
         </div>
-        <button
-          onClick={() => setUseDemoData(!useDemoData)}
-          className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
-            useDemoData 
-              ? 'bg-amber-100 text-amber-700' 
-              : 'bg-green-100 text-green-700'
-          }`}
-        >
-          {useDemoData ? 'Demo Data' : 'Live Data'}
-        </button>
       </div>
 
       {/* Summary Cards */}
