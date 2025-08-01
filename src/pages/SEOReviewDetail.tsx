@@ -421,12 +421,45 @@ export default function SEOReviewDetail() {
         </div>
         
         {expandedSections['seo-strategy'] && (
-          <div className="px-6 pb-6">
-            <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-4">
-              <p className="text-sm text-gray-700 whitespace-pre-wrap">
-                {submission.seo_strategy_outline || 'AI-generated SEO/GEO strategy will appear here based on FDA data and market intelligence.'}
-              </p>
+          <div className="px-6 pb-6 space-y-4">
+            {/* SEO Strategy Outline */}
+            <div>
+              <h3 className="text-sm font-semibold text-gray-900 mb-2">SEO Strategy Outline</h3>
+              <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-4">
+                <p className="text-sm text-gray-700 whitespace-pre-wrap">
+                  {submission.seo_strategy_outline || 'AI-generated SEO/GEO strategy will appear here based on FDA data and market intelligence.'}
+                </p>
+              </div>
             </div>
+            
+            {/* Content Strategy */}
+            {submission.content_strategy && (
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900 mb-2">Content Strategy</h3>
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4">
+                  <p className="text-sm text-gray-700 whitespace-pre-wrap">
+                    {submission.content_strategy}
+                  </p>
+                </div>
+              </div>
+            )}
+            
+            {/* Competitive Advantages */}
+            {submission.competitive_advantages && (
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900 mb-2">Competitive Positioning</h3>
+                <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg p-4">
+                  <ul className="space-y-2">
+                    {submission.competitive_advantages.map((advantage: string, idx: number) => (
+                      <li key={idx} className="flex items-start">
+                        <span className="text-purple-600 mr-2">•</span>
+                        <span className="text-sm text-gray-700">{advantage}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -733,14 +766,14 @@ export default function SEOReviewDetail() {
         
         {expandedSections['geo-optimization'] && (
           <div className="px-6 pb-6 space-y-6">
-            {/* Dynamic GEO Fields (5-7 based on FDA data) */}
+            {/* 7 GEO Optimization Fields */}
             <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg p-4 mb-4">
-              <h3 className="text-sm font-semibold text-gray-900 mb-3">Dynamic GEO Fields (5-7 based on data availability)</h3>
+              <h3 className="text-sm font-semibold text-gray-900 mb-3">7 GEO Optimization Fields for AI Search Engines</h3>
               <div className="space-y-3">
-                {/* 1. Event Tags */}
+                {/* 1. GEO Event Tags */}
                 <FieldApprovalControl
                   fieldName="1. GEO Event Tags"
-                  fieldValue={submission.geo_event_tags || []}
+                  fieldValue={submission.geo_event_tags || ['biosimilar-growth-hormone', 'FDA-approved-GHD-treatment', 'pediatric-endocrinology', 'cost-effective-biologic', 'hormone-replacement-therapy']}
                   fieldId="geo_tags"
                   onApprovalChange={handleFieldApproval}
                   initialApproval={fieldApprovals['geo_tags']}
@@ -749,68 +782,72 @@ export default function SEOReviewDetail() {
                 {/* 2. AI-Friendly Summary */}
                 <FieldApprovalControl
                   fieldName="2. AI-Friendly Summary"
-                  fieldValue={submission.geo_optimization?.ai_friendly_summary || 'AI-optimized summary pending'}
+                  fieldValue={submission.geo_optimization?.ai_friendly_summary || 'AI-optimized summary for voice and conversational search'}
                   fieldId="ai_friendly_summary"
                   onApprovalChange={handleFieldApproval}
                   initialApproval={fieldApprovals['ai_friendly_summary']}
                 />
 
-                {/* 3. Voice Search Optimization */}
-                {submission.geo_optimization?.voice_search_answers && (
-                  <FieldApprovalControl
-                    fieldName="3. Voice Search Answers"
-                    fieldValue={Object.entries(submission.geo_optimization.voice_search_answers)
+                {/* 3. Voice Search Q&A */}
+                <FieldApprovalControl
+                  fieldName="3. Voice Search Q&A"
+                  fieldValue={submission.geo_optimization?.voice_search_answers ? 
+                    Object.entries(submission.geo_optimization.voice_search_answers)
                       .map(([q, a]) => `Q: ${q}\nA: ${a}`)
-                      .join('\n\n')}
-                    fieldId="voice_search"
-                    onApprovalChange={handleFieldApproval}
-                    initialApproval={fieldApprovals['voice_search']}
-                  />
-                )}
+                      .join('\n\n') : 
+                    'Voice search optimization pending'}
+                  fieldId="voice_search"
+                  onApprovalChange={handleFieldApproval}
+                  initialApproval={fieldApprovals['voice_search']}
+                />
 
-                {/* 4. Medical Facts */}
-                {submission.geo_optimization?.medical_facts && (
-                  <FieldApprovalControl
-                    fieldName="4. Key Medical Facts"
-                    fieldValue={submission.geo_optimization.medical_facts}
-                    fieldId="medical_facts"
-                    onApprovalChange={handleFieldApproval}
-                    initialApproval={fieldApprovals['medical_facts']}
-                  />
-                )}
+                {/* 4. Key Medical Facts */}
+                <FieldApprovalControl
+                  fieldName="4. Key Medical Facts"
+                  fieldValue={submission.geo_optimization?.medical_facts ? 
+                    (typeof submission.geo_optimization.medical_facts === 'object' ? 
+                      JSON.stringify(submission.geo_optimization.medical_facts, null, 2) : 
+                      submission.geo_optimization.medical_facts) : 
+                    'Medical facts for AI extraction pending'}
+                  fieldId="medical_facts"
+                  onApprovalChange={handleFieldApproval}
+                  initialApproval={fieldApprovals['medical_facts']}
+                />
 
                 {/* 5. Evidence Statistics */}
-                {submission.geo_optimization?.evidence_statistics && (
-                  <FieldApprovalControl
-                    fieldName="5. Clinical Evidence Stats"
-                    fieldValue={submission.geo_optimization.evidence_statistics}
-                    fieldId="evidence_stats"
-                    onApprovalChange={handleFieldApproval}
-                    initialApproval={fieldApprovals['evidence_stats']}
-                  />
-                )}
+                <FieldApprovalControl
+                  fieldName="5. Evidence-Based Statistics"
+                  fieldValue={submission.geo_optimization?.evidence_statistics || ['Clinical trial data pending']}
+                  fieldId="evidence_stats"
+                  onApprovalChange={handleFieldApproval}
+                  initialApproval={fieldApprovals['evidence_stats']}
+                />
 
-                {/* 6. Geographic Markets */}
-                {submission.geography && submission.geography.length > 0 && (
-                  <FieldApprovalControl
-                    fieldName="6. Geographic Market Optimization"
-                    fieldValue={submission.geography}
-                    fieldId="geo_markets"
-                    onApprovalChange={handleFieldApproval}
-                    initialApproval={fieldApprovals['geo_markets']}
-                  />
-                )}
+                {/* 6. Key Facts for AI */}
+                <FieldApprovalControl
+                  fieldName="6. Key Facts for AI Extraction"
+                  fieldValue={submission.geo_optimization?.key_facts || ['Key facts pending FDA data analysis']}
+                  fieldId="key_facts"
+                  onApprovalChange={handleFieldApproval}
+                  initialApproval={fieldApprovals['key_facts']}
+                />
 
-                {/* 7. Competitive Positioning */}
-                {submission.competitive_advantages && (
-                  <FieldApprovalControl
-                    fieldName="7. Competitive Advantages for AI"
-                    fieldValue={submission.competitive_advantages}
-                    fieldId="competitive_advantages"
-                    onApprovalChange={handleFieldApproval}
-                    initialApproval={fieldApprovals['competitive_advantages']}
-                  />
-                )}
+                {/* 7. Platform-Specific Event Tags */}
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-900 mb-2">7. Platform-Specific Event Tags</h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    {['perplexity', 'claude', 'chatgpt', 'gemini'].map((platform) => (
+                      <FieldApprovalControl
+                        key={platform}
+                        fieldName={`${platform.charAt(0).toUpperCase() + platform.slice(1)} Tags`}
+                        fieldValue={submission.geo_optimization?.event_tags?.[platform] || [`${platform}-optimization-pending`]}
+                        fieldId={`event_tags_${platform}`}
+                        onApprovalChange={handleFieldApproval}
+                        initialApproval={fieldApprovals[`event_tags_${platform}`]}
+                      />
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
 
