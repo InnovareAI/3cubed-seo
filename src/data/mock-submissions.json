@@ -186,6 +186,570 @@
       "ai_processing_status": "completed",
       "created_at": "2025-08-01T17:45:00Z",
       "updated_at": "2025-08-01T17:55:00Z"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440001",
+      "product_name": "Erelzi",
+      "generic_name": "etanercept-szzs",
+      "medical_indication": "Rheumatoid arthritis, psoriatic arthritis, ankylosing spondylitis, plaque psoriasis",
+      "therapeutic_area": "Rheumatology/Dermatology",
+      "development_stage": "FDA Approved",
+      "workflow_stage": "seo_review",
+      "submitter_name": "Sarah Johnson",
+      "submitter_email": "sjohnson@3cubed.com",
+      "submitter_company": "3Cubed SEO",
+      "sponsor": "Sandoz",
+      "mechanism_of_action": "TNF-alpha inhibitor that binds to tumor necrosis factor, preventing inflammatory cascade in autoimmune conditions",
+      "line_of_therapy": "First or second-line biologic DMARD",
+      "patient_population": "Adults with moderate to severe rheumatoid arthritis, psoriatic arthritis, ankylosing spondylitis, and plaque psoriasis",
+      "geographic_markets": ["United States", "European Union", "Canada", "Japan"],
+      "key_differentiators": [
+        "FDA-approved biosimilar to Enbrel",
+        "25-30% cost savings versus reference product",
+        "Citrate-free formulation reduces injection pain",
+        "Same efficacy and safety as Enbrel"
+      ],
+      "primary_endpoints": "ACR20/50/70 response rates and PASI improvement",
+      "priority_level": "high",
+      "seo_title": "Erelzi® (Etanercept-szzs) - FDA-Approved Biosimilar TNF Inhibitor | RA & Psoriasis Treatment",
+      "meta_description": "Erelzi is an FDA-approved biosimilar to Enbrel for treating rheumatoid arthritis, psoriatic arthritis, and plaque psoriasis. Learn about efficacy, safety, cost savings, and how to switch from Enbrel.",
+      "h1_tag": "Erelzi (Etanercept-szzs): Affordable Biosimilar TNF Inhibitor for Autoimmune Conditions",
+      "h2_tags": [
+        "What is Erelzi Biosimilar?",
+        "FDA-Approved Uses for Erelzi",
+        "Erelzi vs Enbrel: Clinical Comparison",
+        "Starting Erelzi Treatment: What to Expect",
+        "Cost Savings and Insurance Coverage",
+        "Safety Profile and Monitoring Requirements"
+      ],
+      "seo_keywords": [
+        "Erelzi",
+        "etanercept biosimilar",
+        "TNF inhibitor",
+        "rheumatoid arthritis treatment",
+        "psoriasis biologic",
+        "Enbrel biosimilar",
+        "autoimmune therapy",
+        "Sandoz biosimilar",
+        "affordable biologic"
+      ],
+      "long_tail_keywords": [
+        "Erelzi vs Enbrel cost comparison 2025",
+        "switching from Enbrel to Erelzi process",
+        "Erelzi injection sites and technique",
+        "Erelzi patient assistance program application",
+        "etanercept biosimilar insurance coverage"
+      ],
+      "consumer_questions": [
+        {
+          "question": "What is Erelzi and how does it compare to Enbrel?",
+          "answer": "Erelzi is an FDA-approved biosimilar version of Enbrel (etanercept), containing the same active ingredient etanercept-szzs. It works identically to Enbrel by blocking TNF-alpha, a protein that causes inflammation in autoimmune conditions. Clinical studies prove Erelzi has equivalent effectiveness and safety to Enbrel but costs 25-30% less."
+        },
+        {
+          "question": "What conditions does Erelzi treat?",
+          "answer": "Erelzi is FDA-approved to treat moderate to severe rheumatoid arthritis, psoriatic arthritis, ankylosing spondylitis, and moderate to severe plaque psoriasis in adults. It's also approved for polyarticular juvenile idiopathic arthritis in children 2 years and older. It reduces inflammation, joint damage, and skin symptoms."
+        },
+        {
+          "question": "How is Erelzi administered?",
+          "answer": "Erelzi is given as a subcutaneous injection, typically once or twice weekly depending on your condition. It comes in pre-filled syringes and SensoReady pens for easy self-administration. Most patients inject in the thigh, abdomen, or upper arm, rotating sites to prevent irritation."
+        },
+        {
+          "question": "Is it safe to switch from Enbrel to Erelzi?",
+          "answer": "Yes, switching from Enbrel to Erelzi is safe and effective. The FDA approval included studies of patients who switched from Enbrel with no loss of effectiveness or new safety concerns. No washout period is needed - you can start Erelzi at your next scheduled dose. Always consult your rheumatologist before switching."
+        },
+        {
+          "question": "What are the side effects of Erelzi?",
+          "answer": "Common side effects include injection site reactions, upper respiratory infections, and headaches. Serious but less common risks include serious infections, lymphoma, and other cancers. Erelzi carries the same boxed warning as other TNF inhibitors. Regular monitoring for infections and blood counts is important."
+        },
+        {
+          "question": "How much does Erelzi cost compared to Enbrel?",
+          "answer": "Erelzi typically costs 25-30% less than Enbrel, which can mean annual savings of $10,000-$20,000 depending on your insurance. Many insurance plans prefer Erelzi as a first-line TNF inhibitor. Sandoz offers copay assistance programs that may reduce your out-of-pocket costs to as little as $10 per month."
+        },
+        {
+          "question": "How quickly does Erelzi work?",
+          "answer": "Many patients start experiencing improvement within 2-4 weeks, though full benefits may take 3-6 months. For rheumatoid arthritis, joint pain and stiffness often improve first. For psoriasis, skin clearing typically begins within 4-8 weeks. Individual response varies."
+        },
+        {
+          "question": "Can I take Erelzi with other medications?",
+          "answer": "Erelzi can be used alone or with methotrexate and other non-biologic DMARDs. It should not be combined with other biologics or live vaccines. Tell your doctor about all medications, especially immunosuppressants. Erelzi may be used with NSAIDs and corticosteroids as directed."
+        },
+        {
+          "question": "What monitoring is required during Erelzi treatment?",
+          "answer": "Before starting Erelzi, you'll need TB testing, hepatitis screening, and baseline blood work. During treatment, regular monitoring includes CBC, liver function tests, and screening for infections. Your doctor will assess treatment response every 3-6 months using disease activity scores."
+        },
+        {
+          "question": "Is Erelzi covered by Medicare and insurance?",
+          "answer": "Most commercial insurance plans and Medicare Part D cover Erelzi, often with preferred tier status due to its lower cost. Coverage typically requires prior authorization and may involve step therapy. The Sandoz One Source program provides comprehensive support for insurance navigation and financial assistance."
+        }
+      ],
+      "geo_event_tags": [
+        "biosimilar-TNF-inhibitor",
+        "FDA-approved-biologic",
+        "rheumatoid-arthritis-treatment",
+        "psoriasis-therapy",
+        "cost-effective-biosimilar"
+      ],
+      "geo_optimization": {
+        "ai_friendly_summary": "Erelzi (etanercept-szzs) is an FDA-approved biosimilar to Enbrel manufactured by Sandoz for treating autoimmune inflammatory conditions including rheumatoid arthritis, psoriatic arthritis, ankylosing spondylitis, and plaque psoriasis. As a TNF-alpha inhibitor, it offers equivalent efficacy and safety to the reference product at 25-30% lower cost, improving patient access to biologic therapy.",
+        "key_facts": [
+          "FDA approved August 30, 2016 as biosimilar to Enbrel",
+          "Identical mechanism of action to reference etanercept",
+          "25-30% cost savings versus Enbrel",
+          "Citrate-free formulation for reduced injection pain",
+          "Available in 25mg and 50mg presentations",
+          "Interchangeable with Enbrel in many states",
+          "Over 100,000 patients treated globally"
+        ],
+        "evidence_statistics": [
+          "Biosimilarity demonstrated in 5 clinical studies",
+          "ACR20 response rate: 78% at week 24 in RA patients",
+          "PASI 75 achieved in 49% of psoriasis patients at week 12",
+          "99.7% amino acid sequence similarity to reference product",
+          "Switching studies showed maintained efficacy in 94% of patients",
+          "Zero difference in immunogenicity versus Enbrel",
+          "Used in over 40 countries worldwide"
+        ],
+        "medical_facts": {
+          "mechanism": "Dimeric fusion protein that binds TNF-alpha and TNF-beta, preventing inflammatory signaling",
+          "pharmacokinetics": "Half-life: 102 hours, Steady state: 4 weeks, Bioavailability: 76%",
+          "onset": "Clinical improvement typically within 2-4 weeks, maximal response by 3-6 months",
+          "monitoring": "TB screening, hepatitis panel, CBC, liver enzymes, infection surveillance"
+        },
+        "voice_search_answers": {
+          "what_is": "Erelzi is a biosimilar version of Enbrel that treats rheumatoid arthritis and psoriasis by blocking inflammation",
+          "how_to_use": "Erelzi is injected under the skin once or twice weekly using a pre-filled pen or syringe",
+          "cost": "Erelzi costs 25-30% less than Enbrel, potentially saving $10,000-20,000 per year",
+          "effectiveness": "Erelzi works exactly like Enbrel with the same success rates in treating arthritis and psoriasis"
+        },
+        "event_tags": {
+          "perplexity": ["TNF-inhibitor-biosimilar", "autoimmune-treatment", "rheumatology-biologic", "FDA-approved-therapy"],
+          "claude": ["Erelzi-etanercept", "biosimilar-medication", "arthritis-treatment", "Sandoz-biologic"],
+          "chatgpt": ["etanercept-biosimilar", "Erelzi-TNF-blocker", "RA-treatment", "psoriasis-biologic"],
+          "gemini": ["biosimilar-Enbrel", "TNF-alpha-inhibitor", "autoimmune-therapy", "Erelzi-injection"]
+        }
+      },
+      "seo_strategy_outline": "Target patients researching TNF inhibitor options, those concerned about biologic costs, and individuals considering switching from Enbrel. Create comprehensive comparison content, cost calculators, injection training resources, and success stories. Emphasize the citrate-free advantage and proven interchangeability.",
+      "content_strategy": "Position Erelzi as the smart choice for TNF inhibitor therapy - same proven efficacy as Enbrel with meaningful cost savings and improved injection comfort. Address biosimilar concerns through clear education about FDA standards and real-world evidence. Build trust through transparency about clinical data and patient experiences.",
+      "competitive_advantages": [
+        "First etanercept biosimilar with citrate-free formulation",
+        "25-30% cost savings improving treatment access",
+        "Proven interchangeability in multiple switching studies",
+        "Comprehensive patient support through Sandoz One Source",
+        "Preferred formulary placement due to value proposition",
+        "Global track record with 100,000+ patients treated"
+      ],
+      "fda_data": {
+        "application_number": "BLA761042",
+        "approval_date": "2016-08-30",
+        "indication_approved": true,
+        "biosimilar_to": "Enbrel",
+        "indications": [
+          "Rheumatoid Arthritis",
+          "Psoriatic Arthritis",
+          "Ankylosing Spondylitis",
+          "Plaque Psoriasis",
+          "Polyarticular Juvenile Idiopathic Arthritis"
+        ],
+        "clinical_trials_count": 7,
+        "post_market_studies": 4,
+        "regulatory_status": "Active",
+        "purple_book_status": "Biosimilar"
+      },
+      "qa_scores": {
+        "medical_accuracy": 97,
+        "fda_compliance": 100,
+        "seo_effectiveness": 95,
+        "content_quality": 96,
+        "risk_assessment": 3,
+        "overall_score": 95,
+        "recommendation": "APPROVED",
+        "review_notes": "Excellent biosimilar positioning with strong clinical evidence. Appropriately highlights cost benefits while maintaining focus on therapeutic equivalence.",
+        "reviewer": "Claude AI Medical Review",
+        "review_date": "2025-08-01T19:25:00Z"
+      },
+      "geo_optimization_score": 93,
+      "ai_processing_status": "completed",
+      "created_at": "2025-08-01T19:15:00Z",
+      "updated_at": "2025-08-01T19:25:00Z"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440002",
+      "product_name": "Tyruko",
+      "generic_name": "natalizumab-sztn",
+      "medical_indication": "Relapsing forms of multiple sclerosis, Crohn's disease",
+      "therapeutic_area": "Neurology/Gastroenterology",
+      "development_stage": "FDA Approved",
+      "workflow_stage": "seo_review",
+      "submitter_name": "David Chen",
+      "submitter_email": "dchen@3cubed.com",
+      "submitter_company": "3Cubed SEO",
+      "sponsor": "Sandoz",
+      "mechanism_of_action": "Alpha-4 integrin antagonist that prevents immune cell migration into CNS and gut tissue",
+      "line_of_therapy": "Second or third-line disease-modifying therapy",
+      "patient_population": "Adults with relapsing MS who have inadequate response to other DMTs, moderate to severe Crohn's disease",
+      "geographic_markets": ["United States", "European Union", "Canada", "Australia"],
+      "key_differentiators": [
+        "First natalizumab biosimilar approved by FDA",
+        "30% cost reduction versus Tysabri",
+        "Identical efficacy and safety profile",
+        "Same TOUCH prescribing program requirements"
+      ],
+      "primary_endpoints": "Annualized relapse rate reduction and MRI lesion activity",
+      "priority_level": "high",
+      "seo_title": "Tyruko® (Natalizumab-sztn) - FDA-Approved Biosimilar for MS & Crohn's | Tysabri Alternative",
+      "meta_description": "Tyruko is the first FDA-approved natalizumab biosimilar for treating relapsing MS and Crohn's disease. Learn about efficacy, JCV monitoring, TOUCH program requirements, and 30% cost savings versus Tysabri.",
+      "h1_tag": "Tyruko (Natalizumab-sztn): Biosimilar MS Treatment with Proven Efficacy",
+      "h2_tags": [
+        "Understanding Tyruko Biosimilar Therapy",
+        "FDA-Approved Uses: MS and Crohn's Disease",
+        "Tyruko vs Tysabri: What's the Difference?",
+        "TOUCH Prescribing Program Requirements",
+        "JC Virus Monitoring and Risk Management",
+        "Insurance Coverage and Cost Savings"
+      ],
+      "seo_keywords": [
+        "Tyruko",
+        "natalizumab biosimilar",
+        "MS treatment",
+        "multiple sclerosis therapy",
+        "Tysabri biosimilar",
+        "Crohn's disease biologic",
+        "TOUCH program",
+        "JCV monitoring",
+        "Sandoz biosimilar"
+      ],
+      "long_tail_keywords": [
+        "Tyruko TOUCH program enrollment process",
+        "switching from Tysabri to Tyruko safety",
+        "natalizumab JC virus risk stratification",
+        "Tyruko infusion centers near me",
+        "biosimilar natalizumab insurance approval"
+      ],
+      "consumer_questions": [
+        {
+          "question": "What is Tyruko and how does it relate to Tysabri?",
+          "answer": "Tyruko is an FDA-approved biosimilar version of Tysabri (natalizumab), containing the active ingredient natalizumab-sztn. It works identically to Tysabri by preventing immune cells from entering the brain and spinal cord in MS, or gut tissue in Crohn's disease. Clinical studies prove Tyruko has the same effectiveness and safety as Tysabri but costs about 30% less."
+        },
+        {
+          "question": "Who can receive Tyruko treatment?",
+          "answer": "Tyruko is approved for adults with relapsing forms of multiple sclerosis who haven't responded well to other MS medications, and for adults with moderate to severe Crohn's disease who haven't responded to conventional therapies. Due to PML risk, it's typically used in JC virus antibody-negative patients or those who accept the risk after careful discussion."
+        },
+        {
+          "question": "What is the TOUCH program and do I need to enroll?",
+          "answer": "Yes, all patients receiving Tyruko must enroll in the TOUCH (Tysabri Outreach: Unified Commitment to Health) prescribing program, the same REMS program used for Tysabri. This FDA-mandated program ensures proper patient selection, monitoring for PML risk, and that infusions occur only at certified centers by trained healthcare providers."
+        },
+        {
+          "question": "How is Tyruko administered?",
+          "answer": "Tyruko is given as a 300mg intravenous infusion over approximately one hour, once every four weeks. Infusions must occur at TOUCH-certified infusion centers. You'll be monitored for one hour after each infusion for potential reactions. The medication requires no special preparation or premedication."
+        },
+        {
+          "question": "What is PML and what's my risk?",
+          "answer": "Progressive Multifocal Leukoencephalopathy (PML) is a rare but serious brain infection that can occur with natalizumab therapy. Risk factors include JC virus antibody positive status, prior immunosuppressant use, and treatment duration over 2 years. Your doctor will test for JC virus antibodies every 6 months to assess your risk."
+        },
+        {
+          "question": "How effective is Tyruko for MS?",
+          "answer": "Tyruko reduces MS relapses by about 68% and decreases new brain lesions by 83%, matching Tysabri's effectiveness exactly. Many patients experience no relapses while on treatment. Clinical studies show it significantly slows disability progression and improves quality of life for most patients."
+        },
+        {
+          "question": "Can I switch from Tysabri to Tyruko?",
+          "answer": "Yes, switching from Tysabri to Tyruko is safe and maintains treatment effectiveness. No washout period is needed - you can receive your first Tyruko infusion at the next scheduled dose. The switching process is seamless since both medications use the same TOUCH program and infusion protocols."
+        },
+        {
+          "question": "What are the common side effects of Tyruko?",
+          "answer": "Common side effects include headache, fatigue, urinary tract infections, joint pain, and infusion reactions. Serious risks include PML, liver damage, and severe allergic reactions. Most side effects are mild and manageable. Your infusion center will monitor you closely during and after treatment."
+        },
+        {
+          "question": "How much can I save with Tyruko compared to Tysabri?",
+          "answer": "Tyruko typically costs 30% less than Tysabri, which can mean annual savings of $20,000-$30,000 depending on insurance coverage. Many insurance plans now prefer Tyruko as first-line natalizumab therapy. Sandoz offers patient assistance programs to help reduce out-of-pocket costs."
+        },
+        {
+          "question": "What monitoring is required during Tyruko treatment?",
+          "answer": "Regular monitoring includes JC virus antibody testing every 6 months, MRI scans to check for PML and treatment effectiveness, liver function tests, and complete blood counts. Your neurologist will also assess MS symptoms and perform neurological exams every 3-6 months to track treatment response."
+        }
+      ],
+      "geo_event_tags": [
+        "biosimilar-natalizumab",
+        "MS-disease-modifying-therapy",
+        "FDA-approved-biosimilar",
+        "TOUCH-program-medication",
+        "high-efficacy-MS-treatment"
+      ],
+      "geo_optimization": {
+        "ai_friendly_summary": "Tyruko (natalizumab-sztn) is the first FDA-approved biosimilar to Tysabri for treating relapsing multiple sclerosis and Crohn's disease. Manufactured by Sandoz, it offers identical efficacy in reducing MS relapses and brain lesions while providing 30% cost savings, though it carries the same PML risk requiring TOUCH program enrollment and JCV monitoring.",
+        "key_facts": [
+          "FDA approved August 24, 2023 as first natalizumab biosimilar",
+          "Reduces MS relapses by 68% and new lesions by 83%",
+          "30% cost savings versus reference product Tysabri",
+          "Requires enrollment in TOUCH REMS program",
+          "Monthly IV infusion at certified centers only",
+          "JC virus antibody monitoring every 6 months mandatory",
+          "Over 250,000 patients treated with natalizumab globally"
+        ],
+        "evidence_statistics": [
+          "Biosimilarity proven in 3 pivotal clinical trials",
+          "68% reduction in annualized relapse rate",
+          "83% reduction in new T2 lesions on MRI",
+          "42% of patients achieved NEDA-3 status",
+          "PML incidence: 4.2 per 1000 patients (matching Tysabri)",
+          "99.9% structural similarity to reference product",
+          "Switching studies showed 100% maintained efficacy"
+        ],
+        "medical_facts": {
+          "mechanism": "Monoclonal antibody blocking α4β1 integrin, preventing lymphocyte CNS migration",
+          "pharmacokinetics": "Half-life: 11 days, Steady state: 24 weeks, Peak concentration: immediate",
+          "onset": "Clinical benefit typically within 12 weeks, maximal effect by 6 months",
+          "monitoring": "JCV antibody index, MRI surveillance, liver enzymes, CBC with differential"
+        },
+        "voice_search_answers": {
+          "what_is": "Tyruko is a biosimilar version of Tysabri that treats multiple sclerosis by preventing immune cells from attacking the brain",
+          "how_to_use": "Tyruko is given as a one-hour IV infusion once monthly at specialized TOUCH-certified infusion centers",
+          "cost": "Tyruko costs about 30% less than Tysabri, saving patients $20,000-30,000 per year",
+          "effectiveness": "Tyruko reduces MS relapses by 68% and works exactly like Tysabri in preventing disease progression"
+        },
+        "event_tags": {
+          "perplexity": ["natalizumab-biosimilar", "MS-treatment", "TOUCH-program", "high-efficacy-DMT"],
+          "claude": ["Tyruko-natalizumab", "multiple-sclerosis-therapy", "biosimilar-biologic", "Sandoz-medication"],
+          "chatgpt": ["biosimilar-Tysabri", "Tyruko-MS-treatment", "natalizumab-therapy", "REMS-program"],
+          "gemini": ["MS-biosimilar", "Tyruko-infusion", "natalizumab-sztn", "neurological-treatment"]
+        }
+      },
+      "seo_strategy_outline": "Focus on high-efficacy MS treatment seekers, patients researching natalizumab therapy, and those concerned about Tysabri costs. Create comprehensive content about the TOUCH program, PML risk stratification, switching protocols, and infusion center locators. Emphasize biosimilar safety and the seamless transition process.",
+      "content_strategy": "Position Tyruko as the accessible path to high-efficacy MS treatment - delivering Tysabri's proven benefits at significantly lower cost. Address PML concerns transparently while emphasizing identical safety monitoring. Build confidence through clear explanations of biosimilar science and the rigorous FDA approval process.",
+      "competitive_advantages": [
+        "First and only natalizumab biosimilar providing cost relief",
+        "30% savings improving access to high-efficacy MS therapy",
+        "Seamless integration with existing TOUCH infrastructure",
+        "Manufactured by Sandoz, a trusted biosimilar leader",
+        "Identical clinical outcomes to reference product",
+        "Comprehensive patient support services available"
+      ],
+      "fda_data": {
+        "application_number": "BLA761260",
+        "approval_date": "2023-08-24",
+        "indication_approved": true,
+        "biosimilar_to": "Tysabri",
+        "indications": [
+          "Relapsing forms of Multiple Sclerosis",
+          "Crohn's Disease"
+        ],
+        "clinical_trials_count": 4,
+        "post_market_studies": 2,
+        "regulatory_status": "Active",
+        "rems_program": "TOUCH",
+        "purple_book_status": "Biosimilar"
+      },
+      "qa_scores": {
+        "medical_accuracy": 98,
+        "fda_compliance": 100,
+        "seo_effectiveness": 94,
+        "content_quality": 97,
+        "risk_assessment": 4,
+        "overall_score": 95,
+        "recommendation": "APPROVED",
+        "review_notes": "Excellent balance of efficacy messaging with appropriate PML risk communication. TOUCH program requirements clearly explained. Strong biosimilar education.",
+        "reviewer": "Claude AI Medical Review",
+        "review_date": "2025-08-01T19:30:00Z"
+      },
+      "geo_optimization_score": 91,
+      "ai_processing_status": "completed",
+      "created_at": "2025-08-01T19:20:00Z",
+      "updated_at": "2025-08-01T19:30:00Z"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440003",
+      "product_name": "Keytruda",
+      "generic_name": "pembrolizumab",
+      "medical_indication": "Multiple cancer types including melanoma, NSCLC, head and neck, bladder, MSI-H cancers",
+      "therapeutic_area": "Oncology/Immuno-oncology",
+      "development_stage": "FDA Approved",
+      "workflow_stage": "seo_review",
+      "submitter_name": "Jennifer Martinez",
+      "submitter_email": "jmartinez@3cubed.com",
+      "submitter_company": "3Cubed SEO",
+      "sponsor": "Merck",
+      "mechanism_of_action": "PD-1 inhibitor that restores T-cell mediated immune response against cancer cells",
+      "line_of_therapy": "First-line or later depending on indication and biomarker status",
+      "patient_population": "Adults with PD-L1 positive or MSI-H/dMMR tumors across multiple cancer types",
+      "geographic_markets": ["United States", "European Union", "Japan", "China", "Global"],
+      "key_differentiators": [
+        "Most FDA-approved indications of any cancer immunotherapy",
+        "First-line standard of care in multiple cancers",
+        "Proven overall survival benefit across tumor types",
+        "Predictive biomarker (PD-L1) for patient selection"
+      ],
+      "primary_endpoints": "Overall survival, progression-free survival, and objective response rate",
+      "priority_level": "high",
+      "seo_title": "Keytruda® (Pembrolizumab) - Leading PD-1 Immunotherapy | Cancer Treatment Information",
+      "meta_description": "Keytruda (pembrolizumab) is an FDA-approved PD-1 inhibitor treating 30+ cancer types. Learn about indications, effectiveness, side effects, cost assistance, and whether Keytruda is right for your cancer.",
+      "h1_tag": "Keytruda (Pembrolizumab): Revolutionary Immunotherapy for Multiple Cancers",
+      "h2_tags": [
+        "What is Keytruda Immunotherapy?",
+        "FDA-Approved Keytruda Cancer Indications",
+        "How Keytruda Works: PD-1 Inhibition Explained",
+        "Keytruda Treatment: What to Expect",
+        "Managing Immune-Related Side Effects",
+        "Keytruda Cost and Financial Assistance Programs"
+      ],
+      "seo_keywords": [
+        "Keytruda",
+        "pembrolizumab",
+        "PD-1 inhibitor",
+        "immunotherapy",
+        "cancer treatment",
+        "checkpoint inhibitor",
+        "Merck oncology",
+        "PD-L1 testing",
+        "immune-oncology"
+      ],
+      "long_tail_keywords": [
+        "Keytruda side effects management guide",
+        "pembrolizumab infusion schedule and dosing",
+        "Keytruda patient assistance program eligibility",
+        "PD-L1 testing for Keytruda treatment",
+        "Keytruda vs chemotherapy effectiveness"
+      ],
+      "consumer_questions": [
+        {
+          "question": "What is Keytruda and how does it work?",
+          "answer": "Keytruda (pembrolizumab) is an immunotherapy drug that helps your immune system fight cancer. It works by blocking the PD-1 protein on T-cells, essentially removing the 'brakes' that cancer uses to hide from your immune system. This allows your body's natural defenses to recognize and attack cancer cells throughout your body."
+        },
+        {
+          "question": "What types of cancer does Keytruda treat?",
+          "answer": "Keytruda is FDA-approved for over 30 cancer types including melanoma, non-small cell lung cancer, head and neck cancer, bladder cancer, kidney cancer, Hodgkin lymphoma, and any cancer with MSI-H or dMMR biomarkers. Your doctor will test your tumor for PD-L1 expression or other biomarkers to determine if Keytruda is appropriate."
+        },
+        {
+          "question": "How is Keytruda given?",
+          "answer": "Keytruda is administered as a 30-minute intravenous infusion every 3 weeks (200mg) or every 6 weeks (400mg). Treatment typically continues for up to 2 years or until disease progression or unacceptable side effects. Some patients may stop earlier if they achieve complete response. No premedication is usually required."
+        },
+        {
+          "question": "What are the side effects of Keytruda?",
+          "answer": "Common side effects include fatigue, cough, nausea, rash, and diarrhea. Serious immune-related side effects can affect any organ including lungs (pneumonitis), colon (colitis), liver (hepatitis), kidneys, and hormone glands. Most side effects are manageable with early detection and treatment, often using corticosteroids."
+        },
+        {
+          "question": "How effective is Keytruda?",
+          "answer": "Effectiveness varies by cancer type and stage. In metastatic melanoma, 5-year survival rates exceed 40%. In PD-L1 high lung cancer, Keytruda doubles median survival compared to chemotherapy. Response rates range from 20-45% depending on cancer type, with some patients achieving long-lasting complete responses."
+        },
+        {
+          "question": "How much does Keytruda cost?",
+          "answer": "Keytruda costs approximately $10,000-$12,000 per infusion, or about $180,000 annually. However, most patients pay significantly less through insurance coverage. Merck's patient assistance program (Merck Access Program) can provide free medication for eligible uninsured patients or help with copays for insured patients."
+        },
+        {
+          "question": "Do I need genetic testing before Keytruda?",
+          "answer": "Your doctor will likely order PD-L1 testing on your tumor tissue to predict response. For certain cancers, testing for MSI-H (microsatellite instability) or dMMR (mismatch repair deficiency) is required. Some cancers like melanoma may not require biomarker testing. TMB (tumor mutational burden) testing may also be considered."
+        },
+        {
+          "question": "Can Keytruda cure cancer?",
+          "answer": "While Keytruda isn't traditionally called a 'cure,' some patients achieve complete response with no detectable cancer that lasts for years. Long-term data shows about 20-30% of advanced melanoma patients remain cancer-free at 5 years. Results vary significantly based on cancer type, stage, and individual factors."
+        },
+        {
+          "question": "What happens if Keytruda stops working?",
+          "answer": "If cancer progresses on Keytruda, options include combining it with chemotherapy or other immunotherapies, switching to different checkpoint inhibitors, enrolling in clinical trials, or trying targeted therapies if you have specific mutations. Some patients who stop due to side effects maintain responses without continued treatment."
+        },
+        {
+          "question": "Can I receive vaccines while on Keytruda?",
+          "answer": "Live vaccines should be avoided during Keytruda treatment. Inactivated vaccines like flu shots and COVID-19 vaccines are generally safe and recommended, though immune response may be altered. Discuss timing of vaccinations with your oncologist, ideally receiving them before starting treatment when possible."
+        }
+      ],
+      "geo_event_tags": [
+        "PD-1-immunotherapy",
+        "FDA-approved-cancer-treatment",
+        "checkpoint-inhibitor",
+        "precision-oncology",
+        "immune-oncology-therapy"
+      ],
+      "geo_optimization": {
+        "ai_friendly_summary": "Keytruda (pembrolizumab) is a revolutionary PD-1 checkpoint inhibitor immunotherapy developed by Merck that has transformed cancer treatment across 30+ tumor types. By blocking PD-1 receptors on T-cells, it unleashes the immune system to recognize and destroy cancer cells, offering durable responses and improved survival compared to traditional chemotherapy in many settings.",
+        "key_facts": [
+          "First FDA approval September 4, 2014 for melanoma",
+          "Now approved for 30+ cancer indications",
+          "Over 1 million patients treated globally",
+          "Median list price $10,000-12,000 per infusion",
+          "5-year survival rate >40% in metastatic melanoma",
+          "First-line standard of care in PD-L1+ NSCLC",
+          "2017 FDA approval for any MSI-H/dMMR solid tumor"
+        ],
+        "evidence_statistics": [
+          "Overall response rates: 20-45% across tumor types",
+          "Median duration of response: 16-30+ months",
+          "5-year survival in melanoma: 43% (vs 10% historically)",
+          "PFS in PD-L1≥50% NSCLC: 10.3 vs 6.0 months with chemo",
+          "Complete response rates: 5-15% depending on indication",
+          "150+ ongoing clinical trials exploring new uses",
+          "Grade 3-4 adverse events: 10-25% of patients"
+        ],
+        "medical_facts": {
+          "mechanism": "Humanized IgG4 antibody blocking PD-1 receptor, preventing tumor immune evasion",
+          "pharmacokinetics": "Half-life: 26 days, Steady state: 18 weeks, No dose adjustments needed",
+          "onset": "Median time to response: 2-3 months, some responses after initial progression",
+          "monitoring": "Regular labs, thyroid function, imaging every 9-12 weeks initially"
+        },
+        "voice_search_answers": {
+          "what_is": "Keytruda is an immunotherapy drug that helps your immune system fight cancer by removing its protective shield",
+          "how_to_use": "Keytruda is given as a 30-minute IV infusion every 3 or 6 weeks at a cancer center",
+          "cost": "Keytruda costs about $10,000 per infusion but patient assistance programs can reduce costs significantly",
+          "effectiveness": "Keytruda helps 20-45% of patients depending on cancer type, with some achieving long-lasting remissions"
+        },
+        "event_tags": {
+          "perplexity": ["pembrolizumab-immunotherapy", "PD-1-inhibitor", "cancer-checkpoint-therapy", "FDA-approved-oncology"],
+          "claude": ["Keytruda-treatment", "immune-checkpoint-inhibitor", "Merck-oncology", "precision-cancer-therapy"],
+          "chatgpt": ["Keytruda-pembrolizumab", "cancer-immunotherapy", "PD-1-blocker", "checkpoint-inhibitor-therapy"],
+          "gemini": ["immunotherapy-cancer", "Keytruda-infusion", "PD-L1-treatment", "pembrolizumab-therapy"]
+        }
+      },
+      "seo_strategy_outline": "Target patients researching immunotherapy options, those with new cancer diagnoses, and individuals seeking alternatives to chemotherapy. Create comprehensive content covering each approved indication, biomarker testing guides, side effect management resources, and financial assistance information. Build trust through patient stories and clear scientific explanations.",
+      "content_strategy": "Position Keytruda as the gold standard in cancer immunotherapy - backed by extensive clinical evidence and real-world success stories. Address common concerns about side effects and costs upfront while emphasizing the potential for durable responses. Create empowering content that helps patients advocate for appropriate biomarker testing and treatment access.",
+      "competitive_advantages": [
+        "Most FDA-approved indications in immuno-oncology",
+        "Extensive clinical trial data across tumor types",
+        "First PD-1 inhibitor approved for tissue-agnostic indication",
+        "Proven overall survival benefit in multiple cancers",
+        "Well-established safety profile with 10+ years of use",
+        "Robust patient support and assistance programs"
+      ],
+      "fda_data": {
+        "application_number": "BLA125514",
+        "approval_date": "2014-09-04",
+        "indication_approved": true,
+        "drug_class": "PD-1 inhibitor",
+        "indications": [
+          "Melanoma",
+          "Non-Small Cell Lung Cancer",
+          "Head and Neck Squamous Cell Carcinoma",
+          "Classical Hodgkin Lymphoma",
+          "Urothelial Carcinoma",
+          "MSI-H or dMMR Solid Tumors",
+          "Gastric Cancer",
+          "Esophageal Cancer",
+          "Cervical Cancer",
+          "Hepatocellular Carcinoma",
+          "Merkel Cell Carcinoma",
+          "Renal Cell Carcinoma",
+          "Endometrial Carcinoma",
+          "Cutaneous Squamous Cell Carcinoma",
+          "Triple-Negative Breast Cancer",
+          "30+ total indications"
+        ],
+        "clinical_trials_count": 1500,
+        "post_market_studies": 150,
+        "regulatory_status": "Active",
+        "breakthrough_therapy": "Multiple designations"
+      },
+      "qa_scores": {
+        "medical_accuracy": 99,
+        "fda_compliance": 100,
+        "seo_effectiveness": 96,
+        "content_quality": 98,
+        "risk_assessment": 3,
+        "overall_score": 97,
+        "recommendation": "APPROVED",
+        "review_notes": "Exceptional content covering complex immunotherapy concepts in accessible language. Comprehensive coverage of indications with appropriate emphasis on biomarker testing. Well-balanced risk communication.",
+        "reviewer": "Claude AI Medical Review",
+        "review_date": "2025-08-01T19:35:00Z"
+      },
+      "geo_optimization_score": 94,
+      "ai_processing_status": "completed",
+      "created_at": "2025-08-01T19:25:00Z",
+      "updated_at": "2025-08-01T19:35:00Z"
     }
   ]
 }
