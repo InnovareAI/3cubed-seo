@@ -285,7 +285,10 @@ function analyzeCompetitors(data, genericName, indication) {
 function analyzeGeographicMarkets(trials, targetMarkets, indication) {
   const marketData = {};
   
-  targetMarkets.forEach(market => {
+  // Handle both string and array inputs
+  const markets = Array.isArray(targetMarkets) ? targetMarkets : (targetMarkets ? [targetMarkets] : []);
+  
+  markets.forEach(market => {
     const marketTrials = trials.filter(t => 
       t.locations?.countries?.includes(market) || 
       t.locations?.countries?.includes(getCountryFromMarket(market))
@@ -439,8 +442,10 @@ function generatePatientSearchTerms(indication, lineOfTherapy, patientPopulation
   }
   
   // Population specific
-  if (patientPopulation && patientPopulation.length > 0) {
-    patientPopulation.forEach(pop => {
+  if (patientPopulation) {
+    // Handle both string and array inputs
+    const populations = Array.isArray(patientPopulation) ? patientPopulation : [patientPopulation];
+    populations.forEach(pop => {
       terms.push(`${indication} treatment ${pop}`);
     });
   }
@@ -468,8 +473,11 @@ function generateHCPSearchTerms(genericName, indication, stage) {
 function generateGeoTerms(markets, indication) {
   const terms = [];
   
-  if (markets && markets.length > 0) {
-    markets.forEach(market => {
+  // Handle both string and array inputs
+  const marketList = Array.isArray(markets) ? markets : (markets ? [markets] : []);
+  
+  if (marketList.length > 0) {
+    marketList.forEach(market => {
       terms.push(`${indication} treatment ${market}`);
       terms.push(`${indication} clinical trials ${market}`);
       terms.push(`${indication} specialist ${market}`);

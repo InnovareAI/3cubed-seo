@@ -33,6 +33,10 @@ exports.handler = async (event, context) => {
     const competitiveContext = buildCompetitiveContext(fdaData);
     const geoContext = buildGeographicContext(fdaData, submission.geographic_markets);
     const geoOptimizationStrategy = buildGEOStrategy(submission, fdaData);
+    
+    // Dynamic content depth based on input richness
+    const inputDepth = calculateInputDepth(submission, fdaData);
+    const contentDepthStrategy = buildContentDepthStrategy(inputDepth, submission);
 
     const geoEnhancedPrompt = `You are an expert pharmaceutical SEO strategist specializing in Generative Engine Optimization (GEO). Create content that not only ranks in traditional search but is optimized for AI systems like ChatGPT, Claude, Perplexity, and Google's AI Overviews.
 
@@ -51,6 +55,8 @@ ${competitiveContext}
 ${geoContext}
 
 ${geoOptimizationStrategy}
+
+${contentDepthStrategy}
 
 Create comprehensive SEO/GEO content following this structure for maximum AI comprehension:
 
@@ -584,4 +590,141 @@ ${market.toUpperCase()} MARKET:
   }
 
   return context;
+}
+
+// New function to calculate input depth
+function calculateInputDepth(submission, fdaData) {
+  let depthScore = 0;
+  const depthFactors = {
+    // Basic required fields (base score)
+    hasProductName: submission.product_name ? 10 : 0,
+    hasGenericName: submission.generic_name ? 10 : 0,
+    hasIndication: submission.medical_indication ? 10 : 0,
+    hasTherapeuticArea: submission.therapeutic_area ? 10 : 0,
+    
+    // Additional strategic fields
+    hasMechanism: submission.mechanism_of_action ? 15 : 0,
+    hasLineOfTherapy: submission.line_of_therapy ? 10 : 0,
+    hasKeyDifferentiators: submission.key_differentiators?.length > 0 ? 10 : 0,
+    hasTargetAudience: submission.target_audience?.length > 0 ? 5 : 0,
+    hasGeography: submission.geographic_markets?.length > 0 ? 5 : 0,
+    
+    // Clinical data richness
+    hasNCTNumber: submission.nct_number ? 10 : 0,
+    hasPrimaryEndpoints: submission.primary_endpoints ? 10 : 0,
+    hasKeyBiomarkers: submission.key_biomarkers ? 10 : 0,
+    hasPatientPopulation: submission.patient_population ? 10 : 0,
+    
+    // FDA data richness
+    hasClinicalTrials: fdaData?.data?.clinicalTrials?.length > 0 ? 15 : 0,
+    hasAdverseEvents: fdaData?.data?.adverseEvents?.length > 0 ? 10 : 0,
+    hasCompetitorData: fdaData?.data?.competitorAnalysis?.length > 0 ? 10 : 0,
+    hasGeographicData: Object.keys(fdaData?.data?.geographicData || {}).length > 0 ? 10 : 0,
+    
+    // Business context
+    hasClientName: submission.client_name ? 5 : 0,
+    hasSponsor: submission.sponsor ? 5 : 0,
+    hasPriorityLevel: submission.priority_level === 'high' ? 5 : 0
+  };
+  
+  // Calculate total depth score
+  Object.values(depthFactors).forEach(score => depthScore += score);
+  
+  // Categorize depth level
+  if (depthScore >= 150) return 'comprehensive';
+  if (depthScore >= 100) return 'detailed';
+  if (depthScore >= 60) return 'standard';
+  return 'basic';
+}
+
+// Build content strategy based on input depth
+function buildContentDepthStrategy(depth, submission) {
+  const strategies = {
+    comprehensive: `
+CONTENT DEPTH: COMPREHENSIVE (Maximum detail available)
+
+Generate ADVANCED SEO/GEO content with:
+- 10 detailed consumer questions with comprehensive answers (include patient journey stages)
+- 5 sophisticated long-tail keywords targeting specific patient segments
+- 7 dynamic GEO fields including voice search, medical facts, evidence stats
+- Deep competitive positioning analysis
+- Multi-market geographic optimization
+- Advanced clinical trial intelligence
+- Biomarker-driven content sections
+- Insurance and access pathways
+- HCP-specific technical content
+- Patient support program details
+- Real-world evidence integration
+- Formulary positioning strategy
+
+CONSUMER QUESTIONS should span:
+1. Pre-diagnosis awareness
+2. Diagnosis confirmation
+3. Treatment initiation
+4. Ongoing management
+5. Side effect management
+6. Insurance/access navigation
+7. Lifestyle integration
+8. Long-term outcomes
+9. Switching from other therapies
+10. Caregiver support needs`,
+
+    detailed: `
+CONTENT DEPTH: DETAILED (Rich information provided)
+
+Generate ENHANCED SEO/GEO content with:
+- 10 consumer questions covering key patient concerns
+- 5 targeted long-tail keywords
+- 5-6 GEO fields based on available FDA and clinical data
+- Competitive differentiation messaging
+- Primary market optimization
+- Clinical efficacy highlights
+- Safety profile details
+- Basic access information
+
+CONSUMER QUESTIONS should focus on:
+1. What is the medication
+2. How it works
+3. Who should take it
+4. Expected benefits
+5. Common side effects
+6. Administration details
+7. Cost considerations
+8. Lifestyle impacts
+9. Monitoring requirements
+10. When to contact doctor`,
+
+    standard: `
+CONTENT DEPTH: STANDARD (Core information available)
+
+Generate SOLID SEO/GEO content with:
+- 10 consumer questions covering fundamentals
+- 5 long-tail keywords for basic searches
+- 5 essential GEO fields
+- Basic competitive context
+- Primary indication focus
+- Key clinical benefits
+- Important safety information
+
+CONSUMER QUESTIONS should address:
+1-3. Basic product understanding
+4-6. Usage and administration
+7-8. Safety and side effects
+9-10. Access and support`,
+
+    basic: `
+CONTENT DEPTH: BASIC (Limited information provided)
+
+Generate FOUNDATIONAL SEO/GEO content with:
+- 10 consumer questions based on standard template
+- 5 generic long-tail keywords
+- 5 core GEO fields
+- General therapeutic area positioning
+- Basic product information
+- Standard safety language
+
+Note: With more detailed input about ${submission.product_name || 'the product'}, including clinical trial data, competitive landscape, and patient demographics, we could create much more targeted and effective content.`
+  };
+  
+  return strategies[depth] || strategies.basic;
 }
