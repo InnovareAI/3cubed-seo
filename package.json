@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "node scripts/inject-env.js && vite build",
     "preview": "vite preview",
     "deploy": "netlify deploy --prod",
     "netlify:dev": "netlify dev",
@@ -24,7 +24,7 @@
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.1",
     "lucide-react": "^0.294.0",
-    "node-fetch": "^3.3.2",
+    "node-fetch": "^2.7.0",
     "papaparse": "^5.5.3",
     "pg": "^8.16.3",
     "react": "^18.2.0",

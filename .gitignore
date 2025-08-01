@@ -43,3 +43,6 @@ coverage/
 
 # Local Netlify folder
 .netlify
+
+# Injected config with API keys
+netlify/functions/config-injected.js

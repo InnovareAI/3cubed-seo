@@ -22,7 +22,18 @@ exports.handler = async (event, context) => {
 
   try {
     const { submission, fdaData } = JSON.parse(event.body);
-    const perplexityApiKey = process.env.PERPLEXITY_API_KEY || process.env.VITE_PERPLEXITY_API_KEY;
+    // Try multiple sources for API key
+    let perplexityApiKey = process.env.PERPLEXITY_API_KEY || process.env.VITE_PERPLEXITY_API_KEY;
+    
+    // If not found in env, try injected config
+    if (!perplexityApiKey) {
+      try {
+        const config = require('./config-injected.js');
+        perplexityApiKey = config.PERPLEXITY_API_KEY;
+      } catch (e) {
+        // Config file might not exist
+      }
+    }
     
     if (!perplexityApiKey) {
       throw new Error('PERPLEXITY_API_KEY not configured');

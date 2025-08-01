@@ -20,7 +20,18 @@ exports.handler = async (event, context) => {
 
   try {
     const { content, submission, fdaData } = JSON.parse(event.body);
-    const claudeApiKey = process.env.CLAUDE_API_KEY || process.env.VITE_CLAUDE_API_KEY;
+    // Try multiple sources for API key
+    let claudeApiKey = process.env.CLAUDE_API_KEY || process.env.VITE_CLAUDE_API_KEY;
+    
+    // If not found in env, try injected config
+    if (!claudeApiKey) {
+      try {
+        const config = require('./config-injected.js');
+        claudeApiKey = config.CLAUDE_API_KEY;
+      } catch (e) {
+        // Config file might not exist
+      }
+    }
     
     if (!claudeApiKey) {
       throw new Error('CLAUDE_API_KEY not configured');

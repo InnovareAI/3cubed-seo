@@ -14,10 +14,16 @@ exports.handler = async (event, context) => {
   const envCheck = {
     perplexity_configured: !!process.env.PERPLEXITY_API_KEY,
     claude_configured: !!process.env.CLAUDE_API_KEY,
+    vite_perplexity_configured: !!process.env.VITE_PERPLEXITY_API_KEY,
+    vite_claude_configured: !!process.env.VITE_CLAUDE_API_KEY,
     perplexity_length: process.env.PERPLEXITY_API_KEY ? process.env.PERPLEXITY_API_KEY.length : 0,
     claude_length: process.env.CLAUDE_API_KEY ? process.env.CLAUDE_API_KEY.length : 0,
+    vite_perplexity_length: process.env.VITE_PERPLEXITY_API_KEY ? process.env.VITE_PERPLEXITY_API_KEY.length : 0,
+    vite_claude_length: process.env.VITE_CLAUDE_API_KEY ? process.env.VITE_CLAUDE_API_KEY.length : 0,
     perplexity_prefix: process.env.PERPLEXITY_API_KEY ? process.env.PERPLEXITY_API_KEY.substring(0, 5) : 'not set',
     claude_prefix: process.env.CLAUDE_API_KEY ? process.env.CLAUDE_API_KEY.substring(0, 7) : 'not set',
+    vite_perplexity_prefix: process.env.VITE_PERPLEXITY_API_KEY ? process.env.VITE_PERPLEXITY_API_KEY.substring(0, 5) : 'not set',
+    vite_claude_prefix: process.env.VITE_CLAUDE_API_KEY ? process.env.VITE_CLAUDE_API_KEY.substring(0, 7) : 'not set',
     node_env: process.env.NODE_ENV,
     all_env_keys: Object.keys(process.env).filter(key => !key.includes('AWS') && !key.includes('LAMBDA')).sort()
   };

@@ -79,11 +79,11 @@ export default function SEOReviewDetail() {
   
   const [showApprovalForm, setShowApprovalForm] = useState(false)
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
+    'seo-strategy': true,  // Show SEO/GEO strategy first
     'compliance': true,
-    'overview': true,
-    'seo-analysis': !showApprovalForm,
-    'geo-optimization': false,
-    'seo-strategy': false
+    'overview': false,
+    'seo-analysis': true,
+    'geo-optimization': true  // Show GEO fields by default
   })
   
   const [revisionNotes, setRevisionNotes] = useState('')
@@ -369,7 +369,37 @@ export default function SEOReviewDetail() {
         </div>
       </div>
 
-      {/* Compliance Status Section - MOVED TO TOP */}
+      {/* SEO/GEO Strategy Section - MOVED TO TOP AS REQUESTED */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+        <div 
+          className="p-6 cursor-pointer"
+          onClick={() => toggleSection('seo-strategy')}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Globe className="h-5 w-5 text-gray-600" />
+              <h2 className="text-lg font-semibold text-gray-900">SEO/GEO Strategy</h2>
+              <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full">Primary Focus</span>
+            </div>
+            {expandedSections['seo-strategy'] ? 
+              <ChevronUp className="h-5 w-5 text-gray-400" /> : 
+              <ChevronDown className="h-5 w-5 text-gray-400" />
+            }
+          </div>
+        </div>
+        
+        {expandedSections['seo-strategy'] && (
+          <div className="px-6 pb-6">
+            <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-4">
+              <p className="text-sm text-gray-700 whitespace-pre-wrap">
+                {submission.seo_strategy_outline || 'AI-generated SEO/GEO strategy will appear here based on FDA data and market intelligence.'}
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Compliance Status Section */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
         <div 
           className="p-6 cursor-pointer"
@@ -409,35 +439,6 @@ export default function SEOReviewDetail() {
             style={{ width: `${(approvedCount / totalApprovals) * 100}%` }}
           />
         </div>
-      </div>
-
-      {/* SEO/GEO Strategy Section - MOVED TO TOP */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
-        <div 
-          className="p-6 cursor-pointer"
-          onClick={() => toggleSection('seo-strategy')}
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Globe className="h-5 w-5 text-gray-600" />
-              <h2 className="text-lg font-semibold text-gray-900">SEO/GEO Strategy</h2>
-            </div>
-            {expandedSections['seo-strategy'] ? 
-              <ChevronUp className="h-5 w-5 text-gray-400" /> : 
-              <ChevronDown className="h-5 w-5 text-gray-400" />
-            }
-          </div>
-        </div>
-        
-        {expandedSections['seo-strategy'] && (
-          <div className="px-6 pb-6">
-            <div className="bg-gray-50 rounded-lg p-4">
-              <p className="text-sm text-gray-700 whitespace-pre-wrap">
-                {submission.seo_strategy_outline}
-              </p>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Overview Section */}
@@ -602,21 +603,58 @@ export default function SEOReviewDetail() {
               </div>
             </div>
 
-            {/* Keywords */}
-            <FieldApprovalControl
-              fieldName="5. Target Keywords (10-15 terms)"
-              fieldValue={[
-                ...(submission.seo_keywords || []),
-                ...(submission.long_tail_keywords || [])
-              ]}
-              fieldId="keywords"
-              onApprovalChange={handleFieldApproval}
-              initialApproval={fieldApprovals['keywords']}
-            />
+            {/* Keywords - Split into SEO and Long-tail */}
+            <div className="space-y-4">
+              <FieldApprovalControl
+                fieldName="5. Primary SEO Keywords"
+                fieldValue={submission.seo_keywords || []}
+                fieldId="seo_keywords"
+                onApprovalChange={handleFieldApproval}
+                initialApproval={fieldApprovals['seo_keywords']}
+              />
+              
+              <FieldApprovalControl
+                fieldName="6. Long-tail Keywords (5 required)"
+                fieldValue={submission.long_tail_keywords || []}
+                fieldId="long_tail_keywords"
+                onApprovalChange={handleFieldApproval}
+                initialApproval={fieldApprovals['long_tail_keywords']}
+                minItems={5}
+              />
+            </div>
+
+            {/* Consumer Questions - NEW SECTION */}
+            <div>
+              <h3 className="text-sm font-semibold text-gray-900 mb-3">
+                7. Consumer Questions (10 required)
+              </h3>
+              <div className="space-y-3">
+                {(submission.consumer_questions || []).slice(0, 10).map((question: any, idx: number) => {
+                  const questionText = typeof question === 'string' ? question : question.question;
+                  const answer = typeof question === 'object' ? question.answer : '';
+                  
+                  return (
+                    <FieldApprovalControl
+                      key={`cq-${idx}`}
+                      fieldName={`Q${idx + 1}`}
+                      fieldValue={answer ? `${questionText}\n\nAnswer: ${answer}` : questionText}
+                      fieldId={`consumer_question_${idx}`}
+                      onApprovalChange={handleFieldApproval}
+                      initialApproval={fieldApprovals[`consumer_question_${idx}`]}
+                    />
+                  );
+                })}
+                {(!submission.consumer_questions || submission.consumer_questions.length < 10) && (
+                  <div className="text-sm text-amber-600 bg-amber-50 p-3 rounded-lg">
+                    ⚠️ {10 - (submission.consumer_questions?.length || 0)} more consumer questions needed
+                  </div>
+                )}
+              </div>
+            </div>
 
             {/* Body Content Summary */}
             <FieldApprovalControl
-              fieldName="6. Body Content Summary"
+              fieldName="8. Body Content Summary"
               fieldValue={submission.ai_generated_content?.body_preview || 'AI-generated body content focusing on ' + submission.generic_name + ' for ' + (submission.medical_indication || submission.indication) + ' treatment optimization.'}
               fieldId="body_content"
               characterLimit={800}
@@ -626,7 +664,7 @@ export default function SEOReviewDetail() {
 
             {/* Schema Markup */}
             <FieldApprovalControl
-              fieldName="7. Schema Markup (JSON-LD)"
+              fieldName="9. Schema Markup (JSON-LD)"
               fieldValue={submission.ai_generated_content?.schema_markup || JSON.stringify({
                 "@context": "https://schema.org",
                 "@type": "Drug",
@@ -661,53 +699,115 @@ export default function SEOReviewDetail() {
           </div>
         </div>
         
-        {expandedSections['geo-optimization'] && submission.geo_optimization && (
+        {expandedSections['geo-optimization'] && (
           <div className="px-6 pb-6 space-y-6">
-            {/* Event Tags */}
-            <FieldApprovalControl
-              fieldName="GEO Event Tags"
-              fieldValue={submission.geo_event_tags || []}
-              fieldId="geo_tags"
-              onApprovalChange={handleFieldApproval}
-              initialApproval={fieldApprovals['geo_tags']}
-            />
+            {/* Dynamic GEO Fields (5-7 based on FDA data) */}
+            <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg p-4 mb-4">
+              <h3 className="text-sm font-semibold text-gray-900 mb-3">Dynamic GEO Fields (5-7 based on data availability)</h3>
+              <div className="space-y-3">
+                {/* 1. Event Tags */}
+                <FieldApprovalControl
+                  fieldName="1. GEO Event Tags"
+                  fieldValue={submission.geo_event_tags || []}
+                  fieldId="geo_tags"
+                  onApprovalChange={handleFieldApproval}
+                  initialApproval={fieldApprovals['geo_tags']}
+                />
 
-            {/* AI-Friendly Summary */}
-            <div>
-              <h3 className="text-sm font-semibold text-gray-900 mb-3">AI-Friendly Summary</h3>
-              <div className="bg-purple-50 rounded-lg p-4">
-                <p className="text-sm text-gray-700">
-                  {submission.geo_optimization.ai_friendly_summary}
-                </p>
+                {/* 2. AI-Friendly Summary */}
+                <FieldApprovalControl
+                  fieldName="2. AI-Friendly Summary"
+                  fieldValue={submission.geo_optimization?.ai_friendly_summary || 'AI-optimized summary pending'}
+                  fieldId="ai_friendly_summary"
+                  onApprovalChange={handleFieldApproval}
+                  initialApproval={fieldApprovals['ai_friendly_summary']}
+                />
+
+                {/* 3. Voice Search Optimization */}
+                {submission.geo_optimization?.voice_search_answers && (
+                  <FieldApprovalControl
+                    fieldName="3. Voice Search Answers"
+                    fieldValue={Object.entries(submission.geo_optimization.voice_search_answers)
+                      .map(([q, a]) => `Q: ${q}\nA: ${a}`)
+                      .join('\n\n')}
+                    fieldId="voice_search"
+                    onApprovalChange={handleFieldApproval}
+                    initialApproval={fieldApprovals['voice_search']}
+                  />
+                )}
+
+                {/* 4. Medical Facts */}
+                {submission.geo_optimization?.medical_facts && (
+                  <FieldApprovalControl
+                    fieldName="4. Key Medical Facts"
+                    fieldValue={submission.geo_optimization.medical_facts}
+                    fieldId="medical_facts"
+                    onApprovalChange={handleFieldApproval}
+                    initialApproval={fieldApprovals['medical_facts']}
+                  />
+                )}
+
+                {/* 5. Evidence Statistics */}
+                {submission.geo_optimization?.evidence_statistics && (
+                  <FieldApprovalControl
+                    fieldName="5. Clinical Evidence Stats"
+                    fieldValue={submission.geo_optimization.evidence_statistics}
+                    fieldId="evidence_stats"
+                    onApprovalChange={handleFieldApproval}
+                    initialApproval={fieldApprovals['evidence_stats']}
+                  />
+                )}
+
+                {/* 6. Geographic Markets */}
+                {submission.geography && submission.geography.length > 0 && (
+                  <FieldApprovalControl
+                    fieldName="6. Geographic Market Optimization"
+                    fieldValue={submission.geography}
+                    fieldId="geo_markets"
+                    onApprovalChange={handleFieldApproval}
+                    initialApproval={fieldApprovals['geo_markets']}
+                  />
+                )}
+
+                {/* 7. Competitive Positioning */}
+                {submission.competitive_advantages && (
+                  <FieldApprovalControl
+                    fieldName="7. Competitive Advantages for AI"
+                    fieldValue={submission.competitive_advantages}
+                    fieldId="competitive_advantages"
+                    onApprovalChange={handleFieldApproval}
+                    initialApproval={fieldApprovals['competitive_advantages']}
+                  />
+                )}
               </div>
             </div>
 
             {/* Platform-Specific Tags */}
             <div>
-              <h3 className="text-sm font-semibold text-gray-900 mb-3">Platform-Specific Event Tags</h3>
+              <h3 className="text-sm font-semibold text-gray-900 mb-3">Platform-Specific Optimization</h3>
               <div className="grid grid-cols-2 gap-4">
                 {['perplexity', 'claude', 'chatgpt', 'gemini'].map((platform) => (
                   <div key={platform} className="bg-white border rounded-lg p-3">
                     <h5 className="text-xs font-medium text-gray-600 uppercase mb-2">{platform}</h5>
-                    {submission.geo_optimization.event_tags?.[platform]?.length > 0 ? (
+                    {submission.geo_optimization?.event_tags?.[platform]?.length > 0 ? (
                       <div className="space-y-1">
                         {submission.geo_optimization.event_tags[platform].map((tag: string, idx: number) => (
                           <div key={idx} className="text-xs text-gray-700">• {tag}</div>
                         ))}
                       </div>
                     ) : (
-                      <p className="text-xs text-gray-400 italic">No tags</p>
+                      <p className="text-xs text-gray-400 italic">Optimizing for {platform}...</p>
                     )}
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Key Facts */}
-            <div>
-              <h3 className="text-sm font-semibold text-gray-900 mb-3">Key Facts for AI</h3>
-              <div className="bg-purple-50 rounded-lg p-4">
-                {submission.geo_optimization.key_facts && submission.geo_optimization.key_facts.length > 0 ? (
+            {/* Key Facts for AI Extraction */}
+            {submission.geo_optimization?.key_facts && submission.geo_optimization.key_facts.length > 0 && (
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900 mb-3">Key Facts for AI Extraction</h3>
+                <div className="bg-purple-50 rounded-lg p-4">
                   <ul className="space-y-2">
                     {submission.geo_optimization.key_facts.map((fact: string, idx: number) => (
                       <li key={idx} className="flex items-start">
@@ -716,11 +816,9 @@ export default function SEOReviewDetail() {
                       </li>
                     ))}
                   </ul>
-                ) : (
-                  <p className="text-sm text-gray-500 italic">No key facts defined</p>
-                )}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         )}
       </div>
