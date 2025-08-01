@@ -750,6 +750,191 @@
       "ai_processing_status": "completed",
       "created_at": "2025-08-01T19:25:00Z",
       "updated_at": "2025-08-01T19:35:00Z"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440004",
+      "product_name": "Immunomax",
+      "generic_name": "tocilizumab-bavi",
+      "medical_indication": "Rheumatoid arthritis, giant cell arteritis, systemic sclerosis-associated interstitial lung disease",
+      "therapeutic_area": "Rheumatology/Immunology",
+      "development_stage": "FDA Approved",
+      "workflow_stage": "seo_review",
+      "submitter_name": "Robert Kim",
+      "submitter_email": "rkim@3cubed.com",
+      "submitter_company": "3Cubed SEO",
+      "sponsor": "BioPharma Innovations",
+      "mechanism_of_action": "IL-6 receptor antagonist that blocks interleukin-6 mediated inflammatory signaling",
+      "line_of_therapy": "Second-line biologic after TNF inhibitor failure or first-line in select patients",
+      "patient_population": "Adults with moderate to severe RA, GCA, and SSc-ILD who require advanced immunosuppression",
+      "geographic_markets": ["United States", "European Union", "Canada", "Japan", "Australia"],
+      "key_differentiators": [
+        "First biosimilar IL-6 inhibitor with expanded indications",
+        "35% cost reduction versus reference products",
+        "Both IV and subcutaneous formulations available",
+        "Proven efficacy in multiple inflammatory conditions"
+      ],
+      "primary_endpoints": "ACR response rates, remission rates, and lung function preservation",
+      "priority_level": "high",
+      "seo_title": "Immunomax® (Tocilizumab-bavi) - FDA-Approved IL-6 Inhibitor | RA, GCA & SSc-ILD Treatment",
+      "meta_description": "Immunomax is an FDA-approved biosimilar IL-6 inhibitor for rheumatoid arthritis, giant cell arteritis, and systemic sclerosis lung disease. Learn about efficacy, dosing, safety profile, and 35% cost savings.",
+      "h1_tag": "Immunomax (Tocilizumab-bavi): Advanced IL-6 Inhibitor for Multiple Inflammatory Conditions",
+      "h2_tags": [
+        "What is Immunomax IL-6 Inhibitor?",
+        "FDA-Approved Uses: RA, GCA, and SSc-ILD",
+        "How Immunomax Compares to Actemra",
+        "IV vs Subcutaneous Administration Options",
+        "Managing Side Effects and Monitoring",
+        "Insurance Coverage and Patient Savings"
+      ],
+      "seo_keywords": [
+        "Immunomax",
+        "tocilizumab biosimilar",
+        "IL-6 inhibitor",
+        "rheumatoid arthritis treatment",
+        "giant cell arteritis therapy",
+        "systemic sclerosis ILD",
+        "Actemra biosimilar",
+        "inflammatory disease treatment",
+        "biologic therapy"
+      ],
+      "long_tail_keywords": [
+        "Immunomax vs Actemra cost comparison",
+        "tocilizumab biosimilar switching guidelines",
+        "IL-6 inhibitor for RA after TNF failure",
+        "Immunomax infusion schedule calculator",
+        "giant cell arteritis biologic treatment options"
+      ],
+      "consumer_questions": [
+        {
+          "question": "What is Immunomax and how does it work?",
+          "answer": "Immunomax (tocilizumab-bavi) is an FDA-approved biosimilar that blocks IL-6, a key protein causing inflammation in conditions like rheumatoid arthritis, giant cell arteritis, and systemic sclerosis. By binding to IL-6 receptors, it interrupts the inflammatory cascade that damages joints, blood vessels, and lungs. It works identically to Actemra but costs 35% less."
+        },
+        {
+          "question": "What conditions does Immunomax treat?",
+          "answer": "Immunomax is FDA-approved for three main conditions: moderate to severe rheumatoid arthritis (including patients who failed other biologics), giant cell arteritis (inflammation of large blood vessels), and systemic sclerosis-associated interstitial lung disease (SSc-ILD). It's also being studied for other inflammatory conditions including COVID-19 cytokine storm."
+        },
+        {
+          "question": "How is Immunomax administered?",
+          "answer": "Immunomax offers two options: intravenous infusion every 4 weeks (4-8mg/kg based on condition) or weekly subcutaneous injections (162mg). IV infusions take about an hour at an infusion center. The subcutaneous version comes in pre-filled syringes or autoinjectors for home use. Your doctor will recommend the best option based on your condition and preferences."
+        },
+        {
+          "question": "Is it safe to switch from Actemra to Immunomax?",
+          "answer": "Yes, switching from Actemra to Immunomax is safe and maintains treatment effectiveness. Clinical studies show no loss of efficacy or new safety concerns when switching. No washout period is needed - you can start Immunomax at your next scheduled dose. The dosing and administration remain the same as your current Actemra regimen."
+        },
+        {
+          "question": "What are the main side effects of Immunomax?",
+          "answer": "Common side effects include upper respiratory infections, headache, high blood pressure, and injection site reactions. Serious risks include serious infections, liver enzyme elevations, low neutrophil counts, and intestinal perforation (rare). Regular blood work monitors for these issues. Most patients tolerate Immunomax well with proper monitoring."
+        },
+        {
+          "question": "How much does Immunomax cost compared to other biologics?",
+          "answer": "Immunomax costs approximately 35% less than Actemra, potentially saving $15,000-25,000 annually. It's often more affordable than TNF inhibitors like Humira or Enbrel. Most insurance plans cover Immunomax with prior authorization. BioPharma Innovations offers copay assistance programs that can reduce out-of-pocket costs to as low as $5 per dose."
+        },
+        {
+          "question": "How quickly does Immunomax work?",
+          "answer": "Many patients experience improvement within 2-4 weeks, with maximum benefits typically seen by 12-16 weeks. For rheumatoid arthritis, joint pain and morning stiffness often improve first. Giant cell arteritis symptoms like headaches may resolve within days. Lung function in SSc-ILD stabilizes gradually over months."
+        },
+        {
+          "question": "Can Immunomax be used with other medications?",
+          "answer": "Immunomax is often combined with methotrexate for rheumatoid arthritis but should not be used with other biologics. It can be used with corticosteroids, though doses may be reduced over time. Avoid live vaccines during treatment. Drug interactions are minimal, but always inform your doctor about all medications you take."
+        },
+        {
+          "question": "What monitoring is required during Immunomax treatment?",
+          "answer": "Regular monitoring includes complete blood count (checking neutrophils and platelets), liver function tests, and lipid panels every 4-8 weeks initially, then every 3 months. Screen for tuberculosis and hepatitis before starting. Watch for signs of infection. Patients with SSc-ILD need periodic lung function tests and imaging."
+        },
+        {
+          "question": "Who should not use Immunomax?",
+          "answer": "Immunomax should be avoided in patients with active infections, severe liver disease, or low neutrophil/platelet counts. Use caution in patients with diverticulitis history due to perforation risk. It's not recommended during pregnancy unless benefits outweigh risks. Patients with recurring infections may need alternative treatments."
+        }
+      ],
+      "geo_event_tags": [
+        "IL-6-inhibitor-biosimilar",
+        "FDA-approved-biologic",
+        "rheumatology-treatment",
+        "inflammatory-disease-therapy",
+        "cost-effective-biosimilar"
+      ],
+      "geo_optimization": {
+        "ai_friendly_summary": "Immunomax (tocilizumab-bavi) is an FDA-approved biosimilar IL-6 receptor antagonist for treating rheumatoid arthritis, giant cell arteritis, and systemic sclerosis-associated interstitial lung disease. As the first biosimilar IL-6 inhibitor with expanded indications, it offers identical efficacy to reference products at 35% lower cost, available in both IV and subcutaneous formulations.",
+        "key_facts": [
+          "FDA approved March 2024 as first IL-6 biosimilar with 3 indications",
+          "35% cost savings versus reference tocilizumab products",
+          "Both IV (monthly) and SC (weekly) formulations available",
+          "Proven efficacy after TNF inhibitor failure in RA",
+          "Reduces GCA relapse risk by 85% vs steroids alone",
+          "Slows lung function decline in SSc-ILD by 44%",
+          "Over 500,000 patients treated with tocilizumab globally"
+        ],
+        "evidence_statistics": [
+          "ACR20 response rate: 80% at week 24 in RA",
+          "GCA remission rate: 56% at week 52",
+          "SSc-ILD FVC preservation: -0.6% vs -3.5% placebo",
+          "99.8% structural similarity to reference product",
+          "Serious infection rate: 4.5 per 100 patient-years",
+          "Switching studies: 95% maintained disease control",
+          "Available in 45+ countries worldwide"
+        ],
+        "medical_facts": {
+          "mechanism": "Humanized monoclonal antibody binding IL-6 receptors, blocking pro-inflammatory signaling",
+          "pharmacokinetics": "Half-life: 13 days (IV), 5 days (SC); Steady state: 16 weeks",
+          "onset": "Clinical improvement within 2-4 weeks, maximal effect by 12-16 weeks",
+          "monitoring": "CBC with differential, LFTs, lipids, infection surveillance"
+        },
+        "voice_search_answers": {
+          "what_is": "Immunomax is a biosimilar version of Actemra that treats inflammatory conditions by blocking IL-6",
+          "how_to_use": "Immunomax is given as a monthly IV infusion or weekly injection under the skin",
+          "cost": "Immunomax costs 35% less than Actemra, saving patients $15,000-25,000 per year",
+          "effectiveness": "Immunomax works as well as Actemra, helping 80% of RA patients achieve significant improvement"
+        },
+        "event_tags": {
+          "perplexity": ["IL-6-biosimilar", "inflammatory-arthritis-treatment", "FDA-approved-biologic", "tocilizumab-therapy"],
+          "claude": ["Immunomax-tocilizumab", "IL-6-inhibitor", "rheumatology-biosimilar", "BioPharma-medication"],
+          "chatgpt": ["tocilizumab-biosimilar", "Immunomax-treatment", "IL-6-blocker", "RA-biologic-therapy"],
+          "gemini": ["biosimilar-Actemra", "IL-6-receptor-antagonist", "inflammatory-disease-treatment", "Immunomax-therapy"]
+        }
+      },
+      "seo_strategy_outline": "Target patients who failed TNF inhibitors, those researching IL-6 therapy, and cost-conscious individuals seeking biosimilar options. Create detailed comparison content versus Actemra and other biologics, switching guides, and condition-specific treatment pathways. Emphasize the unique advantage of having both IV and SC formulations.",
+      "content_strategy": "Position Immunomax as the smart evolution in IL-6 therapy - delivering proven efficacy across multiple serious conditions at significantly lower cost. Address biosimilar confidence through clinical data while highlighting the flexibility of dual formulation options. Build trust through transparent safety monitoring guidance and real-world evidence.",
+      "competitive_advantages": [
+        "First IL-6 biosimilar with 3 FDA-approved indications",
+        "35% cost reduction improving treatment access",
+        "Both IV and subcutaneous formulations for flexibility",
+        "Proven efficacy in TNF-inadequate responders",
+        "Comprehensive patient support program",
+        "Preferred formulary status at major insurers"
+      ],
+      "fda_data": {
+        "application_number": "BLA761310",
+        "approval_date": "2024-03-15",
+        "indication_approved": true,
+        "biosimilar_to": "Actemra",
+        "indications": [
+          "Rheumatoid Arthritis",
+          "Giant Cell Arteritis",
+          "Systemic Sclerosis-Associated Interstitial Lung Disease",
+          "Polyarticular Juvenile Idiopathic Arthritis (pending)",
+          "Cytokine Release Syndrome (pending)"
+        ],
+        "clinical_trials_count": 8,
+        "post_market_studies": 3,
+        "regulatory_status": "Active",
+        "purple_book_status": "Biosimilar"
+      },
+      "qa_scores": {
+        "medical_accuracy": 97,
+        "fda_compliance": 100,
+        "seo_effectiveness": 95,
+        "content_quality": 96,
+        "risk_assessment": 3,
+        "overall_score": 96,
+        "recommendation": "APPROVED",
+        "review_notes": "Excellent biosimilar content with comprehensive safety information. Strong positioning for IL-6 therapy with appropriate risk communication. Well-structured for multiple indications.",
+        "reviewer": "Claude AI Medical Review",
+        "review_date": "2025-08-01T19:45:00Z"
+      },
+      "geo_optimization_score": 94,
+      "ai_processing_status": "completed",
+      "created_at": "2025-08-01T19:40:00Z",
+      "updated_at": "2025-08-01T19:45:00Z"
     }
   ]
 }
