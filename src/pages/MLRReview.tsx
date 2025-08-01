@@ -169,9 +169,6 @@ export default function MLRReview() {
           <h1 className="text-2xl font-bold text-gray-900">MLR Review</h1>
           <p className="text-sm text-gray-600 mt-1">Medical legal compliance review before publication</p>
         </div>
-        <CTAButton variant="primary" icon={<FileText className="h-4 w-4" />}>
-          Export Report
-        </CTAButton>
       </div>
 
       {/* Stats Cards */}

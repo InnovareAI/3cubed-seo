@@ -108,9 +108,6 @@ export default function ClientReview() {
           <h1 className="text-2xl font-bold text-gray-900">Client Review</h1>
           <p className="text-sm text-gray-600 mt-1">Review and approve SEO-optimized content with clients</p>
         </div>
-        <CTAButton variant="primary" icon={<FileText className="h-4 w-4" />}>
-          Export Report
-        </CTAButton>
       </div>
 
       {/* Stats Cards */}

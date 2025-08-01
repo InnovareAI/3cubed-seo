@@ -185,6 +185,39 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
       return;
     }
 
+    // MOCKUP: Simulate submission delay then show success
+    setTimeout(() => {
+      setShowSuccessMessage(true);
+      setIsSubmitting(false);
+      
+      // Reset form
+      setFormData({
+        product_name: '',
+        generic_name: '',
+        indication: '',
+        therapeutic_area: '',
+        nct_number: '',
+        sponsor: '',
+        development_stage: '',
+        line_of_therapy: '',
+        patient_population: [],
+        route_of_administration: '',
+        combination_partners: [],
+        primary_endpoints: [],
+        geographic_markets: [],
+        key_biomarkers: [],
+        target_age_groups: [],
+        seo_reviewer_name: '',
+        seo_reviewer_email: '',
+        client_reviewer_name: '',
+        client_reviewer_email: '',
+        mlr_reviewer_name: '',
+        mlr_reviewer_email: ''
+      });
+    }, 1500);
+
+    return; // Exit early - this is a mockup
+
     // Build submission data - only include fields that definitely exist
     let submissionData: any = {
         // Mandatory fields (always included)
@@ -348,8 +381,11 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 Success!
               </h3>
-              <p className="text-gray-600 mb-6">
+              <p className="text-gray-600 mb-4">
                 Your SEO content request has been submitted successfully and is now being processed.
+              </p>
+              <p className="text-sm text-gray-500 mb-6">
+                (This is a mockup demonstration - no data was actually submitted)
               </p>
               <button
                 onClick={() => setShowSuccessMessage(false)}
