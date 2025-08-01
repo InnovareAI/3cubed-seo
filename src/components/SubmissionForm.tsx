@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { api } from '../lib/api';
+import { aiApi } from '../lib/ai-api';
 import { THERAPEUTIC_AREAS } from '../constants/therapeuticAreas';
 import { CheckCircle } from 'lucide-react';
 
@@ -248,6 +249,37 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
         
         const submissionId = submission.id;
         console.log('✅ Created submission record:', submissionId);
+
+        // Step 2: Trigger AI processing in background
+        console.log('🤖 Starting AI processing pipeline...');
+        aiApi.processSubmission(submission).then(async (aiResult) => {
+          console.log('✅ AI processing completed:', aiResult);
+          
+          // Update submission with AI results
+          await api.updateSubmission(submissionId, {
+            workflow_stage: aiResult.passed ? 'ai_complete' : 'ai_review_needed',
+            seo_title: aiResult.seoContent?.seo_title,
+            meta_description: aiResult.seoContent?.meta_description,
+            primary_keywords: aiResult.seoContent?.primary_keywords,
+            long_tail_keywords: aiResult.seoContent?.long_tail_keywords,
+            h1_tags: aiResult.seoContent?.h1_tags,
+            h2_tags: aiResult.seoContent?.h2_tags,
+            consumer_questions: aiResult.seoContent?.consumer_questions,
+            competitive_advantages: aiResult.seoContent?.competitive_advantages,
+            content_strategy: aiResult.seoContent?.content_strategy,
+            fda_data: JSON.stringify(aiResult.fdaData),
+            qa_scores: JSON.stringify(aiResult.qaReview),
+            ai_output: JSON.stringify(aiResult)
+          });
+          console.log('✅ Submission updated with AI results');
+        }).catch(error => {
+          console.error('❌ AI processing failed:', error);
+          // Update submission to show AI processing failed
+          api.updateSubmission(submissionId, {
+            workflow_stage: 'ai_error',
+            ai_output: JSON.stringify({ error: error.message })
+          });
+        });
 
         console.log('✅ Successfully created submission record via Railway API');
         console.log('🎉 Form submission completed');

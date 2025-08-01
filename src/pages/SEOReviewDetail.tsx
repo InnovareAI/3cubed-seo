@@ -55,7 +55,7 @@ interface Submission {
   key_differentiators?: string[]
   seo_keywords?: string[]
   long_tail_keywords?: string[]
-  consumer_questions?: string[]
+  consumer_questions?: any[]
   h1_tag?: string
   h2_tags?: string[]
   meta_title?: string
@@ -64,6 +64,12 @@ interface Submission {
   geo_event_tags?: string[]
   geo_optimization?: any
   seo_strategy_outline?: string
+  primary_keywords?: string[]
+  competitive_advantages?: string[]
+  content_strategy?: string
+  fda_data?: string
+  qa_scores?: string
+  ai_output?: string
 }
 
 export default function SEOReviewDetail() {
