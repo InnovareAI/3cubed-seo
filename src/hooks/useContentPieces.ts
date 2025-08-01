@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase } from '../lib/mockData'
-import { ContentStatus, ContentPiece } from '../lib/mockData'
+import { supabase } from '../lib/database-types'
+import { ContentStatus, ContentPiece } from '../lib/database-types'
 
 export function useContentPieces(status?: ContentStatus) {
   return useQuery({

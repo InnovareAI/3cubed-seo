@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
-import { supabase } from '../lib/mockData'
+import { supabase } from '../lib/database-types'
 import UnifiedReviewModal from './UnifiedReviewModal'
 import { 
   Building2,

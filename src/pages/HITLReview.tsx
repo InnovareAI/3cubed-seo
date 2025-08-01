@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { mockApi } from '../lib/mockData'
+import { mockApi } from '../lib/database-types'
 
 interface Submission {
   id: string

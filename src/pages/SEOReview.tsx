@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { mockApi } from '../lib/mockData'
+import { api } from '../lib/api'
 import CTAButton from '../components/CTAButton'
 import { THERAPEUTIC_AREAS } from '../constants/therapeuticAreas'
 import GEOScoreBreakdownComponent from '../components/GEOScoreBreakdown'
@@ -86,7 +86,7 @@ export default function SEOReview() {
   const { data: dbSubmissions, isLoading } = useQuery({
     queryKey: ['seo-review-queue'],
     queryFn: async () => {
-      const data = await mockApi.getSubmissions()
+      const data = await api.getSubmissions()
       return data as Submission[]
     },
     enabled: true

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { mockApi } from '@/lib/mockData'
+import { api } from '@/lib/api'
 import CTAButton from '@/components/CTAButton'
 import ComprehensiveApprovalForm from '@/components/ComprehensiveApprovalForm'
 import FieldApprovalControl, { FieldApproval } from '@/components/FieldApprovalControl'
@@ -183,7 +183,7 @@ export default function SEOReviewDetail() {
         return demoData[id] || null
       }
       
-      const data = await mockApi.getSubmission(id!)
+      const data = await api.getSubmission(id!)
       if (!data) throw new Error('Submission not found')
       return data as Submission
     }
@@ -212,7 +212,7 @@ export default function SEOReviewDetail() {
         updateData.rejected_at = new Date().toISOString()
       }
 
-      await mockApi.updateSubmission(id!, updateData)
+      await api.updateSubmission(id!, updateData)
       
       queryClient.invalidateQueries({ queryKey: ['seo-review-content'] })
       navigate('/seo-review')

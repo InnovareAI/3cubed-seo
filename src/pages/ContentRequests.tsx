@@ -11,7 +11,7 @@ import {
   XCircle
 } from 'lucide-react'
 import { format } from 'date-fns'
-import { supabase } from '../lib/mockData'
+import { supabase } from '../lib/database-types'
 import { Link } from 'react-router-dom'
 
 type WorkflowStage = 'submitted' | 'seo_review' | 'mlr_review' | 'client_review' | 'approved' | 'rejected' | 'initial_processing'

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase } from '../lib/mockData'
+import { supabase } from '../lib/database-types'
 import { Link } from 'react-router-dom'
 import { format } from 'date-fns'
 import { 

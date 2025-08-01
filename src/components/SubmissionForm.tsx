@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { mockApi } from '../lib/mockData';
+import { api } from '../lib/api';
 import { THERAPEUTIC_AREAS } from '../constants/therapeuticAreas';
 import { CheckCircle } from 'lucide-react';
 
@@ -243,13 +243,13 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSuccess, onClo
       console.log('🚀 About to create submission record in Supabase:', submissionData);
 
       try {
-        // Step 1: Create submission record locally
-        const submission = await mockApi.createSubmission(submissionData);
+        // Step 1: Create submission record via Railway API
+        const submission = await api.createSubmission(submissionData);
         
         const submissionId = submission.id;
         console.log('✅ Created submission record:', submissionId);
 
-        console.log('✅ Successfully created submission record');
+        console.log('✅ Successfully created submission record via Railway API');
         console.log('🎉 Form submission completed');
 
         // Show success modal (user must dismiss manually)

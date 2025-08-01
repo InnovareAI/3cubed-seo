@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { supabase } from '../lib/mockData'
+import { supabase } from '../lib/database-types'
 import { mockClientReviews } from '../data/mockClientReviews'
 import { THERAPEUTIC_AREAS } from '../constants/therapeuticAreas'
 import CTAButton from '../components/CTAButton'

@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { supabase, type Submission } from '../lib/mockData'
+import { supabase, type Submission } from '../lib/database-types'
 import { Tabs, Tab } from '@/components/Tabs'
 import { FileText, Shield, Clock, BarChart3 } from 'lucide-react'
 

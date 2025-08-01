@@ -1,6 +1,6 @@
 // Example of how to create a new submission with automatic client/project assignment
 
-import { supabase } from '../lib/mockData'
+import { supabase } from '../lib/database-types'
 import { processSubmissionAssignment } from '../lib/clientProjectHelpers'
 
 export async function createSubmission(formData: {

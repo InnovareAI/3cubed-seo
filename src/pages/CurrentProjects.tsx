@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { supabase } from '../lib/mockData'
+import { supabase } from '../lib/database-types'
 import { Link } from 'react-router-dom'
 import { format } from 'date-fns'
 import { Clock, CheckCircle, AlertCircle, Edit2, Eye } from 'lucide-react'

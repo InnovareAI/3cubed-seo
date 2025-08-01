@@ -1,9 +1,9 @@
 import { Fragment } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import { X, Target, BarChart3, AlertCircle, CheckCircle } from 'lucide-react'
-import { ContentPiece } from '../lib/mockData'
+import { ContentPiece } from '../lib/database-types'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase } from '../lib/mockData'
+import { supabase } from '../lib/database-types'
 import { useState } from 'react'
 
 interface SEOReviewModalProps {

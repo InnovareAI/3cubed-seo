@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { supabase } from '../lib/mockData'
+import { supabase } from '../lib/database-types'
 import { Search, Filter, ChevronRight, AlertCircle, CheckCircle, Clock, XCircle } from 'lucide-react'
 import { format } from 'date-fns'
-import type { Submission } from '../lib/mockData'
+import type { Submission } from '../lib/database-types'
 
 const getStatusIcon = (status: string) => {
   switch (status) {

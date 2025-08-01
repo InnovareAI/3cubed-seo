@@ -1,4 +1,4 @@
-import { supabase } from '../lib/mockData'
+import { supabase } from '../lib/database-types'
 
 // Utility function to move a submission to Client Review for testing
 export async function moveSubmissionToClientReview(submissionId: string) {

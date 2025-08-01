@@ -4,7 +4,7 @@ import MetricCard from '@/components/MetricCard'
 import StatusDistributionChart from '@/components/StatusDistributionChart'
 import ProcessingQueue from '@/components/ProcessingQueue'
 import { useContentPieces } from '@/hooks/useContentPieces'
-import { ContentStatus } from '../lib/mockData'
+import { ContentStatus } from '../lib/database-types'
 
 export default function Overview() {
   // Fetch content pieces

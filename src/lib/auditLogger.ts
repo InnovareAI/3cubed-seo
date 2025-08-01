@@ -1,4 +1,4 @@
-import { supabase } from '../lib/mockData';
+import { supabase } from '../lib/database-types';
 
 interface AuditLogEntry {
   entityType: string;
