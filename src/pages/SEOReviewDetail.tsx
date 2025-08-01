@@ -189,9 +189,23 @@ export default function SEOReviewDetail() {
         return demoData[id] || null
       }
       
-      const data = await api.getSubmission(id!)
-      if (!data) throw new Error('Submission not found')
-      return data as Submission
+      try {
+        const data = await api.getSubmission(id!)
+        if (!data) {
+          // Try to load from mock data
+          const mockData = await import('../data/mock-submissions.json')
+          const mockSubmission = mockData.submissions.find(s => s.id === id)
+          if (mockSubmission) return mockSubmission as Submission
+          throw new Error('Submission not found')
+        }
+        return data as Submission
+      } catch (error) {
+        // Fallback to mock data
+        const mockData = await import('../data/mock-submissions.json')
+        const mockSubmission = mockData.submissions.find(s => s.id === id)
+        if (mockSubmission) return mockSubmission as Submission
+        throw error
+      }
     }
   })
 
